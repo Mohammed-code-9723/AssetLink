@@ -1,0 +1,16 @@
+npm install rsuite --save
+import 'rsuite/dist/rsuite.min.css';
+
+npm install @mui/material @emotion/react @emotion/styled
+npm install @mui/material @mui/styled-engine-sc styled-components
+npm install @mui/joy @emotion/react @emotion/styled
+
+npm install recharts
+
+npm install framer-motion
+
+npm install @reduxjs/toolkit 
+
+npm install react-router-dom
+
+npm i react-parallax

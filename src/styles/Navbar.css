@@ -1,0 +1,131 @@
+
+.Nav_container {
+    width:100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.142);
+    position:fixed !important;
+    backdrop-filter: blur(10px);
+    z-index: 100;
+    /* background-image: url('/public/wallpaper_1.jpg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover; */
+    background:linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%);
+    height:35px;
+    padding: 10px 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    display: inline;
+    color: #ecf0f1;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
+nav{
+    /* background:rgb(27, 214, 251); */
+    width: 70%;
+    display: flex;
+    justify-content: space-between;
+}
+nav .nav_links {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 20px;
+    /* background:red; */
+    width:90%
+}
+.signInBtn{
+    background: linear-gradient(124deg, rgba(12,46,96,1) 0%, rgba(38,86,17,1) 46%, rgba(9,46,100,1) 100%);
+    width: 150px;
+    transition:all 0.5s;
+    
+}
+.signInBtn:hover{
+    background: linear-gradient(124deg, rgba(38,86,17,1)  0%, rgba(12,46,96,1) 46%,rgba(38,86,17,1) 100%);
+    
+}
+
+
+nav .nav_links .navbar_links {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 5px 15px;
+    /* border-radius: 5px; */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+nav .nav_links .navbar_links.active {
+    color: #0acd9c;
+    border-bottom: 2px solid rgb(5, 207, 207) ;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-weight: 900;
+    font-size: 1.2rem;
+}
+nav .nav_links .navbar_links:hover {
+    /* background:  linear-gradient(124deg, rgba(12,46,96,1) 0%, rgba(38,86,17,1) 46%, rgba(9,46,100,1) 100%); */
+    color: #05fcb2;
+    border-bottom: 2px solid rgb(5, 207, 207) ;
+    text-shadow: 0 0 3px #05fcb2;
+}
+
+@media (max-width: 768px) {
+    .Nav_container {
+        flex-direction: column;
+    }
+
+    nav .nav_links {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .logo {
+        margin-bottom: 10px;
+    }
+}
+
+
+
+/*sign up button*/
+/* styles.css */
+@keyframes gradient-border {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  .signInBtn {
+    position: relative;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    /* background: white; */
+  }
+  
+  .signInBtn::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(270deg, #095b8b, #0c6020, #c22df8);
+    background-size: 600% 600%;
+    animation: gradient-border 5s ease infinite;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 2px;
+  }
+  

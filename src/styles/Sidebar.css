@@ -1,0 +1,13 @@
+.logoVille{
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    height: 50px;
+    align-items: center;
+}
+.zec{
+    color:rgb(71, 71, 71)
+}
+.main_links{
+    color:rgb(46, 46, 46);
+}
