@@ -77,7 +77,7 @@ export default function Sidebar({onToggle}) {
                             <Cascader
                                 // data={data}
                                 style={{ width: '90%' ,marginRight:'3px',display:expanded?'inline':'none'}} 
-                                placeholder="Périmètre" 
+                                placeholder="All Workspaces" 
                             />
                         </div>
                         <div eventKey="2" style={{width:'100%',display:'flex'}}>

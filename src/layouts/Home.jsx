@@ -8,82 +8,146 @@ import CircularProgress from '@mui/joy/CircularProgress';
 import Typography from '@mui/joy/Typography';
 import SvgIcon from '@mui/joy/SvgIcon';
 
-const CardComponent=({workspace,projects,sites,buildings,components})=>(
-    <Card variant="solid" color="primary" invertedColors sx={{
-        width:'30%'
-    }}>
-                <CardContent orientation="horizontal">
-                    <CircularProgress size="lg" determinate value={projects}>
-                    <SvgIcon>
-                        <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
-                        />
-                        </svg>
-                    </SvgIcon>
-                    </CircularProgress>
-                    <CardContent>
-                        <Typography level="body-md">Work space : </Typography>
-                        <Typography level="h2">{workspace} </Typography>
-                        <Typography level="body-md">Projects: </Typography>
-                        <Typography level="h2">{projects}</Typography>
-                        <Typography level="body-md">sites: </Typography>
-                        <Typography level="h2">{sites}</Typography>
-                    </CardContent>
-                </CardContent>
-                <CardActions sx={{
-                    width:'100%',
-                    display:'flex',
-                    justifyContent:'space-around'
-                }}>
-                    <Box>
-                        <Typography level="body-md">buildings: </Typography>
-                        <Typography level="h2">{buildings}</Typography>
-                    </Box>
-                    <Box>
-                        <Typography level="body-md">Components: </Typography>
-                        <Typography level="h2">{components}</Typography>
-                    </Box>
-                </CardActions>
-            </Card>
-);
+//
+import { styled } from '@mui/joy/styles';
+import Sheet from '@mui/joy/Sheet';
+import Grid from '@mui/joy/Grid';
+//
+
+import Breadcrumbs from '@mui/joy/Breadcrumbs';
+import Link from '@mui/joy/Link';
+import Stack from '@mui/joy/Stack';
+import { AvatarGroup, Badge, Avatar, Divider } from 'rsuite';
+import { BsPersonWorkspace } from "react-icons/bs";
+import { FaProjectDiagram } from "react-icons/fa";
+import { FaBuilding } from "react-icons/fa";
+import { BiSolidComponent } from "react-icons/bi";
+
+
+
+
+const Item = styled(Sheet)(({ theme }) => ({
+    backgroundColor:theme.palette.mode === 'dark' ? theme.palette.background.level1 : '#fff',
+    ...theme.typography['body-sm'],
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    borderRadius: 4,
+    color: theme.vars.palette.text.secondary,
+}));
+
+
 export default function Home() {
     const data=[
         { workSpace: 1, projects: 25, sites: 'Beta', buildings: 15, components: 340 },
         { workSpace: 2, projects: 47, sites: 'Gamma', buildings: 8, components: 712 },
         { workSpace: 3, projects: 60, sites: 'Alpha', buildings: 20, components: 450 },
-        // { workSpace: 4, projects: 38, sites: 'Delta', buildings: 10, components: 300 },
-        // { workSpace: 5, projects: 89, sites: 'Epsilon', buildings: 5, components: 670 },
-        // { workSpace: 6, projects: 20, sites: 'Zeta', buildings: 30, components: 520 },
-        // { workSpace: 7, projects: 95, sites: 'Eta', buildings: 12, components: 430 },
-        // { workSpace: 8, projects: 40, sites: 'Theta', buildings: 25, components: 310 },
-        // { workSpace: 9, projects: 55, sites: 'Iota', buildings: 18, components: 620 },
-        // { workSpace: 10, projects: 70, sites: 'Kappa', buildings: 22, components: 710 }
     ];
     
     return (
         <div >
-            Home
-            <div style={{display:'flex',flexWrap:'wrap',gap:10,justifyContent:'center',width:'100%'}}>
-                {
-                    data.map((item,index)=>(
-                        <CardComponent 
-                        workspace={item.workSpace}
-                        projects={item.projects}
-                        sites={item.sites}
-                        buildings={item.buildings}
-                        components={item.components}
-                        />
-                    ))
-                }
+            <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
+                {['Dashboard','Home'].map((item) => (
+                <Link key={item} color="neutral" href="#sizes">
+                    {item}
+                </Link>
+                ))}
+            </Breadcrumbs>
+            
+            <div style={{display:'flex',flexWrap:'wrap',gap:10,justifyContent:'center',width:'100%',marginTop:'20px'}}>
+                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                    <Grid xs={3} >
+                        <Item style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)'}}>
+                            <Avatar style={{background:'black',position:'absolute',top:'-15px',left:'10px'}}>
+                                <BsPersonWorkspace />
+                            </Avatar>
+                            <h5>Workspaces</h5>
+                            <h5>0</h5>
+                        </Item>
+                    </Grid>
+                    <Grid xs={3} >
+                        <Item style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)'}}>
+                            <Avatar style={{background:'rgb(5, 77, 172)',position:'absolute',top:'-15px',left:'10px'}}>
+                                <FaProjectDiagram />
+                            </Avatar>
+                            <h5>Projects</h5>
+                            <h5>0</h5>
+                        </Item>
+                    </Grid>
+                    <Grid xs={3} >
+                        <Item style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)'}}>
+                            <Avatar style={{background:'rgba(7,28,75,1)',position:'absolute',top:'-15px',left:'10px'}}>
+                                <FaBuilding />
+                            </Avatar>
+                            <h5>Buildings</h5>
+                            <h5>0</h5>
+                        </Item>
+                    </Grid>
+                    <Grid xs={3} >
+                        <Item style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)'}}>
+                            <Avatar style={{background:'rgb(5, 172, 150)',position:'absolute',top:'-15px',left:'10px'}}>
+                                <BiSolidComponent />
+                            </Avatar>
+                            <h5>Components</h5>
+                            <h5>0</h5>
+                        </Item>
+                    </Grid>
+                </Grid>
+                
+                <Grid
+                container
+                rowSpacing={5}
+                columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+                sx={{ width: '100%' ,marginTop:'20px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)',borderRadius:'5px'}}
+                >
+                    <Grid xs={12}>
+                        <h3 style={{display:'flex',alignItems:'center'}}><BsPersonWorkspace />&nbsp;&nbsp; Workspaces</h3>
+                    </Grid>
+                    <Grid xs={12}>
+                        <Item>work spaces here</Item>
+                    </Grid>
+                </Grid>
+
+                <Grid
+                container
+                rowSpacing={5}
+                columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+                sx={{ width: '100%' ,marginTop:'41px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)',borderRadius:'5px'}}
+                >
+                    <Grid xs={12}>
+                        <h3 style={{display:'flex',alignItems:'center'}}><FaProjectDiagram />&nbsp;&nbsp; Projects</h3>
+                    </Grid>
+                    <Grid xs={12}>
+                        <Item>Projects here</Item>
+                    </Grid>
+                </Grid>
+
+                <Grid
+                container
+                rowSpacing={5}
+                columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+                sx={{ width: '100%' ,marginTop:'41px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)',borderRadius:'5px'}}
+                >
+                    <Grid xs={12}>
+                        <h3 style={{display:'flex',alignItems:'center'}}><FaBuilding />&nbsp;&nbsp; Buildings</h3>
+                    </Grid>
+                    <Grid xs={12}>
+                        <Item>Buildings here</Item>
+                    </Grid>
+                </Grid>
+
+                <Grid
+                container
+                rowSpacing={5}
+                columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+                sx={{ width: '100%' ,marginTop:'41px',marginBottom:'41px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)',borderRadius:'5px'}}
+                >
+                    <Grid xs={12}>
+                        <h3 style={{display:'flex',alignItems:'center'}}><BiSolidComponent />&nbsp;&nbsp; Components</h3>
+                    </Grid>
+                    <Grid xs={12}>
+                        <Item>Components here</Item>
+                    </Grid>
+                </Grid>
             </div>
         </div>
     )
