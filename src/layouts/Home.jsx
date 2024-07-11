@@ -54,8 +54,8 @@ export default function Home() {
             </Breadcrumbs>
             
             <div style={{display:'flex',flexWrap:'wrap',gap:10,justifyContent:'center',width:'100%',marginTop:'20px'}}>
-                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                    <Grid xs={3} >
+                <Grid container spacing={2} sx={{ flexGrow: 1,width:'100%' }}>
+                    <Grid xs={12} sm={12} md={3} lg={3}>
                         <Item style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)'}}>
                             <Avatar style={{background:'black',position:'absolute',top:'-15px',left:'10px'}}>
                                 <BsPersonWorkspace />
@@ -64,7 +64,7 @@ export default function Home() {
                             <h5>0</h5>
                         </Item>
                     </Grid>
-                    <Grid xs={3} >
+                    <Grid xs={12} sm={12} md={3} lg={3}>
                         <Item style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)'}}>
                             <Avatar style={{background:'rgb(5, 77, 172)',position:'absolute',top:'-15px',left:'10px'}}>
                                 <FaProjectDiagram />
@@ -73,7 +73,7 @@ export default function Home() {
                             <h5>0</h5>
                         </Item>
                     </Grid>
-                    <Grid xs={3} >
+                    <Grid xs={12} sm={12} md={3} lg={3}>
                         <Item style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)'}}>
                             <Avatar style={{background:'rgba(7,28,75,1)',position:'absolute',top:'-15px',left:'10px'}}>
                                 <FaBuilding />
@@ -82,7 +82,7 @@ export default function Home() {
                             <h5>0</h5>
                         </Item>
                     </Grid>
-                    <Grid xs={3} >
+                    <Grid xs={12} sm={12} md={3} lg={3}>
                         <Item style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)'}}>
                             <Avatar style={{background:'rgb(5, 172, 150)',position:'absolute',top:'-15px',left:'10px'}}>
                                 <BiSolidComponent />

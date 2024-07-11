@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useState} from 'react';
 import '../styles/Navbar.css';
 import { Button } from '@mui/joy';
 import { SiHomeassistant } from "react-icons/si";
@@ -21,6 +21,8 @@ import ModalClose from '@mui/joy/ModalClose';
 import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
 import { Form,Input, SelectPicker } from 'rsuite';
+import { MdCancel } from "react-icons/md";
+import { GiHamburgerMenu } from "react-icons/gi";
 
 const selectData = ['Eugenia', 'Bryan', 'Linda', 'Nancy', 'Lloyd', 'Alice'].map(item => ({
     label: item,
@@ -39,36 +41,46 @@ export default function Navbar() {
         password: '',
         textarea: ''
     });
+    const [navOpen,setNavOpen]=useState(false);
+    const toggleNavBar=()=>{
+        setNavOpen(!navOpen);
+    }
 
     return (
-        <div className='Nav_container'>
+        <div className='Nav_container' style={{height:navOpen?'330px':'35px'}}>
             <h1 className='logo'><SiHomeassistant style={{color:'white'}}/>&nbsp;&nbsp;&nbsp;<span style={{color:'white'}}>AssetLink</span></h1>
             <nav>
                 <ul className='nav_links'>
                     <NavLink className='navbar_links' to='/dashboard'>
-                        <RiHome3Fill/>&nbsp;&nbsp; Home
+                        <RiHome3Fill size={25}/>&nbsp;&nbsp; <span>Home</span>
                     </NavLink>
                     <NavLink className='navbar_links' to='/howItsWorks'>
-                        <FaCircleQuestion/>&nbsp;&nbsp; How It Works
+                        <FaCircleQuestion size={25}/>&nbsp;&nbsp; <span>How It Works</span>
                     </NavLink>
-                    <NavLink className='navbar_links' to='/Pricing'>
-                        <IoIosPricetags/>&nbsp;&nbsp; Pricing
+                    <NavLink className='navbar_links' to='/dashboard/Pricing'>
+                        <IoIosPricetags size={25}/>&nbsp;&nbsp; <span>Pricing</span>
                     </NavLink>
                     <NavLink className='navbar_links' to='/AboutUs'>
-                        <HiInformationCircle/>&nbsp;&nbsp; About Us
+                        <HiInformationCircle size={25}/>&nbsp;&nbsp; <span>About Us</span>
                     </NavLink>
                     <NavLink className='navbar_links' to='/ContactUs'>
-                        <MdContactPhone/>&nbsp;&nbsp; Contact Us
+                        <MdContactPhone size={25}/>&nbsp;&nbsp; <span>Contact Us</span>
                     </NavLink>
                 </ul>
-                <Box sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '25%' }}>
+                <Box id="signUpButton" sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '25%' }}>
                     <Button onClick={handleOpen} className="signInBtn" sx={{ borderRadius: '20px',background:'#088fa6' }}>
                         <MdPersonAdd/>&nbsp; &nbsp; &nbsp;  Sign In
                     </Button>
                 </Box>
+                <Button 
+                id='toggleButton'
+                onClick={toggleNavBar}
+                >
+                    <GiHamburgerMenu size={25}/>
+                </Button>
             </nav>
-            <div >
-                //! Modal:
+            
+                {/* Modal sign up */}                
                 <Modal
                     aria-labelledby="modal-title"
                     aria-describedby="modal-desc"
@@ -118,12 +130,8 @@ export default function Navbar() {
                                 <Form.ControlLabel>Password</Form.ControlLabel>
                                 <Form.Control name="password" type="password" autoComplete="off" />
                                 </Form.Group>
-                                <Form.Group controlId="textarea-9">
-                                <Form.ControlLabel>Textarea</Form.ControlLabel>
-                                <Form.Control rows={5} name="textarea" accepter={Textarea} />
-                                </Form.Group>
                                 <Form.Group controlId="select-10">
-                                <Form.ControlLabel>SelectPicker</Form.ControlLabel>
+                                <Form.ControlLabel>Country</Form.ControlLabel>
                                 <SelectPicker data={selectData} style={{ width: '100%',zIndex:100,marginBottom:'10px' }} placement="rightStart" />
                                 </Form.Group>
                             </Form>
@@ -131,19 +139,30 @@ export default function Navbar() {
                                 width:'100%',
                                 display:'flex',
                                 justifyContent:'space-evenly',
-                                // marginTop:'100px'
+                                marginTop:'100px'
                             }}>
-                            <Button onClick={() => setOpen(false)} appearance="primary">
+                            <Button 
+                            sx={{
+                                borderRadius:'20px',
+                                width:'200px',
+                                background:' linear-gradient(124deg, rgba(12,46,96,1) 0%, rgba(38,86,17,1) 46%, rgba(9,46,100,1) 100%)'
+                            }}
+                            onClick={() => setOpen(false)} appearance="primary">
                                 <FiLogIn />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Login
                             </Button>
-                            <Button onClick={() => setOpen(false)} appearance="subtle">
-                                Cancel
+                            <Button 
+                            sx={{
+                                borderRadius:'20px',
+                                width:'200px',
+                                background:' linear-gradient(124deg, rgba(12,46,96,1) 0%, rgba(38,86,17,1) 46%, rgba(9,46,100,1) 100%)'
+                            }}
+                            onClick={() => setOpen(false)} appearance="subtle">
+                                <MdCancel/>&nbsp;&nbsp;&nbsp;&nbsp;Cancel
                             </Button>
                             </div>
                         </div>
                     </Sheet>
                 </Modal>
-            </div>
         </div>
     )
 }

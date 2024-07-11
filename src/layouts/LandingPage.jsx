@@ -5,9 +5,24 @@ import { FiLogIn } from "react-icons/fi";
 
 import Modal from '@mui/joy/Modal';
 import ModalClose from '@mui/joy/ModalClose';
-import Typography from '@mui/joy/Typography';
+// import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
 import { Form } from 'rsuite';
+
+//!Pricing: 
+import Box from '@mui/joy/Box';
+// import Button from '@mui/joy/Button';
+import Card from '@mui/joy/Card';
+import CardActions from '@mui/joy/CardActions';
+import Chip from '@mui/joy/Chip';
+import Divider from '@mui/joy/Divider';
+import List from '@mui/joy/List';
+import ListItem from '@mui/joy/ListItem';
+import ListItemDecorator from '@mui/joy/ListItemDecorator';
+import Typography from '@mui/joy/Typography';
+import Check from '@mui/icons-material/Check';
+import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+//
 
 export default function LandingPage() {
 
@@ -29,7 +44,7 @@ export default function LandingPage() {
                 <div style={{
                     width:'40%',
                     color:'white',
-                    // background:'red',
+                    
                     fontWeight:'900',
                     fontSize:'4rem',
                     textAlign:'center'
@@ -58,7 +73,7 @@ export default function LandingPage() {
                 </div>
             </div>
             <div >
-                //! Modal:
+                
                 <Modal
                     aria-labelledby="modal-title"
                     aria-describedby="modal-desc"
@@ -117,10 +132,22 @@ export default function LandingPage() {
                                 justifyContent:'space-evenly',
                                 marginTop:'100px'
                             }}>
-                            <Button onClick={() => setOpen(false)} appearance="primary">
+                            <Button 
+                            sx={{
+                                borderRadius:'20px',
+                                width:'200px',
+                                background:' linear-gradient(124deg, rgba(12,46,96,1) 0%, rgba(38,86,17,1) 46%, rgba(9,46,100,1) 100%)'
+                            }}
+                            onClick={() => setOpen(false)} appearance="primary">
                                 <FiLogIn />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Login
                             </Button>
-                            <Button onClick={() => setOpen(false)} appearance="subtle">
+                            <Button 
+                            sx={{
+                                borderRadius:'20px',
+                                width:'200px',
+                                background:' linear-gradient(124deg, rgba(12,46,96,1) 0%, rgba(38,86,17,1) 46%, rgba(9,46,100,1) 100%)'
+                            }}
+                            onClick={() => setOpen(false)} appearance="subtle">
                                 Cancel
                             </Button>
                             </div>
@@ -128,6 +155,7 @@ export default function LandingPage() {
                     </Sheet>
                 </Modal>
             </div>
+            
         </>
     )
 }

@@ -1,0 +1,26 @@
+.pricing_container{
+    width:100%;
+    margin:-20px;
+    padding:10px;
+    min-height:90dvh;
+}
+.pricing_container .pricing_hero_section{
+    width:70%;
+    /* background: rgb(0, 109, 128); */
+}
+#hero_title{
+    background: linear-gradient(95deg, rgba(118,0,89,1) 0%, rgba(5,127,83,1) 50%, rgba(5,49,138,1) 100%);
+    width: fit-content;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    padding-bottom: 8px;
+}
+#sec_hero_title,#par_hero_title{
+    background: linear-gradient(265deg, rgba(118,0,89,1) 0%, rgba(5,127,83,1) 50%, rgba(5,49,138,1) 100%);
+    width: fit-content;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    padding-bottom: 10px;
+}

@@ -10,6 +10,7 @@ import Building from './layouts/Building';
 import Component from './layouts/Component';
 import Energy from './layouts/Energy';
 import LandingPage from './layouts/LandingPage';
+import Pricing from './layouts/Pricing';
 
 function App() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -28,9 +29,6 @@ function App() {
             </>
           )
         }
-        {/* <div className='sidebar_container'>
-          <Sidebar onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)} />
-        </div> */}
         <div className='routes_container' style={{marginLeft:location.pathname==='/'?0:'',width:location.pathname==='/'?'100%':'100%'}}>
           <Routes>
             <Route path="/" element={<LandingPage/>} />
@@ -39,6 +37,7 @@ function App() {
             <Route path="/dashboard/Building" element={<Dashboard><Building /></Dashboard>} />
             <Route path="/dashboard/Component" element={<Dashboard><Component /></Dashboard>} />
             <Route path="/dashboard/Energy" element={<Dashboard><Energy /></Dashboard>} />
+            <Route path="/dashboard/Pricing" element={<Dashboard><Pricing /></Dashboard>} />
           </Routes>
         </div>
       </div>

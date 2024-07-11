@@ -4,16 +4,11 @@
     display: flex;
     justify-content: space-around;
     align-items: center;
-    background: rgba(255, 255, 255, 0.142);
     position:fixed !important;
     backdrop-filter: blur(10px);
     z-index: 100;
-    /* background-image: url('/public/wallpaper_1.jpg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover; */
+    transition: all 0.3s;
     background:linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%);
-    height:35px;
     padding: 10px 5px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -27,7 +22,7 @@
 }
 nav{
     /* background:rgb(27, 214, 251); */
-    width: 70%;
+    width: 80%;
     display: flex;
     justify-content: space-between;
 }
@@ -39,7 +34,7 @@ nav .nav_links {
     justify-content: space-around;
     align-items: center;
     gap: 20px;
-    /* background:red; */
+    /* background:rgb(0, 255, 195); */
     width:90%
 }
 .signInBtn{
@@ -60,6 +55,9 @@ nav .nav_links .navbar_links {
     padding: 5px 15px;
     /* border-radius: 5px; */
     transition: background-color 0.3s ease, color 0.3s ease;
+    display:flex;
+    justify-content:space-around;
+    align-items: center;
 }
 
 nav .nav_links .navbar_links.active {
@@ -76,18 +74,50 @@ nav .nav_links .navbar_links:hover {
     text-shadow: 0 0 3px #05fcb2;
 }
 
-@media (max-width: 768px) {
+#toggleButton{
+    display:none;
+
+}
+@media (max-width: 984px) {
     .Nav_container {
         flex-direction: column;
+        overflow: hidden;
+
+    }
+    #toggleButton{
+        display: inline-flex;
+        position: absolute;
+        top:7px;
+        right:17px;
+    }
+    #signUpButton{
+        position: absolute;
+        top: 7px;
+        left: 17px;
+    }
+    nav{
+        /* background:red; */
+        width: 100%;
+        display: flex;
+        justify-content: center;
     }
 
     nav .nav_links {
         flex-direction: column;
+        /* align-items: flex-end; */
         gap: 10px;
+        /* background: green ; */
+    }
+    nav .nav_links .navbar_links{
+        /* background: purple; */
+        width: 100%;
+        display: flex;
+        gap: 50px;
     }
 
     .logo {
         margin-bottom: 10px;
+        margin-top: -10px;
     }
 }
 
