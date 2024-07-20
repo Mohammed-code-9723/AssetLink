@@ -1,0 +1,21 @@
+.table_container {
+    overflow-x: auto;
+  }
+  
+  .table_container table {
+    width: 100%;
+  }
+  
+  @media (max-width: 984px) {
+    .table_container table {
+      min-width: 984px;
+    }
+  }
+.info-container h4{
+  background: linear-gradient(265deg, rgba(118,0,89,1) 0%, rgba(5,127,83,1) 50%, rgba(5,49,138,1) 100%);
+  width: fit-content;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  margin: 20px 0;
+}

@@ -24,8 +24,8 @@ export default function Pricing() {
         <div 
             className='pricing_container'
             >
-                <h1>Pricing</h1>
                 <center>
+                <h1>Pricing</h1>
                     <div
                         className='pricing_hero_section'
                         >

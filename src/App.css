@@ -9,8 +9,9 @@
 
 .body_container .sidebar_container {
   position: fixed;
-  height: 100vh;
+  height: 100%;
   z-index: 1;
+  /* background:red; */
 }
 
 .body_container .routes_container {

@@ -1,0 +1,45 @@
+.landing_container{
+    background:linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%);
+    width:110%;
+    margin:-20px;
+    padding:10px;
+    min-height:90dvh;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+}
+.landing_container .hero_section{
+    width:40%;
+    color:white;
+    font-weight:900;
+    font-size:4rem;
+    text-align:center;
+}
+.landing_container .image_section{
+    width:60%;
+}
+.landing_container .image_section #imgHouse{
+    width:100%;
+    position:relative;
+}
+                
+@media (max-width: 984px){
+    .landing_container{
+        width:110%;
+        margin:-20px;
+        padding:10px;
+        min-height:100dvh;
+    }
+    .landing_container .hero_section{
+        width:100%;
+        z-index: 100;
+    }
+    .landing_container .image_section{
+        width: 100%;
+        position:absolute;
+        z-index: 99;
+        filter: blur(15px);
+        transition: all 0.3s;
+    }
+
+}

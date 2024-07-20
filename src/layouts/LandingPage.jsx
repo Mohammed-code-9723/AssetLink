@@ -1,4 +1,4 @@
-import React from 'react'
+import React,{useState} from 'react'
 import { Button } from '@mui/joy';
 import { MdAutoAwesome } from "react-icons/md";
 import { FiLogIn } from "react-icons/fi";
@@ -23,33 +23,53 @@ import Typography from '@mui/joy/Typography';
 import Check from '@mui/icons-material/Check';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 //
+import '../styles/LandingPage.css';
 
 export default function LandingPage() {
 
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     
+    const [email,setEmail]=useState('');
+    const [password,setPassword]=useState('');
+
+    const HandleSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (email === '') {
+            alert('Email is empty');
+            return;
+        } else if (password === '') {
+            alert('Password is empty');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email, password})
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                alert('Login successful');
+                console.log(data.user);
+                console.log(data.token);
+                setOpen(false);
+            } else {
+                alert(data.message || 'Login failed');
+            }
+        } catch (error) {
+            alert('An error occurred: ' + error.message);
+        }
+    };
+
     return (
         <>
-            <div style={{
-                background:'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)',
-                width:'110%',
-                margin:'-20px',
-                padding:'10px',
-                minHeight:'90dvh',
-                display:'flex',
-                justifyContent:'space-around',
-                alignItems:'center',
-                }}>
-                <div style={{
-                    width:'40%',
-                    color:'white',
-                    
-                    fontWeight:'900',
-                    fontSize:'4rem',
-                    textAlign:'center'
-                    
-                }}>
+            <div className='landing_container'>
+                <div className='hero_section'>
                     Gestion immobilière <br />
                     sans effort avec <br />
                     AssetLink <br />
@@ -65,15 +85,12 @@ export default function LandingPage() {
                         <FiLogIn />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Log in
                     </Button>
                 </div>
-                <div style={{width:'60%'}}>
-                    <img src="/realEstate.png" alt="realEstate" style={{
-                        width:'100%',
-                        position:'relative ',
-                    }}/>
+                <div className='image_section'>
+                    <img src="/realEstate.png" alt="realEstate" id='imgHouse'/>
                 </div>
             </div>
+            
             <div >
-                
                 <Modal
                     aria-labelledby="modal-title"
                     aria-describedby="modal-desc"
@@ -92,9 +109,10 @@ export default function LandingPage() {
                         height:'70vh'
                         // justifyContent:'space'
                     }}
+                    id="sheet"
                     >
                         <ModalClose variant="plain" sx={{ m: 1 }} />
-                        <div style={{width:'40%'}}>
+                        <div className='image_wavy' style={{width:'40%'}}>
                             <img src="/wallpaper_1.jpg" alt="logImg" style={{
                                 width:'100%',
                                 position:'relative ',
@@ -103,7 +121,7 @@ export default function LandingPage() {
                                 height:'70vh'
                             }}/>
                         </div>
-                        <div style={{
+                        <div className='form_model' style={{
                             width:'60%',
                             padding:'100px 20px '
                             // display:'flex', 
@@ -117,12 +135,12 @@ export default function LandingPage() {
                             <Form fluid>
                                 <Form.Group controlId="email-1">
                                 <Form.ControlLabel>Email</Form.ControlLabel>
-                                <Form.Control name="email" type="email" />
+                                <Form.Control name="email" type="email" value={email}  onChange={(value)=>setEmail(value)}/>
                                 <Form.HelpText>Required</Form.HelpText>
                                 </Form.Group>
                                 <Form.Group controlId="password-1">
                                 <Form.ControlLabel>Password</Form.ControlLabel>
-                                <Form.Control name="password" type="password" autoComplete="off" />
+                                <Form.Control name="password" type="password" value={password}  autoComplete="off" onChange={(value)=>setPassword(value)}/>
                                 <Form.HelpText>Required</Form.HelpText>
                                 </Form.Group>
                             </Form>
@@ -138,7 +156,7 @@ export default function LandingPage() {
                                 width:'200px',
                                 background:' linear-gradient(124deg, rgba(12,46,96,1) 0%, rgba(38,86,17,1) 46%, rgba(9,46,100,1) 100%)'
                             }}
-                            onClick={() => setOpen(false)} appearance="primary">
+                            onClick={HandleSubmit} appearance="primary">
                                 <FiLogIn />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Login
                             </Button>
                             <Button 

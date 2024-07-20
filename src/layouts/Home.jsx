@@ -46,9 +46,11 @@ export default function Home() {
     return (
         <div >
             <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
-                {['Dashboard','Home'].map((item) => (
+                {['Dashboard',''].map((item) => (
                 <Link key={item} color="neutral" href="#sizes">
-                    {item}
+                    <h5>
+                        {item} 
+                    </h5>
                 </Link>
                 ))}
             </Breadcrumbs>

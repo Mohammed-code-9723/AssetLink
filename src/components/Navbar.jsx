@@ -51,20 +51,20 @@ export default function Navbar() {
             <h1 className='logo'><SiHomeassistant style={{color:'white'}}/>&nbsp;&nbsp;&nbsp;<span style={{color:'white'}}>AssetLink</span></h1>
             <nav>
                 <ul className='nav_links'>
-                    <NavLink className='navbar_links' to='/dashboard'>
-                        <RiHome3Fill size={25}/>&nbsp;&nbsp; <span>Home</span>
+                    <NavLink className='navbar_links' to='/'>
+                        <RiHome3Fill size={25} className='nav_icons'/>&nbsp;&nbsp; <span className='nav_spans'>Home</span>
                     </NavLink>
-                    <NavLink className='navbar_links' to='/howItsWorks'>
-                        <FaCircleQuestion size={25}/>&nbsp;&nbsp; <span>How It Works</span>
+                    <NavLink className='navbar_links' to='/HowItWorks'>
+                        <FaCircleQuestion size={25} className='nav_icons'/>&nbsp;&nbsp; <span className='nav_spans'>How It Works</span>
                     </NavLink>
-                    <NavLink className='navbar_links' to='/dashboard/Pricing'>
-                        <IoIosPricetags size={25}/>&nbsp;&nbsp; <span>Pricing</span>
+                    <NavLink className='navbar_links' to='/Pricing'>
+                        <IoIosPricetags size={25} className='nav_icons'/>&nbsp;&nbsp; <span className='nav_spans'>Pricing</span>
                     </NavLink>
                     <NavLink className='navbar_links' to='/AboutUs'>
-                        <HiInformationCircle size={25}/>&nbsp;&nbsp; <span>About Us</span>
+                        <HiInformationCircle size={25} className='nav_icons'/>&nbsp;&nbsp; <span className='nav_spans'>About Us</span>
                     </NavLink>
                     <NavLink className='navbar_links' to='/ContactUs'>
-                        <MdContactPhone size={25}/>&nbsp;&nbsp; <span>Contact Us</span>
+                        <MdContactPhone size={25} className='nav_icons'/>&nbsp;&nbsp; <span className='nav_spans'>Contact Us</span>
                     </NavLink>
                 </ul>
                 <Box id="signUpButton" sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '25%' }}>
@@ -97,9 +97,10 @@ export default function Navbar() {
                         display:'flex',
                         height:'90vh',
                     }}
+                    id="sheet"
                     >
                         <ModalClose variant="plain" sx={{ m: 1 }} />
-                        <div style={{width:'40%'}}>
+                        <div className='image_wavy' style={{width:'40%'}}>
                             <img src="/wallpaper_1.jpg" alt="logImg" style={{
                                 width:'100%',
                                 position:'relative ',
@@ -108,7 +109,7 @@ export default function Navbar() {
                                 height:'90vh'
                             }}/>
                         </div>
-                        <div style={{
+                        <div className='form_model' style={{
                             width:'60%',
                             padding:'50px 20px '
                         }}>

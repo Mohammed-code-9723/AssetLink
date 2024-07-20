@@ -82,7 +82,7 @@ nav .nav_links .navbar_links:hover {
     .Nav_container {
         flex-direction: column;
         overflow: hidden;
-
+        z-index: 1000;
     }
     #toggleButton{
         display: inline-flex;
@@ -119,9 +119,50 @@ nav .nav_links .navbar_links:hover {
         margin-bottom: 10px;
         margin-top: -10px;
     }
+
+    #sheet {
+        width:70%;
+        background:'red'
+    }
+    #sheet .image_wavy img{
+        width: 100% !important;
+        object-fit: fill;
+    }
+    .form_model{
+        width:100% !important;
+        z-index: 100;
+        
+    }
+    
+    #sheet .image_wavy{
+        width: 100% !important;
+        position:absolute;
+        z-index: 99;
+        filter: blur(15px);
+        transition: all 0.3s;
+    }
+
+    .nav_icons{
+        position:absolute;
+        left:50px
+    }
+    
+
+    .nav_spans{
+        position: absolute;
+        right:50px;
+    }
 }
 
-
+.form_model h1{
+    text-align: center;
+    margin-bottom: 20px;
+    background: linear-gradient(265deg, rgb(145, 2, 193) 0%, rgb(2, 201, 128) 50%, rgb(5, 71, 203) 100%);
+    width: fit-content;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
 
 /*sign up button*/
 /* styles.css */
@@ -158,4 +199,6 @@ nav .nav_links .navbar_links:hover {
     border-radius: inherit;
     padding: 2px;
   }
-  
+  /* .zdc{
+    color:rgb(250, 218, 9)
+  } */
