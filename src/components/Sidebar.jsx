@@ -5,7 +5,6 @@ import '../styles/Sidebar.css';
 import 'rsuite/dist/rsuite.min.css';
 import { FaCity } from "react-icons/fa";
 import { Divider } from '@mui/joy';
-
 import { Sidenav, Nav } from 'rsuite';
 import { FaVectorSquare } from "react-icons/fa6";
 import { MdDashboard } from "react-icons/md";
@@ -20,29 +19,28 @@ import { FiBarChart2 } from "react-icons/fi";
 import { GiNetworkBars } from "react-icons/gi";
 import { IoInfinite } from "react-icons/io5";
 import { MdInventory } from "react-icons/md";
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation,Navigate } from 'react-router-dom';
 //
+import { RiUserAddFill } from "react-icons/ri";
+import { FaUserCog } from "react-icons/fa";
+import { FaUsers } from "react-icons/fa";
+import { FaUsers as Us } from "react-icons/fa6";
+import { MdWorkspacesFilled } from "react-icons/md";
+import { FaUserShield } from "react-icons/fa6";
+import { IoSettings } from "react-icons/io5";
+
 
 export default function Sidebar({onToggle}) {
     const [expanded, setExpanded] = React.useState(true);
     const [activeKey, setActiveKey] = React.useState('1');
-    
-    const [anchorEl, setAnchorEl] = React.useState(null);
-    const [anchorEl2, setAnchorEl2] = React.useState(null);
-  const open = Boolean(anchorEl);
-  const open2 = Boolean(anchorEl2);
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClick2 = (event) => {
-    setAnchorEl2(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-  const handleClose2 = () => {
-    setAnchorEl2(null);
-  };
+
+    const user=JSON.parse(localStorage.getItem('user'));
+    const token=localStorage.getItem('token');
+    const location=useLocation();
+
+    if (!token) {
+        return <Navigate to="/"/>
+    }
 
     const handleToggle = () => {
         setExpanded(!expanded);
@@ -61,11 +59,11 @@ export default function Sidebar({onToggle}) {
                         <Divider sx={{width:'80%'}}/>
                     </center>
                     <Nav activeKey={activeKey} style={{display:'flex',gap:55,flexDirection:'column',overflowX:'hidden'}} onSelect={setActiveKey}>
-                        <NavLink to='/dashboard' eventKey="1" className='dash_links' style={{width:'100%',display:'flex',alignItems:'center',height:'50px'}}>
+                        <NavLink to={user.role==="superadmin"?'/dashboard/SuperAdmin':'/dashboard'} eventKey="1" className='dash_links' style={{width:'100%',display:'flex',alignItems:'center',height:'50px'}}>
                             <span style={{width:!expanded?'100%':'28%',display:'flex',alignItems:'center',justifyContent:'center'}}><MdDashboard  size={18}/></span>
                             <span style={{ width: '90%' ,display:expanded?'inline':'none'}} >Dashboard</span>
                         </NavLink>
-                        <div eventKey="2" style={{width:'100%',display:'flex'}}>
+                        <div eventKey="2" style={{width:'100%',display:user.role==="superadmin"?'none':'flex'}}>
                             <span style={{width:!expanded?'100%':'28%',display:'flex',alignItems:'center',justifyContent:'center'}}><FaVectorSquare size={18}/></span>
                             <Cascader
                                 // data={data}
@@ -73,7 +71,7 @@ export default function Sidebar({onToggle}) {
                                 placeholder="All Workspaces" 
                             />
                         </div>
-                        <div eventKey="2" style={{width:'100%',display:'flex'}}>
+                        <div eventKey="2" style={{width:'100%',display:user.role==="superadmin"?'none':'flex'}}>
                             <span style={{width:!expanded?'100%':'28%',display:'flex',alignItems:'center',justifyContent:'center'}}><RiProjectorFill size={18}/></span>
                             <Cascader
                                 // data={data}
@@ -90,6 +88,27 @@ export default function Sidebar({onToggle}) {
                             }} 
                             
                             >
+                                {
+                                    user.role==="superadmin"?(
+                                        <Dropdown title="Users" icon={<Us style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                    <Dropdown.Item eventKey="4" className='Dropdown_items'>
+                                        <NavLink to='/dashboard/SuperAdmin/AllUsers' className='main_links'>
+                                            <FaUsers  style={{marginRight:'10px'}}/>
+                                            <span>
+                                                All users
+                                            </span>
+                                        </NavLink>
+                                    </Dropdown.Item>
+                                    <Dropdown.Item eventKey="1" className='Dropdown_items'>
+                                        <NavLink to='/dashboard/SuperAdmin/Permissions' className='main_links'>
+                                            <FaUserShield   style={{marginRight:'10px'}}/>
+                                            <span>
+                                                Permissions
+                                            </span>
+                                        </NavLink>
+                                    </Dropdown.Item>
+                                </Dropdown>
+                                    ):(
                                 <Dropdown title="Main Inventory" icon={<MdInventory style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
                                     <Dropdown.Item eventKey="1" className='Dropdown_items'>
                                         <NavLink to='/dashboard/Site' className='main_links'>
@@ -140,6 +159,8 @@ export default function Sidebar({onToggle}) {
                                         </NavLink>
                                     </Dropdown.Item>
                                 </Dropdown>
+                                    )
+                                }
                             </Nav>
                         </div>
                         <div style={{width:'100%',display:'flex'}}>
@@ -151,13 +172,52 @@ export default function Sidebar({onToggle}) {
                             }} 
                             
                             >
-                                <Dropdown title="Scenarios" icon={<IoInfinite size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
-                                    <Dropdown.Item eventKey="1" icon={<IoInfinite  style={{marginRight:'10px'}}/>}>
-                                        <NavLink to='/dashboard/Site' className='main_links'>
-                                            All scenarios
-                                        </NavLink>
-                                    </Dropdown.Item>
-                                </Dropdown>
+                                {
+                                    user.role==="superadmin"?(
+                                        <Dropdown title="Workspaces" icon={<MdWorkspacesFilled size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                            <Dropdown.Item eventKey="5"  className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/Workspaces' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        All workspaces
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                            <Dropdown.Item eventKey="6" className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/Workspaces' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        All projects
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                            <Dropdown.Item eventKey="7"  className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/Workspaces' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        All sites
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                            <Dropdown.Item eventKey="8"  className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/Workspaces' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        All buildings
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                        </Dropdown>
+                                    ):(
+                                        <Dropdown title="Scenarios" icon={<IoInfinite size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                            <Dropdown.Item eventKey="1" icon={<IoInfinite  style={{marginRight:'10px'}}/>}>
+                                                <NavLink to='/dashboard/Site' className='main_links'>
+                                                    All scenarios
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                        </Dropdown>
+                                    )
+                                }
                             </Nav>
                         </div>
                         <div style={{width:'100%',display:'flex'}}>
@@ -173,6 +233,24 @@ export default function Sidebar({onToggle}) {
                                     <Dropdown.Item eventKey="1" icon={<GiNetworkBars  style={{marginRight:'10px'}}/>}>
                                         <NavLink to='/dashboard/Site' className='main_links'>
                                             Analytics
+                                        </NavLink>
+                                    </Dropdown.Item>
+                                </Dropdown>
+                            </Nav>
+                        </div>
+                        <div style={{width:'100%',display:'flex'}}>
+                            <Nav style={{
+                                width:'100%',
+                                color:'rgb(71, 71, 71)',
+                                display:'flex',
+                                alignItems:'center'
+                            }} 
+                            
+                            >
+                                <Dropdown title="System settings" icon={<IoSettings size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                    <Dropdown.Item eventKey="1" icon={<IoSettings  style={{marginRight:'10px'}}/>}>
+                                        <NavLink to='/dashboard/SuperAdmin/Settings' className='main_links'>
+                                            System settings
                                         </NavLink>
                                     </Dropdown.Item>
                                 </Dropdown>

@@ -4,7 +4,7 @@ import { Button } from '@mui/joy';
 import { SiHomeassistant } from "react-icons/si";
 import Avatar from '@mui/joy/Avatar';
 import Box from '@mui/joy/Box';
-import { NavLink } from 'react-router-dom';
+import { NavLink ,useLocation, useNavigate} from 'react-router-dom';
 import { IoIosPricetags } from "react-icons/io";
 import { RiHome3Fill } from "react-icons/ri";
 import { FaCircleQuestion } from "react-icons/fa6";
@@ -15,7 +15,6 @@ import { MdPersonAdd } from "react-icons/md";
 
 import { MdAutoAwesome } from "react-icons/md";
 import { FiLogIn } from "react-icons/fi";
-
 import Modal from '@mui/joy/Modal';
 import ModalClose from '@mui/joy/ModalClose';
 import Typography from '@mui/joy/Typography';
@@ -31,6 +30,8 @@ const selectData = ['Eugenia', 'Bryan', 'Linda', 'Nancy', 'Lloyd', 'Alice'].map(
 
 const Textarea = React.forwardRef((props, ref) => <Input {...props} as="textarea" ref={ref} />);
 export default function Navbar() {
+    const navigate=useNavigate();
+    const location = useLocation();
 
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
@@ -46,40 +47,64 @@ export default function Navbar() {
         setNavOpen(!navOpen);
     }
 
+    const logOut=()=>{
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/');
+    }
+
     return (
         <div className='Nav_container' style={{height:navOpen?'330px':'35px'}}>
             <h1 className='logo'><SiHomeassistant style={{color:'white'}}/>&nbsp;&nbsp;&nbsp;<span style={{color:'white'}}>AssetLink</span></h1>
-            <nav>
-                <ul className='nav_links'>
-                    <NavLink className='navbar_links' to='/'>
-                        <RiHome3Fill size={25} className='nav_icons'/>&nbsp;&nbsp; <span className='nav_spans'>Home</span>
-                    </NavLink>
-                    <NavLink className='navbar_links' to='/HowItWorks'>
-                        <FaCircleQuestion size={25} className='nav_icons'/>&nbsp;&nbsp; <span className='nav_spans'>How It Works</span>
-                    </NavLink>
-                    <NavLink className='navbar_links' to='/Pricing'>
-                        <IoIosPricetags size={25} className='nav_icons'/>&nbsp;&nbsp; <span className='nav_spans'>Pricing</span>
-                    </NavLink>
-                    <NavLink className='navbar_links' to='/AboutUs'>
-                        <HiInformationCircle size={25} className='nav_icons'/>&nbsp;&nbsp; <span className='nav_spans'>About Us</span>
-                    </NavLink>
-                    <NavLink className='navbar_links' to='/ContactUs'>
-                        <MdContactPhone size={25} className='nav_icons'/>&nbsp;&nbsp; <span className='nav_spans'>Contact Us</span>
-                    </NavLink>
-                </ul>
-                <Box id="signUpButton" sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '25%' }}>
-                    <Button onClick={handleOpen} className="signInBtn" sx={{ borderRadius: '20px',background:'#088fa6' }}>
-                        <MdPersonAdd/>&nbsp; &nbsp; &nbsp;  Sign In
+            {location.pathname.startsWith('/dashboard') ? (
+                // Conditionally render Avatar if URL is /dashboard/*
+                <>
+                    <Avatar src="https://i.pravatar.cc/150?u=2" circle />
+                    <Button
+                        id='toggleButton'
+                        onClick={toggleNavBar}
+                    >
+                        <GiHamburgerMenu size={25} />
                     </Button>
-                </Box>
-                <Button 
-                id='toggleButton'
-                onClick={toggleNavBar}
-                >
-                    <GiHamburgerMenu size={25}/>
-                </Button>
-            </nav>
-            
+                    <Button
+                        onClick={logOut}
+                    >
+                        log out
+                    </Button>
+                </>
+            ) : (
+                // Render navigation menu otherwise
+                <nav>
+                    <ul className='nav_links'>
+                        <NavLink className='navbar_links' to='/'>
+                            <RiHome3Fill size={25} className='nav_icons' />&nbsp;&nbsp; <span className='nav_spans'>Home</span>
+                        </NavLink>
+                        <NavLink className='navbar_links' to='/HowItWorks'>
+                            <FaCircleQuestion size={25} className='nav_icons' />&nbsp;&nbsp; <span className='nav_spans'>How It Works</span>
+                        </NavLink>
+                        <NavLink className='navbar_links' to='/Pricing'>
+                            <IoIosPricetags size={25} className='nav_icons' />&nbsp;&nbsp; <span className='nav_spans'>Pricing</span>
+                        </NavLink>
+                        <NavLink className='navbar_links' to='/AboutUs'>
+                            <HiInformationCircle size={25} className='nav_icons' />&nbsp;&nbsp; <span className='nav_spans'>About Us</span>
+                        </NavLink>
+                        <NavLink className='navbar_links' to='/ContactUs'>
+                            <MdContactPhone size={25} className='nav_icons' />&nbsp;&nbsp; <span className='nav_spans'>Contact Us</span>
+                        </NavLink>
+                    </ul>
+                    <Box id="signUpButton" sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '25%' }}>
+                        <Button onClick={handleOpen} className="signInBtn" sx={{ borderRadius: '20px', background: '#088fa6' }}>
+                            <MdPersonAdd />&nbsp; &nbsp; &nbsp;  Sign In
+                        </Button>
+                    </Box>
+                    <Button
+                        id='toggleButton'
+                        onClick={toggleNavBar}
+                    >
+                        <GiHamburgerMenu size={25} />
+                    </Button>
+                </nav>
+            )}
                 {/* Modal sign up */}                
                 <Modal
                     aria-labelledby="modal-title"

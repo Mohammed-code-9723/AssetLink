@@ -8,22 +8,11 @@ import ModalClose from '@mui/joy/ModalClose';
 // import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
 import { Form } from 'rsuite';
-
-//!Pricing: 
-import Box from '@mui/joy/Box';
-// import Button from '@mui/joy/Button';
-import Card from '@mui/joy/Card';
-import CardActions from '@mui/joy/CardActions';
-import Chip from '@mui/joy/Chip';
-import Divider from '@mui/joy/Divider';
-import List from '@mui/joy/List';
-import ListItem from '@mui/joy/ListItem';
-import ListItemDecorator from '@mui/joy/ListItemDecorator';
-import Typography from '@mui/joy/Typography';
-import Check from '@mui/icons-material/Check';
-import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import { useDispatch } from 'react-redux';
+import { login } from '../features/UserSlice';
 //
 import '../styles/LandingPage.css';
+import { useNavigate } from 'react-router-dom';
 
 export default function LandingPage() {
 
@@ -32,39 +21,46 @@ export default function LandingPage() {
     
     const [email,setEmail]=useState('');
     const [password,setPassword]=useState('');
+    const [errorEmail,setErrorEmail]=useState({error:false});
+    const [errorPassword,setErrorPassword]=useState({error:false});
 
-    const HandleSubmit = async (e) => {
+    const dispatch = useDispatch();
+    const navigate=useNavigate();
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (email === '') {
-            alert('Email is empty');
+            setErrorEmail({ error: true });
             return;
         } else if (password === '') {
-            alert('Password is empty');
+            setErrorPassword({ error: true });
             return;
         }
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email, password})
-            });
-            
-            const data = await response.json();
-            
-            if (response.ok) {
-                alert('Login successful');
-                console.log(data.user);
-                console.log(data.token);
-                setOpen(false);
-            } else {
-                alert(data.message || 'Login failed');
-            }
+            const result = await dispatch(login({ email, password })).unwrap();
+            localStorage.setItem('user', JSON.stringify(result.user));
+            localStorage.setItem('token', result.token);
+            console.log(result.user);
+            console.log(result.token);
+            setOpen(false);
+            // setTimeout(() => {
+                navigate('/dashboard/SuperAdmin');
+            // }, 5000);
         } catch (error) {
-            alert('An error occurred: ' + error.message);
+            alert(error.message || 'Login failed');
         }
     };
+
+    const handleClose=()=>{
+        setOpen(false);
+        setEmail('')
+        setPassword('')
+        setErrorEmail({error:false});
+        setErrorPassword({error:false});
+
+    }
 
     return (
         <>
@@ -95,7 +91,7 @@ export default function LandingPage() {
                     aria-labelledby="modal-title"
                     aria-describedby="modal-desc"
                     open={open}
-                    onClose={() => setOpen(false)}
+                    onClose={handleClose}
                     sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
                 >
                     <Sheet
@@ -136,12 +132,14 @@ export default function LandingPage() {
                                 <Form.Group controlId="email-1">
                                 <Form.ControlLabel>Email</Form.ControlLabel>
                                 <Form.Control name="email" type="email" value={email}  onChange={(value)=>setEmail(value)}/>
-                                <Form.HelpText>Required</Form.HelpText>
+                                <Form.HelpText>
+                                    <Form.HelpText>{errorEmail.error?(<span style={{color:'red'}}><strong>Error!</strong> Email is required</span>):<span>Required</span>}</Form.HelpText>
+                                </Form.HelpText>
                                 </Form.Group>
                                 <Form.Group controlId="password-1">
                                 <Form.ControlLabel>Password</Form.ControlLabel>
                                 <Form.Control name="password" type="password" value={password}  autoComplete="off" onChange={(value)=>setPassword(value)}/>
-                                <Form.HelpText>Required</Form.HelpText>
+                                <Form.HelpText>{errorPassword.error?(<span style={{color:'red'}}><strong>Error!</strong> Password is required</span>):<span>Required</span>}</Form.HelpText>
                                 </Form.Group>
                             </Form>
                             <div style={{
@@ -156,7 +154,7 @@ export default function LandingPage() {
                                 width:'200px',
                                 background:' linear-gradient(124deg, rgba(12,46,96,1) 0%, rgba(38,86,17,1) 46%, rgba(9,46,100,1) 100%)'
                             }}
-                            onClick={HandleSubmit} appearance="primary">
+                            onClick={handleSubmit} appearance="primary">
                                 <FiLogIn />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Login
                             </Button>
                             <Button 

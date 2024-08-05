@@ -28,29 +28,27 @@ import { FaCheck } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 import { IoMdCreate } from "react-icons/io";
 
-function createData(Code, Name, Activity, Address, ZipCode, City,Country, Floor_ares) {
-  return { Code, Name, Activity, Address, ZipCode, City,Country, Floor_ares };
-}
 
-const rows = [
-  createData('S57', 'Building A', 'Office', '123 Main St', '10001', 'New York', 'USA', 10000),
-  createData('I58', 'Ice Cream Sandwich Shop', 'Retail', '456 Elm St', '90001', 'Los Angeles', 'USA', 2000),
-  createData('E59', 'Eclair Bakery', 'Bakery', '789 Oak St', '60601', 'Chicago', 'USA', 1500),
-  createData('C60', 'Cupcake Factory', 'Manufacturing', '321 Pine St', '94101', 'San Francisco', 'USA', 3000),
-  createData('G61', 'Gingerbread House', 'Housing', '654 Maple St', '30301', 'Atlanta', 'USA', 2500),
-];
+import DialogTitle from '@mui/joy/DialogTitle';
+import DialogContent from '@mui/joy/DialogContent';
+import DialogActions from '@mui/joy/DialogActions';
+import ModalDialog from '@mui/joy/ModalDialog';
+import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 
 
 
 
-export default function Site() {
+
+export default function Site({sites}) {
   const [activePage, setActivePage] = useState(1);
   const [open, setOpen] = React.useState(false);
+  const [openDelete, setOpenDelete] = React.useState(false);
   const [addSite, setAddSite] = React.useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
 
   const [newSite,setNewSite]=useState({Name:'',Activity:'',Code:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_ares:''});
+  const [deletedRow,setDeletedRow]=useState({});
 
   const handleRowClick = (row) => {
     setSelectedRow(row);
@@ -70,19 +68,19 @@ export default function Site() {
     setNewSite({Name:'',Activity:'',Code:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_ares:''});
   }
 
+  const HandleDelete=(row)=>{
+    setOpenDelete(true);
+    setDeletedRow(row);
+  }
+
   return (
     <div>
-      <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
-          {['Workspaces','workspace name','sites'].map((item) => (
-          <Link className='Link_breadcrumbs' key={item} color="neutral" href="#sizes">
-            <h5>
-              {item}
-            </h5>
-          </Link>
-          ))}
-      </Breadcrumbs>
+      
       <div>
-        <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> Site </span></h2>
+        <div className='title_image'>
+          <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> Site </span></h2>
+          <img src="/assets/Sites.svg" alt="sites_img" />
+        </div>
         <Sheet variant="soft" color="neutral" sx={{ marginTop:'10px',p: 4,borderRadius:'5px',boxShadow:'0 0 5px rgba(176, 175, 175, 0.786)' }}>
           
           <div className='action_bottons'>
@@ -141,20 +139,26 @@ export default function Site() {
                 </tr>
               </thead>
               <tbody>
-              {rows.map((row) => (
-                <tr key={row.Code} onClick={()=>handleRowClick(row)} className='table_row'>
-                  <td>{row.Code}</td>
-                  <td>{row.Name}</td>
-                  <td>{row.Activity}</td>
-                  <td>{row.Address}</td>
-                  <td>{row.ZipCode}</td>
-                  <td>{row.City}</td>
-                  <td>{row.Country}</td>
-                  <td>{row.Floor_ares}</td>
+              {sites&&sites.map((row) => (
+                <tr key={row.code} onClick={()=>handleRowClick(row)} className='table_row'>
+                  <td>{row.code}</td>
+                  <td>{row.name}</td>
+                  <td>{row.activity}</td>
+                  <td>{row.address}</td>
+                  <td>{row.zipcode}</td>
+                  <td>{row.city}</td>
+                  <td>{row.country}</td>
+                  <td>{row.floor_area}</td>
                   <td>
                     <Button sx={{
-                      background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
-                    }}>
+                      background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
+                      zIndex:10000
+                    }}
+                    onClick={(e)=>{
+                      e.stopPropagation();
+                      HandleDelete(row)
+                    }}
+                    >
                       <MdDelete size={22}/>
                     </Button>
                   </td>
@@ -473,6 +477,30 @@ export default function Site() {
           </div>
         </Sheet>
       </Modal>
+
+      {/* Modal delete site */}
+      <Modal open={openDelete} onClose={() => setOpenDelete(false)}>
+        <ModalDialog variant="outlined" role="alertdialog">
+          <DialogTitle>
+            <WarningRoundedIcon />
+            Confirmation
+          </DialogTitle>
+          <Divider />
+          <DialogContent>
+            Are you sure you want to delete {deletedRow?.Name} ?
+          </DialogContent>
+          <DialogActions>
+            <Button variant="solid" color="danger" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
+              Confirm
+            </Button>
+            <Button variant="plain" color="neutral" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
+              Cancel
+            </Button>
+          </DialogActions>
+        </ModalDialog>
+      </Modal>
+
+
     </div>
   )
 }

@@ -10,6 +10,24 @@ body {
   -moz-osx-font-smoothing: grayscale;
   
 }
+/* Style the scrollbar for webkit browsers */
+body::-webkit-scrollbar {
+  width: 8px; /* Thin scrollbar */
+}
+
+body::-webkit-scrollbar-track {
+  background: #313131; /* Track color */
+}
+
+body::-webkit-scrollbar-thumb {
+  background: #b0b0b0; /* Scrollbar thumb color */
+  border-radius: 5px; /* Rounded scrollbar thumb */
+  border: none; /* Border around the thumb */
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: #c7c6c6; /* Darker color on hover */
+}
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',

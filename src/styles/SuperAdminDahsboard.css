@@ -1,0 +1,15 @@
+.itemsDash{
+    transition: all 0.3s ease-in-out;
+
+}
+.itemsDash:hover{
+    background:linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%);
+    color: white;
+}
+
+.sheet_comp:hover .dash_items{
+    background:linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%);
+    color:white;
+    transition: 0.3s;
+    transform: translateY(-6px);
+}

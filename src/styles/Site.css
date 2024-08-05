@@ -8,6 +8,13 @@
     margin: 30px 0;
     
 }
+#title_H2_2{
+    background: linear-gradient(265deg, rgba(118,0,89,1) 0%, rgba(5,127,83,1) 50%, rgba(5,49,138,1) 100%);
+    width: fit-content;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
 #title_H2 span{
     background: linear-gradient(265deg, rgba(118,0,89,1) 0%, rgba(5,127,83,1) 50%, rgba(5,49,138,1) 100%);
     width: fit-content;
@@ -97,6 +104,14 @@
     background:#0dc07bb9 !important;
 }
 
+
+.title_image{
+    display:flex;
+    justify-content: space-between;
+}
+.title_image img{
+    width: 200px;
+}
 /* .te{
     color:#fc1c1cb9
 } */

@@ -1,12 +1,5 @@
 import React from 'react';
-import Button from '@mui/joy/Button';
-import Card from '@mui/joy/Card';
-import Box from '@mui/joy/Box';
-import CardContent from '@mui/joy/CardContent';
-import CardActions from '@mui/joy/CardActions';
-import CircularProgress from '@mui/joy/CircularProgress';
-import Typography from '@mui/joy/Typography';
-import SvgIcon from '@mui/joy/SvgIcon';
+
 
 //
 import { styled } from '@mui/joy/styles';
@@ -22,7 +15,7 @@ import { BsPersonWorkspace } from "react-icons/bs";
 import { FaProjectDiagram } from "react-icons/fa";
 import { FaBuilding } from "react-icons/fa";
 import { BiSolidComponent } from "react-icons/bi";
-
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Pie,PieChart} from 'recharts';
 
 
 
@@ -35,13 +28,42 @@ const Item = styled(Sheet)(({ theme }) => ({
     color: theme.vars.palette.text.secondary,
 }));
 
+const data = [
+    { name: 'Page A', uv: 400, pv: 2400, amt: 2400 },
+    { name: 'Page B', uv: 300, pv: 1398, amt: 2210 },
+    { name: 'Page C', uv: 200, pv: 9800, amt: 2290 },
+    { name: 'Page D', uv: 278, pv: 3908, amt: 2000 },
+    { name: 'Page E', uv: 189, pv: 4800, amt: 2181 },
+    { name: 'Page F', uv: 239, pv: 3800, amt: 2500 },
+    { name: 'Page G', uv: 349, pv: 4300, amt: 2100 },
+];
+
+const data01 = [
+    { name: 'Group A', value: 400 },
+    { name: 'Group B', value: 300 },
+    { name: 'Group C', value: 300 },
+    { name: 'Group D', value: 200 },
+    { name: 'Group E', value: 278 },
+    { name: 'Group F', value: 189 },
+  ];
+  
+  const data02 = [
+    { name: 'Group A', value: 2400 },
+    { name: 'Group B', value: 4567 },
+    { name: 'Group C', value: 1398 },
+    { name: 'Group D', value: 9800 },
+    { name: 'Group E', value: 3908 },
+    { name: 'Group F', value: 4800 },
+  ];
 
 export default function Home() {
-    const data=[
+    const workspaces=[
         { workSpace: 1, projects: 25, sites: 'Beta', buildings: 15, components: 340 },
         { workSpace: 2, projects: 47, sites: 'Gamma', buildings: 8, components: 712 },
         { workSpace: 3, projects: 60, sites: 'Alpha', buildings: 20, components: 450 },
     ];
+
+    
     
     return (
         <div >
@@ -105,7 +127,10 @@ export default function Home() {
                         <h3 style={{display:'flex',alignItems:'center'}}><BsPersonWorkspace />&nbsp;&nbsp; Workspaces</h3>
                     </Grid>
                     <Grid xs={12}>
-                        <Item>work spaces here</Item>
+                        <Item>
+                            work spaces here
+                            
+                        </Item>
                     </Grid>
                 </Grid>
 
@@ -119,7 +144,15 @@ export default function Home() {
                         <h3 style={{display:'flex',alignItems:'center'}}><FaProjectDiagram />&nbsp;&nbsp; Projects</h3>
                     </Grid>
                     <Grid xs={12}>
-                        <Item>Projects here</Item>
+                        <Item>
+                            Projects here
+                            <LineChart width={600} height={300} data={data}>
+                                <Line type="monotone" dataKey="uv" stroke="#8884d8" />
+                                <CartesianGrid stroke="#ccc" />
+                                <XAxis dataKey="name" />
+                                <YAxis />
+                            </LineChart>
+                        </Item>
                     </Grid>
                 </Grid>
 
@@ -133,7 +166,15 @@ export default function Home() {
                         <h3 style={{display:'flex',alignItems:'center'}}><FaBuilding />&nbsp;&nbsp; Buildings</h3>
                     </Grid>
                     <Grid xs={12}>
-                        <Item>Buildings here</Item>
+                        <Item>
+                            Buildings here
+                            <LineChart width={600} height={300} data={data}>
+                                <Line type="monotone" dataKey="uv" stroke="#8884d8" />
+                                <CartesianGrid stroke="#ccc" />
+                                <XAxis dataKey="name" />
+                                <YAxis />
+                            </LineChart>
+                        </Item>
                     </Grid>
                 </Grid>
 
@@ -147,7 +188,15 @@ export default function Home() {
                         <h3 style={{display:'flex',alignItems:'center'}}><BiSolidComponent />&nbsp;&nbsp; Components</h3>
                     </Grid>
                     <Grid xs={12}>
-                        <Item>Components here</Item>
+                        <Item>
+                            Components here
+                            <LineChart width={600} height={300} data={data}>
+                                <Line type="monotone" dataKey="uv" stroke="#8884d8" />
+                                <CartesianGrid stroke="#ccc" />
+                                <XAxis dataKey="name" />
+                                <YAxis />
+                            </LineChart>
+                        </Item>
                     </Grid>
                 </Grid>
             </div>

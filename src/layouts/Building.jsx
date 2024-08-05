@@ -30,6 +30,16 @@ import { MdCancel } from "react-icons/md";
 import Input from '@mui/joy/Input';
 import { IoMdCreate } from "react-icons/io";
 
+
+
+import DialogTitle from '@mui/joy/DialogTitle';
+import DialogContent from '@mui/joy/DialogContent';
+import DialogActions from '@mui/joy/DialogActions';
+import ModalDialog from '@mui/joy/ModalDialog';
+import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
+
+
+
 function createData(Code, Name, Site, Activity, Address, Construction_year, Floor_area, Level_count) {
   return { Code, Name, Site, Activity, Address, Construction_year, Floor_area, Level_count };
 }
@@ -50,7 +60,9 @@ export default function Building() {
   const [selectedRow, setSelectedRow] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
   const [newBuilding,setNewBuilding]=useState({Name:'',Activity:'',Code:'',Site:'',ConstructionYear:'',LevelCount:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_ares:'',Comment:''});
-  
+  const [openDelete, setOpenDelete] = React.useState(false);
+  const [deletedRow,setDeletedRow]=useState({});
+
   const emptyFields=()=>{
     setNewBuilding({Name:'',Activity:'',Code:'',Site:'',ConstructionYear:'',LevelCount:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_ares:'',Comment:''});
   }
@@ -68,7 +80,11 @@ export default function Building() {
     }));
     setIsDirty(true);
   };
-
+  
+  const HandleDelete=(row)=>{
+    setOpenDelete(true);
+    setDeletedRow(row);
+  }
   return (
     <div>
         <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
@@ -81,7 +97,10 @@ export default function Building() {
           ))}
         </Breadcrumbs>
         <div>
-          <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> Building </span></h2>
+          <div className='title_image'>
+            <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> Building </span></h2>
+            <img src="/assets/Buildings.svg" alt="bui_img" />
+          </div>
           <Sheet variant="soft" color="neutral" sx={{ marginTop:'10px',p: 4,borderRadius:'5px',boxShadow:'0 0 5px rgba(176, 175, 175, 0.786)' }}>
             
             <div className='action_bottons'>
@@ -163,7 +182,12 @@ export default function Building() {
                       <td>
                         <Button sx={{
                           background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
-                        }}>
+                        }}
+                        onClick={(e)=>{
+                          e.stopPropagation();
+                          HandleDelete(row)
+                        }}
+                        >
                           <MdDelete size={22}/>
                         </Button>
                       </td>
@@ -226,12 +250,16 @@ export default function Building() {
             </span>
           </Typography>
           <div>
-            <h3 id='title_H3'>
-              <IoIosInformationCircle/>
-              <span>Information</span>
-            </h3>
+            <Divider>
+              <h3 id='title_H3'>
+                <IoIosInformationCircle/>
+                <span>Information</span>
+              </h3>
+            </Divider>
             <div className='info-container'>
-              <h4>Information</h4>
+              <Divider>
+                <h4>Information</h4>
+              </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
                   <span>Name</span><br />
@@ -265,7 +293,9 @@ export default function Building() {
                   />
                 </Grid>
               </Grid>
-              <h4>Address</h4>
+              <Divider>
+                <h4>Address</h4>
+              </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
                   <span>Address</span><br />
@@ -276,7 +306,9 @@ export default function Building() {
                   />
                 </Grid>
               </Grid>
-              <h4>Parent Site information</h4>
+              <Divider>
+                <h4>Parent Site information</h4>
+              </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
                   <span>Country</span><br />
@@ -317,7 +349,9 @@ export default function Building() {
                   />
                 </Grid>
               </Grid>
-              <h4>Characteristics</h4>
+              <Divider>
+                <h4>Characteristics</h4>
+              </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
                   <span>Level Count</span><br />
@@ -558,6 +592,28 @@ export default function Building() {
               </div>
           </div>
         </Sheet>
+      </Modal>
+
+      {/* Modal delete site */}
+      <Modal open={openDelete} onClose={() => setOpenDelete(false)}>
+        <ModalDialog variant="outlined" role="alertdialog">
+          <DialogTitle>
+            <WarningRoundedIcon />
+            Confirmation
+          </DialogTitle>
+          <Divider />
+          <DialogContent>
+            Are you sure you want to delete {deletedRow?.Name} ?
+          </DialogContent>
+          <DialogActions>
+            <Button variant="solid" color="danger" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
+              Confirm
+            </Button>
+            <Button variant="plain" color="neutral" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
+              Cancel
+            </Button>
+          </DialogActions>
+        </ModalDialog>
       </Modal>
     </div>
   )

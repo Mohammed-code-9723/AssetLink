@@ -14,6 +14,15 @@ import Pricing from './layouts/Pricing';
 import AboutUs from './layouts/AboutUs';
 import ContactUs from './layouts/ContactUs';
 import HowItWorks from './layouts/HowItWorks';
+import SuperAdminHome from './layouts/SuperAdminHome';
+import SuperAdminDashboard from './components/SuperAdminDashboard';
+import Permissions from './layouts/Permissions';
+import AllUsers from './layouts/AllUsers';
+import UpdateUser from './layouts/UpdateUser';
+import ProtectedRoute from './components/ProtectedRoute';
+import WorkspacesSuperAdmin from './layouts/WorkspacesSuperAdmin';
+import Test from './layouts/Test';
+import SystemSettings from './layouts/SystemSettings';
 
 function App() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -41,13 +50,21 @@ function App() {
             <Route path="/AboutUs" element={<AboutUs/>} />
             <Route path="/ContactUs" element={<ContactUs/>} />
             <Route path="/HowItWorks" element={<HowItWorks/>} />
+
+            <Route path="/tt" element={<Test/>} />
             
             <Route path="/dashboard" element={<Dashboard><Home /></Dashboard>} />
-            <Route path="/dashboard/Site" element={<Dashboard><Site /></Dashboard>} />
+            {/* <Route path="/dashboard/Site" element={<Dashboard><Site /></Dashboard>} /> */}
             <Route path="/dashboard/Building" element={<Dashboard><Building /></Dashboard>} />
             <Route path="/dashboard/Component" element={<Dashboard><Component /></Dashboard>} />
             <Route path="/dashboard/Energy" element={<Dashboard><Energy /></Dashboard>} />
-            {/* <Route path="/dashboard/Pricing" element={<Dashboard><Pricing /></Dashboard>} /> */}
+            
+            <Route path="/dashboard/SuperAdmin" element={<ProtectedRoute><SuperAdminDashboard><SuperAdminHome /></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path="/dashboard/SuperAdmin/Permissions" element={<ProtectedRoute><SuperAdminDashboard><Permissions /></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path="/dashboard/SuperAdmin/Workspaces" element={<ProtectedRoute><SuperAdminDashboard><WorkspacesSuperAdmin/></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path="/dashboard/SuperAdmin/UpdateUser" element={<ProtectedRoute><SuperAdminDashboard><UpdateUser /></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path="/dashboard/SuperAdmin/AllUsers" element={<ProtectedRoute><SuperAdminDashboard><AllUsers /></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path="/dashboard/SuperAdmin/Settings" element={<ProtectedRoute><SuperAdminDashboard><SystemSettings /></SuperAdminDashboard></ProtectedRoute>} />
           </Routes>
         </div>
       </div>

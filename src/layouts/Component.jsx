@@ -1,8 +1,9 @@
-import React from 'react'
+import React,{useState} from 'react'
 import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import Link from '@mui/joy/Link';
 import Sheet from '@mui/joy/Sheet';
 import Button from '@mui/joy/Button';
+import Input from '@mui/joy/Input';
 
 import { SiTestrail } from "react-icons/si";
 import { BsLayersFill } from "react-icons/bs";
@@ -10,12 +11,28 @@ import { MdDelete } from "react-icons/md";
 import { IoFilter } from "react-icons/io5";
 import { MdAdd } from "react-icons/md";
 
-import { Cascader,Avatar } from 'rsuite';
+import { Cascader,Avatar,Toggle } from 'rsuite';
 import Grid from '@mui/joy/Grid';
 import Table from '@mui/joy/Table';
 
 import { Pagination } from 'rsuite';
 import { Divider } from '@mui/joy';
+
+
+import Modal from '@mui/joy/Modal';
+import ModalClose from '@mui/joy/ModalClose';
+import Typography from '@mui/joy/Typography';
+import { FaCheck } from "react-icons/fa";
+import { MdCancel } from "react-icons/md";
+import { IoMdCreate } from "react-icons/io";
+import { IoIosInformationCircle } from "react-icons/io";
+
+
+import DialogTitle from '@mui/joy/DialogTitle';
+import DialogContent from '@mui/joy/DialogContent';
+import DialogActions from '@mui/joy/DialogActions';
+import ModalDialog from '@mui/joy/ModalDialog';
+import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 
 
 function createData(Code, Name, Site, Building, Quantity, Unit, Last_rehabilitation_year, Condition, Severity_Max, Risk_Level) {
@@ -32,6 +49,30 @@ const rows = [
 
 export default function Component() {
   const [activePage, setActivePage] = React.useState(1);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [isDirty, setIsDirty] = useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [openDelete, setOpenDelete] = React.useState(false);
+  const [deletedRow,setDeletedRow]=useState({});
+  
+  const HandleDelete=(row)=>{
+    setOpenDelete(true);
+    setDeletedRow(row);
+  }
+
+  const handleRowClick = (row) => {
+    setSelectedRow(row);
+    setOpen(true);
+    setIsDirty(false);
+  };
+
+  const handleInputChange = (field, value) => {
+    setSelectedRow((prevState) => ({
+      ...prevState,
+      [field]: value,
+    }));
+    setIsDirty(true);
+  };
 
   return (
     <div>
@@ -45,7 +86,10 @@ export default function Component() {
           ))}
       </Breadcrumbs>
       <div>
-        <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> Component </span></h2>
+        <div className='title_image'>
+          <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> Component </span></h2>
+          <img src="/assets/Components.svg" alt="comp_img" />
+        </div>
         <Sheet variant="soft" color="neutral" sx={{ marginTop:'10px',p: 4,borderRadius:'5px',boxShadow:'0 0 5px rgba(176, 175, 175, 0.786)' }}>
           
           <div className='action_bottons'>
@@ -126,7 +170,7 @@ export default function Component() {
               </thead>
               <tbody>
               {rows.map((row) => (
-                <tr key={row.Code}>
+                <tr key={row.Code} className='table_row' onClick={()=>handleRowClick(row)}>
                   <td>{row.Code}</td>
                   <td>{row.Name}</td>
                   <td>{row.Site}</td>
@@ -146,7 +190,12 @@ export default function Component() {
                   <td>
                     <Button sx={{
                       background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
-                    }}>
+                    }}
+                    onClick={(e)=>{
+                      e.stopPropagation();
+                      HandleDelete(row)
+                    }}
+                    >
                       <MdDelete size={22}/>
                     </Button>
                   </td>
@@ -174,6 +223,240 @@ export default function Component() {
           </div>
         </Sheet>
       </div>
+      {/* Modal component information's */}
+      <Modal
+        aria-labelledby="modal-title"
+        aria-describedby="modal-desc"
+        open={open}
+        onClose={() => setOpen(false)}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Sheet
+          variant="outlined"
+          sx={{
+            width:'70%',
+            maxHeight:'85vh',
+            borderRadius: 'md',
+            p: 3,
+            boxShadow: 'lg',
+            overflowY:'scroll'
+          }}
+        >
+          <ModalClose variant="plain" sx={{ m: 1 }} />
+          <Typography
+            component="h2"
+            id="modal-title"
+            level="h2"
+            textColor="inherit"
+            fontWeight="lg"
+            mb={1}
+          > 
+            <SiTestrail style={{color:'rgb(3, 110, 74)'}}/>
+            <span>
+              Component {selectedRow!==null&&selectedRow.Name}
+            </span>
+          </Typography>
+          <div>
+            <Divider>
+              <h3 id='title_H3'>
+                <IoIosInformationCircle/>
+                <span>
+                    Information
+                </span>
+              </h3>
+            </Divider>
+            <div className='info-container'>
+              <Divider>
+                <h4>Knowledge base linker</h4>
+              </Divider>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+              <Grid item xs={12} md={8} lg={6} sm={12}>
+                  <span>Standard Component Type</span><br />
+                  <Input
+                    readOnly
+                    value={`Immobilier - Générique ${selectedRow?.Name}` || ''}
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={12} md={8} lg={6} sm={12}>
+                  <span>Characteristics</span><br />
+                  <Input
+                    readOnly
+                    variant="outlined"
+                  />
+                </Grid>
+              </Grid>
+              <Divider>
+                <h4>Component Identification</h4>
+              </Divider>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                <Grid item xs={12} md={4} lg={6} sm={12}>
+                  <span>Name</span><br />
+                  <Input
+                    value={selectedRow?.Name || ''}
+                    onChange={(e) => handleInputChange('Name', e.target.value)}
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={12} md={4} lg={6} sm={12}>
+                  <span>Code</span><br />
+                  <Input
+                    value={selectedRow?.Code || ''}
+                    onChange={(e) => handleInputChange('Code', e.target.value)}
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={12} md={8} lg={6} sm={12}>
+                  <span>Parent Building</span><br />
+                  <Input
+                    value={selectedRow?.Building || ''}
+                    variant="outlined"
+                  />
+                </Grid>
+              </Grid>
+              <Divider>
+                <h4>Information</h4>
+              </Divider>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                <Grid item xs={12} md={8} lg={6} sm={12}>
+                  <span>Quantity</span><br />
+                  <Input
+                    value={selectedRow?.Quantity || ''}
+                    onChange={(e) => handleInputChange('Quantity', e.target.value)}
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={12} md={4} lg={6} sm={12}>
+                  <span>Unit</span><br />
+                  <Input
+                    value={selectedRow?.Unit || ''}
+                    onChange={(e) => handleInputChange('Unit', e.target.value)}
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={12} md={4} lg={6} sm={12}>
+                  <span>Last rehabilitation year</span><br />
+                  <Input
+                  type='number'
+                    value={selectedRow?.Last_rehabilitation_year || ''}
+                    onChange={(e) => handleInputChange('Last_rehabilitation_year', e.target.value)}
+                    variant="outlined"
+                  />
+                </Grid>
+              </Grid>
+              <Divider>
+                <h4>Ageing and severity</h4>
+              </Divider>
+              <h4>Component condition</h4>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                <Grid item xs={12} md={8} lg={6} sm={12}>
+                  <span>Condition</span><br />
+                  <Input
+                    value={selectedRow?.Condition || ''}
+                    placeholder="Region/State"
+                    variant="outlined"
+                    color={selectedRow?.Condition==='C1'?'success':(selectedRow?.Condition==='C2')?'warning':'danger'}
+                  />
+                </Grid>
+                <Grid item xs={12} md={8} lg={6} sm={12}>
+                  <span>Is condition assumed ?</span><br />
+                  <Toggle defaultChecked color="cyan">
+                  </Toggle>
+                </Grid>
+                <Grid item xs={12} md={12} lg={12} sm={12}>
+                  <span>Comment</span><br />
+                  <Input
+                    placeholder='Comment'
+                    variant="outlined"
+                  />
+                </Grid>
+              </Grid>
+              <h4>Component Severity per Stakes</h4>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                <Grid item xs={12} md={6} lg={6} sm={12}>
+                  <span>Safety </span><br />
+                  <div style={{display:'flex'}}>
+                    <Avatar circle style={{ background: selectedRow?.Severity_Max==='S1'?'green':(selectedRow?.Severity_Max==='S2')?'rgb(250, 218, 9)':(selectedRow?.Severity_Max==='S3')?'orange':'red' }}>{selectedRow?.Severity_Max}</Avatar>
+                    <Input
+                      sx={{width:'100%'}}
+                      value={selectedRow?.Severity_Max || ''}
+                      variant="outlined"
+                      color={selectedRow?.Severity_Max==='S1'?'success':(selectedRow?.Severity_Max==='S2')?'warning':'danger'}
+                    />
+                  </div>
+                </Grid>
+                <Grid item xs={12} md={6} lg={6} sm={12}>
+                  <span>Operations </span><br />
+                  <Input
+                  readOnly
+                    // value={selectedRow?.Floor_ares || ''}
+                    // onChange={(e) => handleInputChange('Floor_ares', e.target.value)}
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={12} md={6} lg={6} sm={12}>
+                  <span>Work Conditions </span><br />
+                  <Input
+                    readOnly
+                    // value={selectedRow?.Floor_ares || ''}
+                    // onChange={(e) => handleInputChange('Floor_ares', e.target.value)}
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={12} md={6} lg={6} sm={12}>
+                  <span>Environment</span><br />
+                  <Input
+                    readOnly
+                    // value={selectedRow?.Floor_ares || ''}
+                    // onChange={(e) => handleInputChange('Floor_ares', e.target.value)}
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={12} md={12} lg={12} sm={12}>
+                  <span>Image </span><br />
+                  <Input
+                    readOnly
+                    // value={selectedRow?.Floor_ares || ''}
+                    // onChange={(e) => handleInputChange('Floor_ares', e.target.value)}
+                    variant="outlined"
+                  />
+                </Grid>
+              </Grid>
+            </div>
+            {
+              isDirty&&(
+                <div className='action_buttons_validate_cancel'>
+                  <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={() => setOpen(false)}>Cancel</Button>
+                  <Button className='checkBtn' startDecorator={<FaCheck />}>Validate</Button>
+                </div>
+              )
+            }
+          </div>
+        </Sheet>
+      </Modal>
+
+      {/* Modal delete site */}
+      <Modal open={openDelete} onClose={() => setOpenDelete(false)}>
+        <ModalDialog variant="outlined" role="alertdialog">
+          <DialogTitle>
+            <WarningRoundedIcon />
+            Confirmation
+          </DialogTitle>
+          <Divider />
+          <DialogContent>
+            Are you sure you want to delete {deletedRow?.Name} ?
+          </DialogContent>
+          <DialogActions>
+            <Button variant="solid" color="danger" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
+              Confirm
+            </Button>
+            <Button variant="plain" color="neutral" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
+              Cancel
+            </Button>
+          </DialogActions>
+        </ModalDialog>
+      </Modal>
+
       </div>
   )
 }
