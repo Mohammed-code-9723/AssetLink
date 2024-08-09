@@ -9,14 +9,19 @@
     align-items:center;
 }
 .landing_container .hero_section{
-    width:40%;
+    width:50%;
     color:white;
     font-weight:900;
     font-size:4rem;
     text-align:center;
+    /* padding: 0 0 0 120px; */
+    /* background:red; */
+    /* margin-right: -30px; */
+
 }
 .landing_container .image_section{
-    width:60%;
+    width:50%;
+    /* margin-left: -10px; */
 }
 .landing_container .image_section #imgHouse{
     width:100%;
@@ -33,6 +38,7 @@
     .landing_container .hero_section{
         width:100%;
         z-index: 100;
+        margin-right:-20px;
     }
     .landing_container .image_section{
         width: 100%;

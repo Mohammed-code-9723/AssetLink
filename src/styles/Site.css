@@ -55,6 +55,7 @@
     border-radius: 8px;
     outline: none;
     color:rgb(9, 215, 146);
+    z-index: 100000;
 }
 .apply_Button{
     width: 100%;
@@ -112,6 +113,6 @@
 .title_image img{
     width: 200px;
 }
-/* .te{
-    color:#fc1c1cb9
-} */
+.te{
+    color:rgb(239, 238, 238)
+}

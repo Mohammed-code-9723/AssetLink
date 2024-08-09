@@ -7,9 +7,25 @@
     color: white;
 }
 
-.sheet_comp:hover .dash_items{
+/* .sheet_comp:hover .dash_items{
     background:linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%);
     color:white;
     transition: 0.3s;
     transform: translateY(-6px);
+} */
+ .dash_items{
+    box-shadow:0px 0 2px rgb(1, 138, 143)
+ }
+.dash_items:hover h4{
+    background:linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%);
+    width: fit-content;
+    color:transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    transition: 0.3s;
+    transform: translateY(-6px);
+}
+.imgHH{
+    position: relative;
+    width: 100%;
 }

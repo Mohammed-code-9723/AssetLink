@@ -18,12 +18,13 @@ import { fetchUsersData } from '../features/UserSlice';
 import { workspacesData,sitesData ,buildingsData,activitiesData} from '../features/SuperAdminSlice';
 
 import { useDispatch,useSelector } from 'react-redux';
-import { Timeline } from 'rsuite';
+import { Timeline, Loader } from 'rsuite';
 
 
 import refreshToken from '../features/SuperAdminSlice';
 
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Item = styled(Sheet)(({ theme }) => ({
     backgroundColor:theme.palette.mode === 'dark' ? theme.palette.background.level1 : '#fff',
@@ -47,6 +48,8 @@ export default function SuperAdminHome() {
     const { sites, statusSites , errorSites } = useSelector((state) => state.sites);
     const { buildings, statusBuildings , errorBuildings } = useSelector((state) => state.buildings);
     const { activities, statusActivities , errorActivities } = useSelector((state) => state.activities);
+    
+    const {t}=useTranslation();
     
     useEffect(()=>{
 
@@ -151,7 +154,7 @@ export default function SuperAdminHome() {
     return (
         <div>
             <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
-                {['Dashboard',''].map((item) => (
+                {[t('dashboard'),''].map((item) => (
                 <Link key={item} color="neutral" href="#sizes">
                     <h5>
                         {item} 
@@ -159,123 +162,151 @@ export default function SuperAdminHome() {
                 </Link>
                 ))}
             </Breadcrumbs>
-            <div>
-                <Sheet>
+            <div style={{display:'flex',flexWrap:'wrap',gap:10,justifyContent:'center',width:'100%'}}>
+                
                     <Grid container spacing={2} sx={{ flexGrow: 1,width:'100%' }}>
                         <Grid xs={12} sm={12} md={6} lg={6}>
-                            <Item className='itemsDash' style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)',
-                                display:'flex',alignItems:'center',justifyContent:'center'
-                            }}>
-                                <h4>Welcome {user.name}</h4>
-                            </Item>
+                            <Sheet variant="outlined" color="neutral" sx={{ marginTop:'20px',p: 1,borderRadius:'10px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
+                                <Item className='itemsDash' style={{height:'70px',boxShadow:'0px 0 2px rgb(1, 138, 143)',
+                                    display:'flex',alignItems:'center',justifyContent:'center'
+                                }}>
+                                    <h4>{t('welcome')===("Welcome"||"Bienvenue")?t('welcome'):''} {user.name} {t('welcome')==="مرحبا"?t('welcome'):''}</h4>
+                                </Item>
+                            </Sheet>
+                        </Grid>
+                        <Grid xs={12} sm={12} md={6} lg={6}>
+                            <Sheet variant="outlined" color="neutral" sx={{ marginTop:'20px',p: 1,borderRadius:'10px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
+                                <Item  style={{height:'70px',boxShadow:'0px 0 2px rgb(1, 138, 143)',
+                                    display:'flex',alignItems:'center',justifyContent:'center',
+                                    backgroundImage:'url("/assets/isometric-house.jpg")',
+                                    backgroundSize:'cover',
+                                    backgroundRepeat:'no-repeat',
+                                    backgroundPosition:'center',
+                                    // objectFit:'fill'
+                                }}>
+                                    {/* <img src="/assets/isometric-house.jpg" alt="" className='imgHH'/> */}
+                                </Item>
+                            </Sheet>
                         </Grid>
                     </Grid>
-                </Sheet>
             </div>
             <div style={{display:'flex',flexWrap:'wrap',gap:10,justifyContent:'center',width:'100%',marginTop:'20px'}}>
                 <Grid container spacing={2} sx={{ flexGrow: 1,width:'100%' }}>
                     <Grid xs={12} sm={12} md={3} lg={3}>
-                        <Item className='itemsDash' style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)'}}>
-                            <Avatar style={{background:'black',position:'absolute',top:'-15px',left:'10px'}}>
-                                <FaUsers />
-                            </Avatar>
-                            <h5>Total Users</h5>
-                            <h5>
-                                {users && users.users.length > 0 ? (
-                                    <span>{users.users.length}</span>
-                                ) : (
-                                    <span>No users found</span>
-                                )
-                                }
-                            </h5>
-                        </Item>
+                        <Sheet variant="outlined" color="neutral" sx={{ p: 1,borderRadius:'10px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
+                            <Item className='itemsDash' style={{height:'70px',boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
+                                <Avatar style={{background:'black',position:'absolute',top:'-15px',left:'10px'}}>
+                                    <FaUsers />
+                                </Avatar>
+                                <h6 style={{marginTop:'10px'}}>{t("users.totalUsers")}</h6>
+                                <h5 style={{marginTop:'8px'}}>
+                                    {users && users.users.length > 0 ? (
+                                        <span>{users.users.length}</span>
+                                    ) : (
+                                        <Loader content="Loading..." />
+                                    )
+                                    }
+                                </h5>
+                            </Item>
+                        </Sheet>
                     </Grid>
                     <Grid xs={12} sm={12} md={3} lg={3}>
-                        <Item className='itemsDash' style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)'}}>
-                            <Avatar style={{background:'rgb(5, 77, 172)',position:'absolute',top:'-15px',left:'10px'}}>
-                                <FaProjectDiagram />
-                            </Avatar>
-                            <h5>Total Workspaces</h5>
-                            <h5>
-                                {workspaces && workspaces.length > 0 ? (
-                                    <span>{workspaces.length}</span>
-                                ) : (
-                                    <span>No workspaces found</span>
-                                )
-                                }
-                            </h5>
-                        </Item>
+                        <Sheet variant="outlined" color="neutral" sx={{ p: 1,borderRadius:'10px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
+                            <Item className='itemsDash' style={{height:'70px',boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
+                                <Avatar style={{background:'rgb(5, 77, 172)',position:'absolute',top:'-15px',left:'10px'}}>
+                                    <FaProjectDiagram />
+                                </Avatar>
+                                <h6 style={{marginTop:'10px'}}>{t("users.totalWorkspaces")}</h6>
+                                <h5 style={{marginTop:'8px'}}>
+                                    {workspaces && workspaces.length > 0 ? (
+                                        <span>{workspaces.length}</span>
+                                    ) : (
+                                        <Loader content="Loading..." />
+                                    )
+                                    }
+                                </h5>
+                            </Item>
+                        </Sheet>
                     </Grid>
                     <Grid xs={12} sm={12} md={3} lg={3}>
-                        <Item className='itemsDash' style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)'}}>
-                            <Avatar style={{background:'rgba(7,28,75,1)',position:'absolute',top:'-15px',left:'10px'}}>
-                                < SiTestcafe/>
-                            </Avatar>
-                            <h5>Total Sites</h5>
-                            <h5>
-                                {sites && sites.length > 0 ? (
-                                    <span>{sites.length}</span>
-                                ) : (
-                                    <span>No sites found</span>
-                                )
-                                }
-                            </h5>
-                        </Item>
+                        <Sheet variant="outlined" color="neutral" sx={{ p: 1,borderRadius:'10px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
+                            <Item className='itemsDash' style={{height:'70px',boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
+                                <Avatar style={{background:'rgba(7,28,75,1)',position:'absolute',top:'-15px',left:'10px'}}>
+                                    < SiTestcafe/>
+                                </Avatar>
+                                <h6 style={{marginTop:'10px'}}>{t("users.totalSites")}</h6>
+                                <h5 style={{marginTop:'8px'}}>
+                                    {sites && sites.length > 0 ? (
+                                        <span>{sites.length}</span>
+                                    ) : (
+                                        <Loader content="Loading..." />
+                                    )
+                                    }
+                                </h5>
+                            </Item>
+                        </Sheet>
                     </Grid>
                     <Grid xs={12} sm={12} md={3} lg={3}>
-                        <Item className='itemsDash' style={{height:'70px',boxShadow:'5px 0 10px rgba(7,28,75,1),-5px 0 10px rgba(9,100,60,1),0px 5px 10px rgba(7,28,75,1)'}}>
-                            <Avatar style={{background:'rgb(5, 172, 150)',position:'absolute',top:'-15px',left:'10px'}}>
-                                < FaBuilding/>
-                            </Avatar>
-                            <h5>Total Buildings</h5>
-                            <h5>
-                                {buildings && buildings.buildings.length > 0 ? (
-                                    <span>{buildings.buildings.length}</span>
-                                ) : (
-                                    <span>No sites found</span>
-                                )
-                                }
-                            </h5>
-                        </Item>
+                        <Sheet variant="outlined" color="neutral" sx={{ p: 1,borderRadius:'10px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
+                            <Item className='itemsDash' style={{height:'70px',boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
+                                <Avatar style={{background:'rgb(5, 172, 150)',position:'absolute',top:'-15px',left:'10px'}}>
+                                    < FaBuilding/>
+                                </Avatar>
+                                <h6 style={{marginTop:'10px'}}>{t("users.totalBuildings")}</h6>
+                                <h5 style={{marginTop:'8px'}}>
+                                    {buildings && buildings.buildings.length > 0 ? (
+                                        <span>{buildings.buildings.length}</span>
+                                    ) : (
+                                        <Loader content="Loading..." />
+                                    )
+                                    }
+                                </h5>
+                            </Item>
+                        </Sheet>
                     </Grid>
                 </Grid>
             </div>
             <div>
-                    <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                        <Grid xs={6} sx={{
-                            height:'300px'
-                        }}>
-                            {/* <Item> */}
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{ marginTop:'20px',p: 4,borderRadius:'10px' }}>
-                                    <Item className='dash_items'><h4>Make this a choice option</h4></Item>
-                                    <BarChart
-                                    width={500}
-                                    height={300}
-                                    data={data}
-                                    margin={{
-                                        top: 5,
-                                        right: 30,
-                                        left: 20,
-                                        bottom: 5,
-                                    }}
-                                    >
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="name" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Legend />
-                                    <Bar dataKey="pv" fill="#8884d8" activeBar={<Rectangle fill="pink" stroke="blue" />} />
-                                    <Bar dataKey="uv" fill="#82ca9d" activeBar={<Rectangle fill="gold" stroke="purple" />} />
-                                    </BarChart>
-                            </Sheet>
-                                </ResponsiveContainer>
-                            {/* </Item> */}
-                        </Grid>
-                        <Grid xs={6}>
+                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                    <Grid xs={12} lg={6}>
+                        {/* <Item> */}
                             <ResponsiveContainer width="100%" height="100%">
-                            <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{ marginTop:'20px',p: 4,borderRadius:'10px' }}>
-                                <Item className='dash_items'><h4>Risque's</h4></Item>
+                                <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{ marginTop:'20px',p: 1,borderRadius:'5px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
+                                <Item className='dash_items'>
+                                    <center>
+                                        <h4>Make this a choice option</h4>
+                                    </center>
+                                <BarChart
+                                width={500}
+                                height={300}
+                                data={data}
+                                margin={{
+                                    top: 5,
+                                    right: 30,
+                                    left: 20,
+                                    bottom: 5,
+                                }}
+                                >
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis />
+                                <Tooltip />
+                                <Legend />
+                                <Bar dataKey="pv" fill="#8884d8" activeBar={<Rectangle fill="pink" stroke="blue" />} />
+                                <Bar dataKey="uv" fill="#82ca9d" activeBar={<Rectangle fill="gold" stroke="purple" />} />
+                                </BarChart>
+                                </Item>
+                        </Sheet>
+                            </ResponsiveContainer>
+                        {/* </Item> */}
+                    </Grid>
+                    <Grid xs={12} lg={6}>
+                        <ResponsiveContainer width="100%" height="100%">
+                        <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{ marginTop:'20px',p: 1,borderRadius:'5px' ,boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
+                            <Item className='dash_items'>
+                                <center>
+                                    <h4>Risque's</h4>
+                                </center>
                                 <PieChart width={500} height={300}>
                                 <Pie
                                     dataKey="value"
@@ -289,17 +320,25 @@ export default function SuperAdminHome() {
                                 />
                                 <Tooltip />
                                 </PieChart>
-                                </Sheet>
-                            </ResponsiveContainer>
-                        </Grid>
-                        <Grid xs={6}>
-                            <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{p: 4,borderRadius:'10px' }}>
-                                <Item className='dash_items'><h4>Others</h4></Item>
+                            </Item>
                             </Sheet>
-                        </Grid>
-                        <Grid xs={6}>
-                            <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{p: 4,borderRadius:'10px' }}>
-                                <Item className='dash_items'><h4>Activities</h4></Item>
+                        </ResponsiveContainer>
+                    </Grid>
+                    <Grid xs={12} lg={6}>
+                        <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{p: 1,borderRadius:'5px' ,boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
+                            <Item className='dash_items'>
+                                <center>
+                                    <h4>Others</h4>
+                                </center>
+                            </Item>
+                        </Sheet>
+                    </Grid>
+                    <Grid xs={12} lg={6}>
+                        <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{p: 1,borderRadius:'5px' ,boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
+                            <Item className='dash_items'>
+                                <center>
+                                    <h4>Activities</h4>
+                                </center>
                                 <Timeline endless style={{marginTop:'20px'}}>
                                     {
                                         activities&&activities.map((activity,index)=>(
@@ -307,9 +346,10 @@ export default function SuperAdminHome() {
                                         ))
                                     }
                                 </Timeline>
-                            </Sheet>
-                        </Grid>
+                            </Item>
+                        </Sheet>
                     </Grid>
+                </Grid>
             </div>
         </div>
     )

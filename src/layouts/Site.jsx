@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React,{useState, useEffect} from 'react';
 import '../styles/Site.css';
 import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import Link from '@mui/joy/Link';
@@ -8,34 +8,58 @@ import Input from '@mui/joy/Input';
 // import { styled } from '@mui/joy/styles';
 
 import { SiTestrail } from "react-icons/si";
-import { BsLayersFill } from "react-icons/bs";
+import { BsEye, BsLayersFill } from "react-icons/bs";
 import { MdDelete } from "react-icons/md";
 import { IoFilter } from "react-icons/io5";
 import { MdAdd } from "react-icons/md";
 
-import { Cascader } from 'rsuite';
+
+import { Cascader, CheckPicker } from 'rsuite';
 import Grid from '@mui/joy/Grid';
 import Table from '@mui/joy/Table';
 
 import { Pagination } from 'rsuite';
 import { Divider } from '@mui/joy';
 import { IoIosInformationCircle } from "react-icons/io";
-
+import { FaSitemap } from "react-icons/fa6";
 import Modal from '@mui/joy/Modal';
 import ModalClose from '@mui/joy/ModalClose';
 import Typography from '@mui/joy/Typography';
 import { FaCheck } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 import { IoMdCreate } from "react-icons/io";
-
+import { FaLocationDot } from "react-icons/fa6";
 
 import DialogTitle from '@mui/joy/DialogTitle';
 import DialogContent from '@mui/joy/DialogContent';
 import DialogActions from '@mui/joy/DialogActions';
 import ModalDialog from '@mui/joy/ModalDialog';
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
+import { useNavigate } from 'react-router-dom';
+import SiteBuildingsMap from './SiteBuildingsMap';
+import AddSiteBuildings from './AddSiteBuildings';
+import { useTranslation } from 'react-i18next';
 
+import { workspacesData,sitesData ,buildingsData,activitiesData} from '../features/SuperAdminSlice';
+import { useDispatch,useSelector } from 'react-redux';
 
+const formatCascaderData = (sites) => {
+  const cities = [...new Set(sites.map((site) => site.city))];
+  
+  return cities.map((city) => ({
+    label: city,
+    value: city,
+  }));
+};
+
+const formatCascaderDataSite = (sites) => {
+  const sitess = [...new Set(sites.map((site) =>({name: site.name,code:site.code})))];
+  
+  return sitess.map((site) => ({
+    label: `${site.code} - ${site.name}`,
+    value: site.code,
+  }));
+};
 
 
 
@@ -49,6 +73,20 @@ export default function Site({sites}) {
 
   const [newSite,setNewSite]=useState({Name:'',Activity:'',Code:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_ares:''});
   const [deletedRow,setDeletedRow]=useState({});
+
+  const navigate=useNavigate();
+  const {t}=useTranslation();
+
+  
+    const dispatch = useDispatch();
+    // const { sites, statusSites , errorSites } = useSelector((state) => state.sites);
+    const { buildings, statusBuildings , errorBuildings } = useSelector((state) => state.buildings);
+    const token=localStorage.getItem('token');
+
+    useEffect(()=>{
+        // dispatch(sitesData(token));
+        dispatch(buildingsData(token));
+    },[dispatch]);
 
   const handleRowClick = (row) => {
     setSelectedRow(row);
@@ -73,12 +111,25 @@ export default function Site({sites}) {
     setDeletedRow(row);
   }
 
+  const cascaderDataCities = formatCascaderData(sites);
+  const cascaderDataSites = formatCascaderDataSite(sites);
+
+  const [openMapModal,setOpenMapModal]=useState(false);
+  const [openMapModalAddBuilding,setOpenMapModalAddBuilding]=useState(false);
+
+  const [chosenSiteBuildings,setChosenSiteBuildings]=useState([]);
+
+  const HandleShowBuildings=(row)=>{
+      setChosenSiteBuildings(buildings.buildings.filter((building)=>building.site_id===row.id));
+      setOpenMapModal(true);
+  }
+
   return (
     <div>
       
       <div>
         <div className='title_image'>
-          <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> Site </span></h2>
+          <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> {t('sites')} </span></h2>
           <img src="/assets/Sites.svg" alt="sites_img" />
         </div>
         <Sheet variant="soft" color="neutral" sx={{ marginTop:'10px',p: 4,borderRadius:'5px',boxShadow:'0 0 5px rgba(176, 175, 175, 0.786)' }}>
@@ -93,35 +144,27 @@ export default function Site({sites}) {
               <Grid xs={12} lg={3.33} sm={12} md={12}>
                 <Cascader
                     // data={data}
+                    menuStyle={{ zIndex: 1400 }}
                     className='Cascader_comp'
                     placeholder="Project" 
                 />
               </Grid>
               <Grid xs={12} lg={3.33} sm={12} md={12}>
-                <Cascader
-                    // data={data}
-                    className='Cascader_comp'
-                    placeholder="Site" 
-                />
+                <CheckPicker labelKey='label' placeholder={t('site')} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataSites} className='Cascader_comp'/>
               </Grid>
               <Grid xs={12} lg={3.33} sm={12} md={12}>
-                <Cascader
-                    // data={data}
-                    className='Cascader_comp'
-                    placeholder="City" 
-                />
+                <CheckPicker labelKey='label' placeholder={t('city')} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataCities} className='Cascader_comp'/>
               </Grid>
               <Grid xs={12} lg={2} sm={12} md={12}>
-                <Button className='apply_Button'><IoFilter size={22}/>&nbsp;&nbsp;Apply filter</Button>
+                <Button className='apply_Button'><IoFilter size={22}/>&nbsp;&nbsp;{t('filter')}</Button>
               </Grid>
             </Grid>
           </div>
           <div className='Add_container'>
-            <Button className='add_Button' onClick={()=>setAddSite(true)}><MdAdd size={22}/>&nbsp;&nbsp;Add site</Button>
+            <Button className='add_Button' onClick={()=>setAddSite(true)}><MdAdd size={22}/>&nbsp;&nbsp;{t('addSite')}</Button>
           </div>
           <div className='table_container'>
             <Table hoverRow 
-            // borderAxis={'yBetween'}
             sx={{
               overflowX:'scroll'
             }}>
@@ -130,12 +173,13 @@ export default function Site({sites}) {
                   <th>Code</th>
                   <th>Name</th>
                   <th>Activity</th>
-                  <th>Address</th>
+                  <th style={{width:'20%'}}>Address</th>
                   <th>ZipCode</th>
                   <th>City</th>
                   <th>Country</th>
                   <th>Floor area</th>
                   <th>Action</th>
+                  <th>Site Buildings</th>
                 </tr>
               </thead>
               <tbody>
@@ -160,6 +204,19 @@ export default function Site({sites}) {
                     }}
                     >
                       <MdDelete size={22}/>
+                    </Button>
+                  </td>
+                  <td>
+                    <Button sx={{
+                      background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
+                      zIndex:10000
+                    }}
+                    onClick={(e)=>{
+                      e.stopPropagation();
+                      HandleShowBuildings(row)
+                    }}
+                    >
+                      <BsEye size={22}/>
                     </Button>
                   </td>
                 </tr>
@@ -217,7 +274,7 @@ export default function Site({sites}) {
           > 
             <SiTestrail style={{color:'rgb(3, 110, 74)'}}/>
             <span>
-              Site {selectedRow!==null&&selectedRow.Name}
+              Site {selectedRow!==null&&selectedRow.name}
             </span>
           </Typography>
           <div>
@@ -231,7 +288,7 @@ export default function Site({sites}) {
                 <Grid item xs={12} md={8} lg={6} sm={12}>
                   <span>Name</span><br />
                   <Input
-                    value={selectedRow?.Name || ''}
+                    value={selectedRow?.name || ''}
                     onChange={(e) => handleInputChange('Name', e.target.value)}
                     variant="outlined"
                   />
@@ -239,7 +296,7 @@ export default function Site({sites}) {
                 <Grid item xs={12} md={4} lg={6} sm={12}>
                   <span>Activity</span><br />
                   <Input
-                    value={selectedRow?.Activity || ''}
+                    value={selectedRow?.activity || ''}
                     onChange={(e) => handleInputChange('Activity', e.target.value)}
                     variant="outlined"
                   />
@@ -247,7 +304,7 @@ export default function Site({sites}) {
                 <Grid item xs={12} md={4} lg={6} sm={12}>
                   <span>Code</span><br />
                   <Input
-                    value={selectedRow?.Code || ''}
+                    value={selectedRow?.code || ''}
                     onChange={(e) => handleInputChange('Code', e.target.value)}
                     variant="outlined"
                   />
@@ -265,7 +322,7 @@ export default function Site({sites}) {
                 <Grid item xs={12} md={8} lg={6} sm={12}>
                   <span>Address</span><br />
                   <Input
-                    value={selectedRow?.Address || ''}
+                    value={selectedRow?.address || ''}
                     onChange={(e) => handleInputChange('Address', e.target.value)}
                     variant="outlined"
                   />
@@ -273,7 +330,7 @@ export default function Site({sites}) {
                 <Grid item xs={12} md={4} lg={6} sm={12}>
                   <span>Country</span><br />
                   <Input
-                    value={selectedRow?.Country || ''}
+                    value={selectedRow?.country || ''}
                     onChange={(e) => handleInputChange('Country', e.target.value)}
                     variant="outlined"
                   />
@@ -281,7 +338,7 @@ export default function Site({sites}) {
                 <Grid item xs={12} md={4} lg={6} sm={12}>
                   <span>Zipcode</span><br />
                   <Input
-                    value={selectedRow?.ZipCode || ''}
+                    value={selectedRow?.zipcode || ''}
                     onChange={(e) => handleInputChange('ZipCode', e.target.value)}
                     variant="outlined"
                   />
@@ -296,7 +353,7 @@ export default function Site({sites}) {
                 <Grid item xs={12} md={8} lg={6} sm={12}>
                   <span>City</span><br />
                   <Input
-                    value={selectedRow?.City || ''}
+                    value={selectedRow?.city || ''}
                     onChange={(e) => handleInputChange('City', e.target.value)}
                     variant="outlined"
                   />
@@ -314,7 +371,7 @@ export default function Site({sites}) {
                 <Grid item xs={12} md={12} lg={12} sm={12}>
                   <span>Floor area </span><br />
                   <Input
-                    value={selectedRow?.Floor_ares || ''}
+                    value={selectedRow?.floor_area || ''}
                     onChange={(e) => handleInputChange('Floor_ares', e.target.value)}
                     variant="outlined"
                   />
@@ -469,6 +526,15 @@ export default function Site({sites}) {
                   />
                 </Grid>
               </Grid>
+              <h4>Add location</h4>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                <Grid item xs={12} md={12} lg={12} sm={12}>
+                  <span>Choose the location of the site</span><br />
+                  <Button className='cancelBtn' startDecorator={<FaLocationDot/>}
+                  onClick={()=>setOpenMapModalAddBuilding(true)}
+                  >ADD LOCATION</Button>
+                </Grid>
+              </Grid>
             </div>
               <div className='action_buttons_validate_cancel'>
                 <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={emptyFields}>Cancel</Button>
@@ -500,7 +566,87 @@ export default function Site({sites}) {
         </ModalDialog>
       </Modal>
 
+      {/*render site buildings map */}
+      <Modal
+        aria-labelledby="modal-title"
+        aria-describedby="modal-desc"
+        open={openMapModal}
+        onClose={() => setOpenMapModal(false)}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Sheet
+          variant="outlined"
+          sx={{
+            width:'100%',
+            height:'98%',
+            borderRadius: 'md',
+            p: 3,
+            boxShadow: 'lg',
+            overflowY:'scroll'
+          }}
+        >
+          <ModalClose variant="plain" sx={{ m: 1 }} />
+          <Typography
+            component="h2"
+            id="modal-title"
+            level="h4"
+            textColor="inherit"
+            fontWeight="lg"
+            mb={1}
+            sx={{
+              width:'100%',
+              display: 'flex',
+              justifyContent:'center'
+            }}
+          >
+            {chosenSiteBuildings?.name}
+          </Typography>
+          <Typography level='div' id="modal-desc" textColor="text.tertiary">
+            <SiteBuildingsMap chosenSiteBuildings={chosenSiteBuildings}/>
+          </Typography>
+        </Sheet>
+      </Modal>
 
+      {/*add site buildings map */}
+      <Modal
+        aria-labelledby="modal-title"
+        aria-describedby="modal-desc"
+        open={openMapModalAddBuilding}
+        onClose={() => setOpenMapModalAddBuilding(false)}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Sheet
+          variant="outlined"
+          sx={{
+            width:'100%',
+            height:'98%',
+            borderRadius: 'md',
+            p: 3,
+            boxShadow: 'lg',
+            overflowY:'scroll'
+          }}
+        >
+          <ModalClose variant="plain" sx={{ m: 1 }} />
+          <Typography
+            component="h2"
+            id="modal-title"
+            level="h4"
+            textColor="inherit"
+            fontWeight="lg"
+            mb={1}
+            sx={{
+              width:'100%',
+              display: 'flex',
+              justifyContent:'center'
+            }}
+          >
+            {chosenSiteBuildings?.name}
+          </Typography>
+          <Typography level='div' id="modal-desc" textColor="text.tertiary">
+            <AddSiteBuildings/>
+          </Typography>
+        </Sheet>
+      </Modal>
     </div>
   )
 }

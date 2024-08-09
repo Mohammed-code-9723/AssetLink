@@ -1,0 +1,9 @@
+.locationList:hover{
+    background-color: rgb(193, 193, 193);
+    border-radius: 8px;
+    transition:0.3s;
+    cursor: pointer;
+}
+.zed{
+    /* boxShadow:'0px 0 2px rgb(1, 138, 143)'; */
+}

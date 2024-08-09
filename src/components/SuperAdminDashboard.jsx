@@ -4,9 +4,6 @@ import React from 'react';
 export default function SuperAdminDashboard({children}) {
   return (
     <div>
-      {/* <Message showIcon type={'info'} closable>
-        <strong>Super Admin Dashboard</strong>
-      </Message> */}
       {children}
     </div>
   )

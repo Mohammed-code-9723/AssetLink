@@ -28,7 +28,7 @@ import { FaUsers as Us } from "react-icons/fa6";
 import { MdWorkspacesFilled } from "react-icons/md";
 import { FaUserShield } from "react-icons/fa6";
 import { IoSettings } from "react-icons/io5";
-
+import { useTranslation } from 'react-i18next';
 
 export default function Sidebar({onToggle}) {
     const [expanded, setExpanded] = React.useState(true);
@@ -37,6 +37,8 @@ export default function Sidebar({onToggle}) {
     const user=JSON.parse(localStorage.getItem('user'));
     const token=localStorage.getItem('token');
     const location=useLocation();
+    const {t } = useTranslation();
+
 
     if (!token) {
         return <Navigate to="/"/>
@@ -47,7 +49,7 @@ export default function Sidebar({onToggle}) {
         onToggle();
     };
     return (
-        <div style={{ minWidth:expanded?260:'',paddingTop:'55px' ,height:'100%',}}>
+        <div style={{ minWidth:expanded?260:'',paddingTop:'55px' ,height:'100%',boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
 
             <Sidenav className='Sidenav' expanded={expanded} defaultOpenKeys={['3', '4']}>
                 <Sidenav.Body className='sidenav_body' style={{overflowY:expanded?'scroll':'hidden'}}>
@@ -61,7 +63,7 @@ export default function Sidebar({onToggle}) {
                     <Nav activeKey={activeKey} style={{display:'flex',gap:55,flexDirection:'column',overflowX:'hidden'}} onSelect={setActiveKey}>
                         <NavLink to={user.role==="superadmin"?'/dashboard/SuperAdmin':'/dashboard'} eventKey="1" className='dash_links' style={{width:'100%',display:'flex',alignItems:'center',height:'50px'}}>
                             <span style={{width:!expanded?'100%':'28%',display:'flex',alignItems:'center',justifyContent:'center'}}><MdDashboard  size={18}/></span>
-                            <span style={{ width: '90%' ,display:expanded?'inline':'none'}} >Dashboard</span>
+                            <span style={{ width: '90%' ,display:expanded?'inline':'none'}} >{t('dashboard')}</span>
                         </NavLink>
                         <div eventKey="2" style={{width:'100%',display:user.role==="superadmin"?'none':'flex'}}>
                             <span style={{width:!expanded?'100%':'28%',display:'flex',alignItems:'center',justifyContent:'center'}}><FaVectorSquare size={18}/></span>
@@ -90,12 +92,12 @@ export default function Sidebar({onToggle}) {
                             >
                                 {
                                     user.role==="superadmin"?(
-                                        <Dropdown title="Users" icon={<Us style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                        <Dropdown title={t("users.users")} icon={<Us style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
                                     <Dropdown.Item eventKey="4" className='Dropdown_items'>
                                         <NavLink to='/dashboard/SuperAdmin/AllUsers' className='main_links'>
                                             <FaUsers  style={{marginRight:'10px'}}/>
                                             <span>
-                                                All users
+                                                {t("users.allUsers")}
                                             </span>
                                         </NavLink>
                                     </Dropdown.Item>
@@ -103,7 +105,7 @@ export default function Sidebar({onToggle}) {
                                         <NavLink to='/dashboard/SuperAdmin/Permissions' className='main_links'>
                                             <FaUserShield   style={{marginRight:'10px'}}/>
                                             <span>
-                                                Permissions
+                                                {t("users.permissions")}
                                             </span>
                                         </NavLink>
                                     </Dropdown.Item>
@@ -174,36 +176,28 @@ export default function Sidebar({onToggle}) {
                             >
                                 {
                                     user.role==="superadmin"?(
-                                        <Dropdown title="Workspaces" icon={<MdWorkspacesFilled size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                        <Dropdown title={t("users.workspaces")} icon={<MdWorkspacesFilled size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
                                             <Dropdown.Item eventKey="5"  className='Dropdown_item_workspace'>
                                                 <NavLink to='/dashboard/SuperAdmin/Workspaces' className='workspace_links'>
                                                     <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
                                                     <span>
-                                                        All workspaces
-                                                    </span>
-                                                </NavLink>
-                                            </Dropdown.Item>
-                                            <Dropdown.Item eventKey="6" className='Dropdown_item_workspace'>
-                                                <NavLink to='/dashboard/SuperAdmin/Workspaces' className='workspace_links'>
-                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
-                                                    <span>
-                                                        All projects
+                                                        {t("users.allWorkspaces")}
                                                     </span>
                                                 </NavLink>
                                             </Dropdown.Item>
                                             <Dropdown.Item eventKey="7"  className='Dropdown_item_workspace'>
-                                                <NavLink to='/dashboard/SuperAdmin/Workspaces' className='workspace_links'>
+                                                <NavLink to='/dashboard/SuperAdmin/Sites' className='workspace_links'>
                                                     <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
                                                     <span>
-                                                        All sites
+                                                        {t("users.allSites")}
                                                     </span>
                                                 </NavLink>
                                             </Dropdown.Item>
                                             <Dropdown.Item eventKey="8"  className='Dropdown_item_workspace'>
-                                                <NavLink to='/dashboard/SuperAdmin/Workspaces' className='workspace_links'>
+                                                <NavLink to='/dashboard/SuperAdmin/Buildings' className='workspace_links'>
                                                     <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
                                                     <span>
-                                                        All buildings
+                                                        {t("users.allBuildings")}
                                                     </span>
                                                 </NavLink>
                                             </Dropdown.Item>
@@ -212,7 +206,7 @@ export default function Sidebar({onToggle}) {
                                         <Dropdown title="Scenarios" icon={<IoInfinite size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
                                             <Dropdown.Item eventKey="1" icon={<IoInfinite  style={{marginRight:'10px'}}/>}>
                                                 <NavLink to='/dashboard/Site' className='main_links'>
-                                                    All scenarios
+                                                    {t("users.allScenarios")}
                                                 </NavLink>
                                             </Dropdown.Item>
                                         </Dropdown>
@@ -229,10 +223,10 @@ export default function Sidebar({onToggle}) {
                             }} 
                             
                             >
-                                <Dropdown title="Analytics" icon={<FiBarChart2 size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                <Dropdown title={t("users.analytics")} icon={<FiBarChart2 size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
                                     <Dropdown.Item eventKey="1" icon={<GiNetworkBars  style={{marginRight:'10px'}}/>}>
                                         <NavLink to='/dashboard/Site' className='main_links'>
-                                            Analytics
+                                            {t("users.analytics")}
                                         </NavLink>
                                     </Dropdown.Item>
                                 </Dropdown>
@@ -247,10 +241,10 @@ export default function Sidebar({onToggle}) {
                             }} 
                             
                             >
-                                <Dropdown title="System settings" icon={<IoSettings size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                <Dropdown title={t("users.settings")} icon={<IoSettings size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
                                     <Dropdown.Item eventKey="1" icon={<IoSettings  style={{marginRight:'10px'}}/>}>
                                         <NavLink to='/dashboard/SuperAdmin/Settings' className='main_links'>
-                                            System settings
+                                            {t("users.settings")}
                                         </NavLink>
                                     </Dropdown.Item>
                                 </Dropdown>

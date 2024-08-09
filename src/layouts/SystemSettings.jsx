@@ -1,11 +1,31 @@
-import React from 'react';
+import React ,{useState} from 'react';
 import { Button, Input,Grid } from '@mui/joy';
 import Tabs from '@mui/joy/Tabs';
 import TabList from '@mui/joy/TabList';
 import Tab from '@mui/joy/Tab';
 import TabPanel from '@mui/joy/TabPanel';
-import { Avatar , Divider, Uploader} from 'rsuite';
+import { Avatar , Divider, Uploader,TagPicker} from 'rsuite';
 
+import { 
+    Card, 
+    CardContent, 
+    Typography, 
+    List, 
+    ListItem, 
+    ListItemText, 
+    Table, 
+    TableHead, 
+    TableRow, 
+    TableCell, 
+    TableBody, 
+    Chip, 
+    IconButton,
+    TextField
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+import {  FormControlLabel, Switch, FormGroup, Checkbox } from '@mui/material';
 
 // import Avatar from '@mui/joy/Avatar';
 import FormLabel from '@mui/joy/FormLabel';
@@ -14,8 +34,38 @@ import RadioGroup from '@mui/joy/RadioGroup';
 import Sheet from '@mui/joy/Sheet';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 
+const dataLanguages = ['العربية', 'Français', 'English', 'Allemande', 'Italian', 'Russian'].map(
+    item => ({ label: item, value: item })
+);
+
 
 export default function SystemSettings() {
+    const [plans, setPlans] = useState([
+        { name: 'Basic Plan', price: 99.99, description: 'Suitable plan for starter business', features: ['Customers Segmentation', 'Google Integrations', 'Activity Reminder'] },
+        { name: 'Enterprise Plan', price: 119.99, description: 'Best plan for mid-sized businesses', features: ['Get a Basic Plans', 'Access All Feature', 'Get 1TB Cloud Storage'] },
+        { name: 'Professional Plan', price: 149.99, description: 'Suitable plan for starter', features: ['Get Enterprise Plan', 'Access All Feature', 'Get 2TB Cloud Storage'] },
+    ]);
+
+    const [editMode, setEditMode] = useState(false);
+    const [editingIndex, setEditingIndex] = useState(null);
+    const [newPrice, setNewPrice] = useState('');
+
+    const handleEdit = (index) => {
+        setEditingIndex(index);
+        setNewPrice(plans[index].price);
+        setEditMode(true);
+    };
+
+    const handleSave = () => {
+        const updatedPlans = plans.map((plan, index) =>
+            index === editingIndex ? { ...plan, price: parseFloat(newPrice) } : plan
+        );
+        setPlans(updatedPlans);
+        setEditMode(false);
+        setEditingIndex(null);
+
+        //API to the backend
+    };
     return (
         <div>
             <div style={{width:'100%',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
@@ -170,7 +220,7 @@ export default function SystemSettings() {
                                             <span>Language</span>
                                         </Grid>
                                         <Grid lg={8}>
-                                            <Input type='text' placeholder="Select language" />
+                                            <TagPicker defaultValue={['العربية', 'Français', 'English']} data={dataLanguages} style={{width:'100%'}}/>
                                         </Grid>
                                     </Grid>
                                 </div>
@@ -178,10 +228,113 @@ export default function SystemSettings() {
                         </div>
                     </TabPanel>
                     <TabPanel value={2}>
-                        <b>Notifications tab</b> 
+                        <h5>Notifications</h5>
+                        <p>Get notified about what's happening right now. You can turn off at any time.</p>
+                        <Divider />
+                        <div>
+                            <h6>Email Notifications</h6>
+                            <FormControlLabel
+                                control={<Switch defaultChecked />}
+                                label="On"
+                            />
+                            <FormGroup>
+                                <FormControlLabel control={<Checkbox defaultChecked />} label="News and Update Settings" />
+                                <FormControlLabel control={<Checkbox />} label="Tips and Tutorials" />
+                                <FormControlLabel control={<Checkbox defaultChecked />} label="Offer and Promotions" />
+                            </FormGroup>
+                            <Divider sx={{ margin: '20px 0' }} />
+                            <h6>More Activity</h6>
+                            <FormControlLabel
+                                control={<Switch defaultChecked />}
+                                label="On"
+                            />
+                            <FormGroup>
+                                <FormControlLabel control={<Checkbox />} label="All Reminders & Activity" />
+                                <FormControlLabel control={<Checkbox />} label="Activity only" />
+                                <FormControlLabel control={<Checkbox defaultChecked />} label="Important Reminder only" />
+                            </FormGroup>
+                        </div>
                     </TabPanel>
                     <TabPanel value={3}>
-                        <b>Billings tab</b> 
+                        <h5>Billings</h5>
+                        <p>Pick a billing plan that suits you</p>
+                        <Divider />
+                        <Grid container spacing={2}>
+                            {plans.map((plan, index) => (
+                                <Grid item xs={4} key={index}>
+                                    <Card>
+                                        <CardContent>
+                                            <Typography variant="h6">{plan.name}</Typography>
+                                            {editMode && editingIndex === index ? (
+                                                <TextField
+                                                    variant="outlined"
+                                                    label="Price"
+                                                    value={newPrice}
+                                                    onChange={(e) => setNewPrice(e.target.value)}
+                                                    fullWidth
+                                                />
+                                            ) : (
+                                                <Typography variant="h5">${plan.price}/year</Typography>
+                                            )}
+                                            <Typography variant="body2">{plan.description}</Typography>
+                                            <List>
+                                                {plan.features.map((feature, i) => (
+                                                    <ListItem key={i}>
+                                                        <ListItemText primary={feature} />
+                                                    </ListItem>
+                                                ))}
+                                            </List>
+                                            {editMode && editingIndex === index ? (
+                                                <Button variant="contained" color="primary" onClick={handleSave}>Save</Button>
+                                            ) : (
+                                                <Button variant="contained" onClick={() => handleEdit(index)}>Edit Price</Button>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
+                            ))}
+                        </Grid>
+                        <Divider sx={{ margin: '20px 0' }} />
+                        <Typography variant="h6">Billing History</Typography>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>No</TableCell>
+                                    <TableCell>Invoices</TableCell>
+                                    <TableCell>Created Date</TableCell>
+                                    <TableCell>Amount</TableCell>
+                                    <TableCell>Plan</TableCell>
+                                    <TableCell>Status</TableCell>
+                                    <TableCell>Action</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                <TableRow>
+                                    <TableCell>01</TableCell>
+                                    <TableCell>Invoice#129810</TableCell>
+                                    <TableCell>25 Dec 2023</TableCell>
+                                    <TableCell>$149.99</TableCell>
+                                    <TableCell>Professional Plan</TableCell>
+                                    <TableCell><Chip label="Success" color="success" /></TableCell>
+                                    <TableCell>
+                                        <IconButton><EditIcon /></IconButton>
+                                        <IconButton><DeleteIcon /></IconButton>
+                                    </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell>02</TableCell>
+                                    <TableCell>Invoice#129810</TableCell>
+                                    <TableCell>05 Jul 2023</TableCell>
+                                    <TableCell>$149.99</TableCell>
+                                    <TableCell>Professional Plan</TableCell>
+                                    <TableCell><Chip label="Success" color="success" /></TableCell>
+                                    <TableCell>
+                                        <IconButton><EditIcon /></IconButton>
+                                        <IconButton><DeleteIcon /></IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
                     </TabPanel>
                 </Tabs>
             </div>

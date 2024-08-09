@@ -3,7 +3,6 @@ import Table from '@mui/joy/Table';
 import Button from '@mui/joy/Button';
 import Sheet from '@mui/joy/Sheet';
 import { MdAdd, MdDeleteSweep } from 'react-icons/md';
-import { GrUpdate } from 'react-icons/gr';
 import { fetchUsersData } from '../features/UserSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { Navigate } from 'react-router-dom';
@@ -13,9 +12,19 @@ import { PiUserSwitchBold } from "react-icons/pi";
 import Modal from '@mui/joy/Modal';
 import ModalClose from '@mui/joy/ModalClose';
 import Typography from '@mui/joy/Typography';
-import Box from '@mui/joy/Box';
 import { Form, ButtonToolbar, Radio, RadioGroup, Notification, Checkbox, CheckboxGroup,Divider } from 'rsuite';
 import { addUser, deleteUser, updateUser } from '../features/SuperAdminSlice';
+
+import DialogTitle from '@mui/joy/DialogTitle';
+import DialogContent from '@mui/joy/DialogContent';
+import DialogActions from '@mui/joy/DialogActions';
+import ModalDialog from '@mui/joy/ModalDialog';
+import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
+
+import { useTranslation } from 'react-i18next';
+import { Breadcrumbs,Link } from '@mui/joy';
+import { AutoComplete } from 'rsuite';
+
 
 export default function AllUsers() {
     const dispatch = useDispatch();
@@ -92,6 +101,21 @@ export default function AllUsers() {
         }));
     }, [checkboxDashboard, checkboxWorkspaces, checkboxProjects, checkboxSites, checkboxBuildings, checkboxComponents, checkboxIncidents, checkboxReports, checkboxUserManagement, checkboxSettings]);
 
+    const {t } = useTranslation();
+    
+    const [search,setSearch]=useState("");
+    const [filteredUsers,setFilteredUsers]=useState(null);
+    const [allUsers,setAllUsers]=useState([]);
+
+    useEffect(() => {
+        if (users) {
+            setAllUsers(users.users);
+        }
+    }, [users]);
+
+    useEffect(()=>{
+        setFilteredUsers(allUsers.filter((user)=>user.name.includes(search)||user.email.includes(search)||user.role.includes(search)));
+    },[search])
 
     if (!token) {
         return <Navigate to="/" />;
@@ -204,19 +228,13 @@ export default function AllUsers() {
 
     //! Add new user:
     const handleAddNewUser = () => {
-        // Check if all fields are filled
         if (newUser.name === '' || newUser.email === '' || newUser.password === '' || newUser.role === '' || Object.values(newUser.permissions).flat().length === 0) {
             alert('All fields are required.');
             return;
         }
-        // Debugging: Check the permissions state
-        console.log('New user:', newUser);
-    
-        // console.log("JSON.stringify(newUser) :",JSON.stringify(newUser));
-        // Dispatch the action
+
         dispatch(addUser({ token, newUser }));
     
-        // Reset state and close modal
         setNewUser({
             name: '',
             email: '',
@@ -266,15 +284,37 @@ export default function AllUsers() {
         setUpdateUserState({ ...updateUserState, [name]: value });
     };
 
+
     return (
         <div>
-            <center>
-                <h1>All users</h1>
-            </center>
+            <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
+                {[t('dashboard'),t('users.users'),t('users.allUsers')].map((item) => (
+                <Link key={item} color="neutral" href="#sizes">
+                    <h5>
+                        {item} 
+                    </h5>
+                </Link>
+                ))}
+            </Breadcrumbs>
             {(messageUpdate || messageDelete || message) && (message !== '' || messageDelete !== ''|| messageUpdate !== '') && (
                 <Notification type="success" header={`${messageUpdate || messageDelete || message}`} closable style={{position:'relative',width:'100%'}}>
                 </Notification>
             )}
+            <div style={{width:'100%',display:'flex',justifyContent:'space-evenly',margin:'20px 0',flexWrap:'wrap'}}>
+                <AutoComplete data={allUsers.map((user)=>user.name)} style={{ width: '30%' }} 
+                    placeholder={t('search.name')}
+                    onChange={(value)=>setSearch(value)}  
+                />
+                <AutoComplete data={allUsers.map((user)=>user.email)} style={{ width: '30%' }} 
+                    placeholder={t('search.email')}
+                    onChange={(value)=>setSearch(value)}  
+                />
+                <AutoComplete data={allUsers.map((user)=>user.role)} style={{ width: '30%' }} 
+                    placeholder={t('search.role')}
+                    onChange={(value)=>setSearch(value)}  
+                />
+                <Button sx={{background:'linear-gradient(265deg, rgba(226,49,96,1) 0%, rgba(115,5,5,1) 100%)'}} onClick={()=>{setSearch("");setFilteredUsers(null)}}>{t('search.clear')}</Button>
+            </div>
             <Sheet variant="outlined" color="neutral" sx={{ marginTop: '20px', p: 4, borderRadius: '10px' }}>
                 <center>
                     <Button
@@ -284,7 +324,7 @@ export default function AllUsers() {
                         }}
                         onClick={handleAddUser}
                     >
-                        <MdAdd size={22} />&nbsp;&nbsp;New user
+                        <MdAdd size={22} />&nbsp;&nbsp;{t('users.addUsers')}
                     </Button>
                 </center>
                 <div style={{ overflowX: 'scroll' }}>
@@ -301,30 +341,65 @@ export default function AllUsers() {
                         <thead>
                             <tr>
                                 <th style={{width: 'var(--Table-firstColumnWidth)', textAlign: 'center' }}>ID</th>
-                                <th style={{ width: '30%',textAlign: 'center' }}>Name</th>
-                                <th style={{ width: '30%',textAlign: 'center' }}>Email</th>
+                                <th style={{ width: '30%',textAlign: 'center' }}>{t('users.name')}</th>
+                                <th style={{ width: '30%',textAlign: 'center' }}>{t('email')}</th>
                                 {/* <th style={{ width: '30%',textAlign: 'center' }}>Password</th> */}
-                                <th style={{ width: '30%',textAlign: 'center' }}>Role</th>
+                                <th style={{ width: '30%',textAlign: 'center' }}>{t('users.role')}</th>
                                 <th 
                                 style={{ width: '30%' , textAlign: 'center' }}>
-                                    Actions
+                                    {t('users.actions')}
                                 </th>
                             </tr>
                         </thead>
                         <tbody >
-                            {users &&
-                                users.users.map((user, index) => (
-                                    <tr
+                            {
+                                filteredUsers&&search!==""?(
+                                    filteredUsers.map((user,index)=>(
+                                        <tr
                                         key={index}
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleRow(user);
+                                            }}
+                                        >
+                                            <td style={{ textAlign: 'center' }}>{user.id}</td>
+                                            <td style={{ textAlign: 'center' }}>{user.name}</td>
+                                            <td style={{ textAlign: 'center' }}>{user.email}</td>
+                                            <td style={{ textAlign: 'center' }}>{user.role}</td>
+                                            <td style={{ display: 'flex', gap: '2px', justifyContent: 'center',flexWrap:'wrap' }}>
+                                                <Button
+                                                    sx={{ background: 'linear-gradient(265deg, rgba(226,49,96,1) 0%, rgba(115,5,5,1) 100%)' }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteUser(user);
+                                                    }}
+                                                >
+                                                    <MdDeleteSweep size={18} />&nbsp;{t('users.delete')}
+                                                </Button>
+                                                <Button
+                                                    sx={{ background: 'linear-gradient(265deg, rgba(49,153,226,1) 0%, rgba(21,31,51,1) 100%)' }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleUpdateUser(user);
+                                                    }}
+                                                >
+                                                    <PiUserSwitchBold size={18} />&nbsp;{t('users.update')}
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    )
+                                )):(users &&
+                                users.users.map((user, index) => (
+                                    <tr
+                                    key={index}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRow(user);
                                         }}
                                     >
                                         <td style={{ textAlign: 'center' }}>{user.id}</td>
                                         <td style={{ textAlign: 'center' }}>{user.name}</td>
                                         <td style={{ textAlign: 'center' }}>{user.email}</td>
-                                        {/* <td style={{ textAlign: 'center' }}>{user.password_confirmation}</td> */}
                                         <td style={{ textAlign: 'center' }}>{user.role}</td>
                                         <td style={{ display: 'flex', gap: '2px', justifyContent: 'center',flexWrap:'wrap' }}>
                                             <Button
@@ -334,7 +409,7 @@ export default function AllUsers() {
                                                     handleDeleteUser(user);
                                                 }}
                                             >
-                                                <MdDeleteSweep size={18} />&nbsp;Delete
+                                                <MdDeleteSweep size={18} />&nbsp;{t('users.delete')}
                                             </Button>
                                             <Button
                                                 sx={{ background: 'linear-gradient(265deg, rgba(49,153,226,1) 0%, rgba(21,31,51,1) 100%)' }}
@@ -343,11 +418,12 @@ export default function AllUsers() {
                                                     handleUpdateUser(user);
                                                 }}
                                             >
-                                                <PiUserSwitchBold size={18} />&nbsp;Update
+                                                <PiUserSwitchBold size={18} />&nbsp;{t('users.update')}
                                             </Button>
                                         </td>
                                     </tr>
-                                ))}
+                                )))
+                            }
                         </tbody>
                     </Table>
                 </div>
@@ -745,45 +821,25 @@ export default function AllUsers() {
             </Modal>
 
             {/* Delete User Modal */}
-            <Modal
-                aria-labelledby="modal-title"
-                aria-describedby="modal-desc"
-                open={openDeleteModal}
-                onClose={() => setOpenDeleteModal(false)}
-                sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-            >
-                <Sheet
-                    variant="outlined"
-                    sx={{
-                        maxWidth: 500,
-                        borderRadius: 'md',
-                        p: 3,
-                        boxShadow: 'lg',
-                    }}
-                >
-                    <ModalClose variant="plain" sx={{ m: 1 }} />
-                    <Typography
-                        component="h2"
-                        id="modal-title"
-                        level="h4"
-                        textColor="inherit"
-                        fontWeight="lg"
-                        mb={1}
-                    >
-                        Delete user:
-                    </Typography>
-                    <Typography id="modal-desc" textColor="text.tertiary">
-                        Are you sure you want to delete user {userRow && userRow.name}?
-                    </Typography>
-                    <ButtonToolbar>
-                        <Button appearance="primary" onClick={() => {dispatch(deleteUser({ token, id: userRow.id }));setOpenDeleteModal(false)}}>
-                            Delete
-                        </Button>
-                        <Button appearance="default" onClick={() => setOpenDeleteModal(false)}>
-                            Cancel
-                        </Button>
-                    </ButtonToolbar>
-                </Sheet>
+            <Modal open={openDeleteModal} onClose={() => setOpenDeleteModal(false)}>
+                <ModalDialog variant="outlined" role="alertdialog">
+                <DialogTitle>
+                    <WarningRoundedIcon />
+                    Confirmation
+                </DialogTitle>
+                <Divider />
+                <DialogContent>
+                    Are you sure you want to delete user {userRow && userRow.name} ?
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="solid" color="danger" onClick={() => {dispatch(deleteUser({ token, id: userRow.id }));setOpenDeleteModal(false)}}>
+                    Confirm
+                    </Button>
+                    <Button variant="plain" color="neutral" onClick={() => setOpenDeleteModal(false)}>
+                    Cancel
+                    </Button>
+                </DialogActions>
+                </ModalDialog>
             </Modal>
         </div>
     );

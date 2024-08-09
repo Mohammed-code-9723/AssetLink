@@ -6,11 +6,14 @@ import { Navigate } from 'react-router-dom';
 import Checkbox from '@mui/joy/Checkbox';
 import Chip from '@mui/joy/Chip';
 import CheckIcon from '@mui/icons-material/Check';
-import { Box } from '@mui/joy';
+import { Box, Breadcrumbs ,Link} from '@mui/joy';
 import { updateUsersPermissions } from '../features/SuperAdminSlice';
-import { PiUserSwitchBold } from "react-icons/pi";
 import { TbShieldCancel } from "react-icons/tb";
 import { LuShieldCheck } from "react-icons/lu";
+import { useTranslation } from 'react-i18next';
+
+import { MdSupervisorAccount } from "react-icons/md";
+import { MdAdminPanelSettings } from "react-icons/md";
 
 const Header = props => {
   const { avatarUrl, title, subtitle, ...rest } = props;
@@ -24,6 +27,7 @@ const Header = props => {
       <Stack spacing={2} direction="column" alignItems="flex-start">
         <div style={{ color: 'white' }}>{title}</div>
         <div style={{ color: 'var(--rs-text-secondary)', fontSize: 12 }}>{subtitle}</div>
+        <img style={{position:"absolute",right:"90px",bottom:"33px",width:"40px",height:"40px"}} src={subtitle==="admin"?"/assets/admin.png":(subtitle==="manager")?"/assets/manager.png":(subtitle==="ingenieur")?"/assets/ingenieur.png":"/assets/mechanic.png"} alt="p" />
       </Stack>
     </Stack>
   );
@@ -38,6 +42,8 @@ export default function Permissions() {
   const [usersChanged, setUsersChanged] = useState([]);
   const [changed, setChanged] = useState(false);
   const [nameUser,setNameUser]=useState("");
+  const {t } = useTranslation();
+
   useEffect(() => {
     if (users) {
       setAllUsers(users.users);
@@ -93,22 +99,25 @@ export default function Permissions() {
       setChanged(false);
       setUsersChanged([]);
     });
-    console.log('Saved changes:', usersChanged);
-    console.log('All updated users:', updatedUsers);
   };
 
   const handleCancel = () => {
     setChanged(false);
     setUsersChanged([]);
   };
+  
 
   return (
     <div>
-      <div>
-        <Message showIcon type={'info'} closable>
-          <strong>Super Admin Dashboard</strong>
-        </Message>
-      </div>
+      <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
+        {[t('dashboard'),t('users.users'),t('users.permissions')].map((item) => (
+        <Link key={item} color="neutral" href="#sizes">
+            <h5>
+                {item} 
+            </h5>
+        </Link>
+        ))}
+      </Breadcrumbs>
       {
         message && statusPermissions==="succeeded" && nameUser!==""?(
           <div>
@@ -223,8 +232,8 @@ export default function Permissions() {
             </div>
             <form action="" method="post" onSubmit={(e)=>e.preventDefault()}>
               <div style={{ width: '100%', display: changed ? 'flex' : 'none', justifyContent: 'space-evenly' }}>
-                <Button onClick={handleSave} type='submit' startIcon={<LuShieldCheck color='success'/>}>Save</Button>
-                <Button onClick={handleCancel} startIcon={<TbShieldCancel color='danger'/>}>Cancel</Button>
+                <Button onClick={handleSave} type='submit' startIcon={<LuShieldCheck color='success'/>}>{t('users.save')}</Button>
+                <Button onClick={handleCancel} startIcon={<TbShieldCancel color='danger'/>}>{t('cancel')}</Button>
               </div>
             </form>
           </Accordion.Panel>
