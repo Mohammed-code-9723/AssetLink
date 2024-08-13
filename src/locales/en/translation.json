@@ -22,6 +22,8 @@
     "components":"Components",
     "city":"City",
     "projects":"Projects",
+    "project":"Project",
+    "addProject":"Add new project",
     "filter":"Apply filter",
     "users":{
       "users":"Users",
@@ -38,6 +40,9 @@
       "allWorkspaces":"All Workspaces",
       "allSites":"All Sites",
       "allBuildings":"All Buildings",
+      "allIncidents":"All Incidents",
+      "allReports":"All Reports",
+      "allComponents":"All Components",
       "allScenarios":"All Scenarios",
       "totalUsers":"Total users",
       "totalWorkspaces":"Total workspaces",
@@ -51,7 +56,11 @@
       "showPS":"Show projects & sites",
       "show":"Show projects",
       "deleteW":"Delete workspace",
-      "details":"Details"
+      "details":"Details",
+      "updateW":"Update workspace",
+      "addW":"Add workspace"
+
+
 
     },
     "search":{

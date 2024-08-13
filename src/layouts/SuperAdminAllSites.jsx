@@ -1,4 +1,4 @@
-import React,{useState, useEffect} from 'react';
+import React,{useEffect,useState} from 'react';
 import '../styles/Site.css';
 import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import Link from '@mui/joy/Link';
@@ -18,7 +18,7 @@ import { Cascader, CheckPicker } from 'rsuite';
 import Grid from '@mui/joy/Grid';
 import Table from '@mui/joy/Table';
 
-import { Pagination ,Notification, Loader} from 'rsuite';
+import { Pagination ,Notification, useToaster} from 'rsuite';
 import { Divider } from '@mui/joy';
 import { IoIosInformationCircle } from "react-icons/io";
 import { FaSitemap } from "react-icons/fa6";
@@ -40,37 +40,59 @@ import SiteBuildingsMap from './SiteBuildingsMap';
 import AddSiteBuildings from './AddSiteBuildings';
 import { useTranslation } from 'react-i18next';
 
-import { deleteSite,buildingsData,addSiteAsync,updateSite} from '../features/SuperAdminSlice';
+import { deleteSite,buildingsData,addSiteAsync,updateSite,workspacesData} from '../features/SuperAdminSlice';
 import { useDispatch,useSelector } from 'react-redux';
-import {workspacesData, projectsData } from '../features/SuperAdminSlice';
+import {sitesData, projectsData } from '../features/SuperAdminSlice';
 import { fetchUsersData } from '../features/UserSlice';
 import LoaderComponent from './LoaderComponent';
-
-const formatCascaderData = (sites) => {
-  const cities = [...new Set(sites.map((site) => site.city))];
-  
-  return cities.map((city) => ({
-    label: city,
-    value: city,
-  }));
-};
-
-const formatCascaderDataSite = (sites) => {
-  const sitess = [...new Set(sites.map((site) =>({name: site.name,code:site.code})))];
-  
-  return sitess.map((site) => ({
-    label: `${site.code} - ${site.name}`,
-    value: site.code,
-  }));
-};
+import { Timeline, Loader } from 'rsuite';
 
 
+// import { useTranslation } from 'react-i18next';
 
 
+export default function SuperAdminAllSites() {
 
 
-export default function Site({setChosenWorkspaceSites,workspace,projects}) {
-
+    // const columns = [
+    //     { field: 'id', headerName: 'ID', width: 70 },
+    //     { field: 'name', headerName: 'Name', width: 150 },
+    //     { field: 'start_year', headerName: 'Start Year', width: 130 },
+    //     { field: 'end_year', headerName: 'End Year', width: 130 },
+    //     { field: 'maintenance_strategy', headerName: 'Maintenance Strategy', width: 200 },
+    //     { field: 'budgetary_constraint', headerName: 'Budgetary Constraint', width: 200 },
+    //     {
+    //       field: 'status',
+    //       headerName: 'Status',
+    //       width: 150,
+    //       renderCell: (params) => (
+    //         <Chip
+    //           variant="outlined"
+    //           color={params.value === 'Active' ? 'success' : 'danger'}
+    //           startDecorator={params.value==='Active'?<FaCheck />:<ImCross/>}
+    //         >
+    //           {params.value}
+    //         </Chip>
+    //       ),
+    //     },
+    //     { field: 'duration', headerName: 'Duration (years)', width: 150 },
+    //     {
+    //       field: 'action',
+    //       headerName: 'Actions',
+    //       width: 150,
+    //       renderCell: (params) => (
+    //         <div>
+    //           <Button style={{width:'50%'}} sx={{background:'red'}} >
+    //               <RiDeleteBin6Fill/>
+    //           </Button>
+    //           <Button style={{width:'50%'}} sx={{background:'blue'}} >
+    //               <GrUpdate/>
+    //           </Button>
+    //         </div>
+    //       ),
+    //     },
+    //   ];
+    
 
   const [activePage, setActivePage] = useState(1);
   const [open, setOpen] = React.useState(false);
@@ -85,21 +107,27 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
 
   const { buildings, statusBuildings , errorBuildings } = useSelector((state) => state.buildings);
   const { workspaces, statusWorkspaces , errorWorkspaces } = useSelector((state) => state.workspaces);
+  const { sites, statusSites , errorSites } = useSelector((state) => state.sites);
   const { messageSiteDelete, statusSiteDelete , errorSiteDelete } = useSelector((state) => state.deleteSiteRe);
   const {messageAddSite,statusAddSite,errorAddSite}=useSelector((state) => state.addSiteRe);
   const {messageUpdateSite,statusUpdateSite,errorUpdateSite}=useSelector((state) => state.updateSiteRe);
 
+
   const token=localStorage.getItem('token');
   const dispatch = useDispatch();
 
+  const [chosenWorkspace,setChosenWorkspace]=useState(null); 
+  const [addWS,setAddWS]=useState(null);
   
   useEffect(()=>{
-    dispatch(workspacesData(token)).then(()=>{
-      setAllSites(workspaces.find(w=>w.id===workspace.id).sites);
+    dispatch(sitesData(token)).then(()=>{
+      setAllSites(sites);
     })
-  },[statusUpdateSite])
+  },[sites])
 
 
+  const [filterByCity,setFilterCity]=useState(null); 
+  const [filterBySite,setFilterSite]=useState(null);
 
   const navigate=useNavigate();
   const {t}=useTranslation();
@@ -118,6 +146,7 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
     setSelectedRow(row);
     setOpen(true);
     setIsDirty(false);
+    setChosenWorkspace(row.workspace_id);
   };
 
   const handleInputChange = (field, value) => {
@@ -135,6 +164,7 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
   const HandleDelete=(row)=>{
     setOpenDelete(true);
     setDeletedRow(row);
+    setChosenWorkspace(row.workspace_id);
   }
 
   const handleInputsAddChange = (field, value) => {
@@ -144,52 +174,94 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
     }));
     // setIsDirty(true);
   };
+  const formatCascaderDataWorkspaces = (workspaces) => {
+    const workspacesDataa = [...new Set(workspaces?.map((workspace) =>({name: workspace.name,id:workspace.id})))];
+    
+    return workspacesDataa.map((workspace) => ({
+      label: `${workspace.id} - ${workspace.name}`,
+      value: workspace.id,
+    }));
+  };
+
+  const formatCascaderData = (sites) => { 
+    const cities = [...new Set(sites?.map((site) => site.city))]; 
+    
+    return cities.map((city) => ({
+      label: city,
+      value: city,
+    }));
+  };
+
+  const formatCascaderDataSite = (sites) => {
+    const sitess = [...new Set(sites?.map((site) =>({name: site.name,code:site.code})))];
+    
+    return sitess.map((site) => ({
+      label: `${site.code} - ${site.name}`,
+      value: site.code,
+    }));
+  };
 
 
-  const cascaderDataCities = formatCascaderData(allSites);
+  const cascaderDataCities = formatCascaderData(allSites); 
   const cascaderDataSites = formatCascaderDataSite(allSites);
+  const cascaderDataWorkspaces = formatCascaderDataWorkspaces(workspaces);
 
   const [openMapModal,setOpenMapModal]=useState(false);
   const [openMapModalAddBuilding,setOpenMapModalAddBuilding]=useState(false);
 
   const [LoaderState,setLoaderState]=useState(false);
+  const [notif,setNotif]=useState(false);
 
   const [chosenSiteBuildings,setChosenSiteBuildings]=useState([]);
+  const [siteName,setSiteName]=useState(null);
 
   const HandleShowBuildings=(row)=>{
       setChosenSiteBuildings(buildings.buildings.filter((building)=>building.site_id===row.id));
+      setSiteName(sites?.find((site)=>site.id===row.id)?.name);
       setOpenMapModal(true);
   }
 
 
   const handleAddSite = async () => {
     setLoaderState(true);
-    const result = await Promise.resolve(dispatch(addSiteAsync({ token, newSite, workspace: workspace.id })));
+    const result = await Promise.resolve(dispatch(addSiteAsync({ token, newSite, workspace: addWS })));
     if (result.meta.requestStatus === 'fulfilled') {
-      const updatedWorkspaces = await dispatch(workspacesData(token));
-      setAllSites(updatedWorkspaces.payload.find(w => w.id === workspace.id).sites);
+      dispatch(workspacesData(token));
+      // setAllSites(updatedWorkspaces.payload.find(w => w.id === workspace.id).sites);
+      dispatch(sitesData(token)).then(()=>{
+        setAllSites(sites);
+      })
     }
     setAddSite(false);
+    setNotif(true);
   };
   
   const handleUpdateSite = async () => {
     setLoaderState(true);
     const result = await Promise.resolve(dispatch(updateSite({ updatedSite: selectedRow, token })));
     if (result.meta.requestStatus === 'fulfilled') {
-      const updatedWorkspaces = await dispatch(workspacesData(token));
-      setAllSites(updatedWorkspaces.payload.find(w => w.id === workspace.id).sites);
+      dispatch(workspacesData(token));
+      // setAllSites(updatedWorkspaces.payload.find(w => w.id === workspace.id).sites);
+      dispatch(sitesData(token)).then(()=>{
+        setAllSites(sites);
+      })
     }
     setOpen(false);
+    setNotif(true);
   };
   
   const confirmDelete=async() =>{ 
     setLoaderState(true);
     const result = await Promise.resolve(dispatch(deleteSite({token,id:deletedRow.id})));
     if (result.meta.requestStatus === 'fulfilled') {
-      const updatedWorkspaces = await dispatch(workspacesData(token));
-      setAllSites(updatedWorkspaces.payload.find(w => w.id === workspace.id).sites);
+      dispatch(workspacesData(token));
+      // setAllSites(updatedWorkspaces.payload.find(w => w.id === workspace.id).sites);
+      dispatch(sitesData(token)).then(()=>{
+        setAllSites(sites);
+      })
       setDeletedRow({});
       setOpenDelete(false);
+      setNotif(true);
     }
   }
   
@@ -200,24 +272,51 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
     return ()=>clearTimeout(intervalLoader);
   },[LoaderState]);
 
+  useEffect(()=>{
+    const intervalLoader=setTimeout(() => {
+      setNotif(false);
+    }, 5000);
+    return ()=>clearTimeout(intervalLoader);
+  },[notif]);
+
+  const handleFilter=()=>{
+    setAllSites(sites?.filter((site)=>site.code!==filterBySite || site.name!==filterByCity));
+  }
+  const handleClearFilter =()=>{
+    dispatch(sitesData(token)).then(()=>{
+      setAllSites(sites);
+      setFilterCity(null);
+      setFilterSite(null);
+    })
+    
+  }
   return (
     <div>
+      <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
+        {[t('dashboard'),t('users.allSites')].map((item) => (
+        <Link key={item} color="neutral" href="#sizes">
+            <h5>
+                {item} 
+            </h5>
+        </Link>
+        ))}
+      </Breadcrumbs>
       {
-        statusSiteDelete==="succeeded"&&(
+        (statusSiteDelete==="succeeded"&&notif)&&(
             <Notification style={{width:'100%',zIndex: 100000 }} showIcon type="success" color='success' closable>
               <strong><FaCheck/></strong> {messageSiteDelete && messageSiteDelete}.
             </Notification>
         )
       }
       {
-        statusAddSite==="succeeded"&&(
+        (statusAddSite==="succeeded"&&notif)&&(
             <Notification style={{width:'100%',zIndex: 100000 }} showIcon type="success" color='success' closable>
               <strong><FaCheck/></strong> {messageAddSite && messageAddSite}.
             </Notification>
         )
       }
       {
-        statusUpdateSite==="succeeded"&&(
+        (statusUpdateSite==="succeeded"&&notif)&&(
             <Notification style={{width:'100%',zIndex: 100000 }} showIcon type="success" color='success' closable>
               <strong><FaCheck/></strong> {messageUpdateSite && messageUpdateSite}.
             </Notification>
@@ -228,7 +327,8 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
           <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> {t('sites')} </span></h2>
           <img src="/assets/Sites.svg" alt="sites_img" />
         </div>
-        <Sheet variant="soft" color="neutral" sx={{ marginTop:'10px',p: 4,borderRadius:'5px',boxShadow:'0 0 5px rgba(176, 175, 175, 0.786)' }}>
+        <Sheet variant="outlined" color="neutral" sx={{ p: 1,borderRadius:'10px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
+                            {/* <Item className='itemsDash' style={{height:'70px',boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>  */}
           
           <div className='action_bottons'>
             <h6><BsLayersFill size={22}/>&nbsp;&nbsp;<span>Current</span></h6>
@@ -246,14 +346,21 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
                 />
               </Grid>
               <Grid xs={12} lg={3.33} sm={12} md={12}>
-                <CheckPicker labelKey='label' placeholder={t('site')} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataSites} className='Cascader_comp'/>
+                <CheckPicker labelKey='label' placeholder={t('site')} onChange={(value)=>setFilterSite(value)} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataSites} className='Cascader_comp'/>
               </Grid>
               <Grid xs={12} lg={3.33} sm={12} md={12}>
-                <CheckPicker labelKey='label' placeholder={t('city')} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataCities} className='Cascader_comp'/>
+                <CheckPicker labelKey='label' placeholder={t('city')} onChange={(value)=>setFilterCity(value)} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataCities} className='Cascader_comp'/>
               </Grid>
               <Grid xs={12} lg={2} sm={12} md={12}>
-                <Button className='apply_Button'><IoFilter size={22}/>&nbsp;&nbsp;{t('filter')}</Button>
+                <Button className='apply_Button' onClick={handleFilter}><IoFilter size={22}/>&nbsp;&nbsp;{t('filter')}</Button>
               </Grid>
+              {
+              (filterByCity||filterBySite)&&(
+                <Grid xs={12} lg={12} sm={12} md={12}>
+                  <Button className='apply_Button' onClick={handleClearFilter}><IoFilter size={22}/>&nbsp;&nbsp;Clear</Button>
+                </Grid>
+              )
+              }
             </Grid>
           </div>
           <div className='Add_container'>
@@ -296,7 +403,7 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
                     <td>
                       <Button sx={{
                         background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
-                        zIndex:10000
+                        zIndex:999
                       }}
                       onClick={(e)=>{
                         e.stopPropagation();
@@ -309,7 +416,7 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
                     <td>
                       <Button sx={{
                         background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
-                        zIndex:10000
+                        zIndex:999
                       }}
                       onClick={(e)=>{
                         e.stopPropagation();
@@ -324,9 +431,7 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
               )  
               :
               (
-                <div style={{width:'100%',display:'flex',justifyContent:'center',alignItems:'center',height:'10vh',fontSize:'1.2rem'}}>
-                  <Loader content="Loading..." style={{width:'fit-content'}}/>
-                </div>
+                <Loader content="Loading..." />
               )
               }
               </tbody>
@@ -634,7 +739,7 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
                   />
                 </Grid>
               </Grid>
-              {/* <h4>Add location</h4>
+              <h4>Add location</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
                   <span>Choose the location of the site</span><br />
@@ -642,7 +747,10 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
                   onClick={()=>setOpenMapModalAddBuilding(true)}
                   >ADD LOCATION</Button>
                 </Grid>
-              </Grid> */}
+                <Grid item xs={12} md={12} lg={12} sm={12}>
+                  <CheckPicker labelKey='label' onChange={(value)=>setAddWS(value)} placeholder={t('users.workspaces')} placement='top' menuStyle={{ zIndex: 1400 }}  data={cascaderDataWorkspaces} className='Cascader_comp'/>
+                </Grid>
+              </Grid>
             </div>
               <div className='action_buttons_validate_cancel'>
                 <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={emptyFields}>Cancel</Button>
@@ -653,7 +761,7 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
       </Modal>
 
       {/* Modal delete site */}
-      <Modal open={openDelete} onClose={() => setOpenDelete(false)}>
+      <Modal open={openDelete} onClose={() => setOpenDelete(false)} sx={{zIndex:1000}}>
         <ModalDialog variant="outlined" role="alertdialog" sx={{width:'40%'}}>
           <DialogTitle>
             <WarningRoundedIcon />
@@ -680,7 +788,7 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
         aria-describedby="modal-desc"
         open={openMapModal}
         onClose={() => setOpenMapModal(false)}
-        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' ,zIndex:1000,marginLeft:'50px',marginTop:'70px'}}
       >
         <Sheet
           variant="outlined"
@@ -710,7 +818,7 @@ export default function Site({setChosenWorkspaceSites,workspace,projects}) {
             {chosenSiteBuildings?.name}
           </Typography>
           <Typography level='div' id="modal-desc" textColor="text.tertiary">
-            <SiteBuildingsMap chosenSiteBuildings={chosenSiteBuildings}/>
+            <SiteBuildingsMap siteName={siteName} chosenSiteBuildings={chosenSiteBuildings} />
           </Typography>
         </Sheet>
       </Modal>

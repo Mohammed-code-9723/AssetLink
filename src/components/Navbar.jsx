@@ -133,8 +133,8 @@ const handleSubmit = async (e) => {
                             <Avatar src="https://i.pravatar.cc/150?u=2" />
                         </IconButton>
                         <Menu
-                            anchorEl={anchorEl}
-                            open={Boolean(anchorEl)}
+                            anchorEl={anchorEl&&anchorEl}
+                            open={Boolean(anchorEl&&anchorEl)}
                             onClose={handleClose2}
                             anchorOrigin={{
                                 vertical: 'bottom',
@@ -162,6 +162,14 @@ const handleSubmit = async (e) => {
                                 '--ListItemDecorator-size': '33px',
                                 borderRadius:'20px',
                                 width:'200px',
+                                background:'#088fa6',
+                            border:'1px solid rgb(21, 255, 169)',
+                            color:'white',
+                            '&:hover':{
+                                boxShadow:'0 0 10px rgb(21, 255, 169)',
+                                transition:'0.3s',
+                                background:'#088fa6',
+                            }
                                 // height:'30x'
                             }}
                             
@@ -213,7 +221,14 @@ const handleSubmit = async (e) => {
                         sx={{
                             width:'fit-content',
                             borderRadius: '20px',
-                            background:'#088fa6' 
+                            background:'#088fa6',
+                            border:'1px solid rgb(21, 255, 169)',
+                            '&:hover':{
+                                boxShadow:'0 0 10px rgb(21, 255, 169)',
+                                transition:'0.3s',
+                                background:'#088fa6',
+
+                            }
                         }}>
                             <FiLogIn />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{t('login')}
                         </Button>
@@ -239,6 +254,14 @@ const handleSubmit = async (e) => {
                             '--ListItemDecorator-size': '33px',
                             borderRadius:'20px',
                             width:'200px',
+                            background:'#088fa6',
+                            border:'1px solid rgb(21, 255, 169)',
+                            color:'white',
+                            '&:hover':{
+                                boxShadow:'0 0 10px rgb(21, 255, 169)',
+                                transition:'0.3s',
+                                background:'#088fa6',
+                            }
                             // height:'30x'
                         }}
                         

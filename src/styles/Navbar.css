@@ -6,7 +6,7 @@
     align-items: center;
     position:fixed !important;
     backdrop-filter: blur(10px);
-    z-index: 100;
+    z-index: 100000;
     transition: all 0.3s;
     background:linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%);
     padding: 10px 5px;
@@ -186,7 +186,7 @@ nav .nav_links .navbar_links:hover {
 .form_model h1{
     text-align: center;
     margin-bottom: 20px;
-    background: linear-gradient(265deg, rgb(145, 2, 193) 0%, rgb(2, 201, 128) 50%, rgb(5, 71, 203) 100%);
+    background: linear-gradient(265deg, rgb(88, 5, 115) 0%, rgb(21, 107, 76) 50%, rgb(5, 48, 135) 100%);
     width: fit-content;
     background-clip: text;
     -webkit-background-clip: text;
@@ -228,6 +228,7 @@ nav .nav_links .navbar_links:hover {
     border-radius: inherit;
     padding: 2px;
   }
-  /* .zdc{
-    color:rgb(250, 218, 9)
-  } */
+  .zdc{
+    color:rgb(21, 255, 169);
+    background:#088fa6;
+  }

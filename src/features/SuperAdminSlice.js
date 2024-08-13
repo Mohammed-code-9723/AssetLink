@@ -121,6 +121,45 @@ const buildingsSlice = createSlice({
     },
 });
 
+//! all projects:
+
+export const projectsData = createAsyncThunk('projects/projectsData', async (token) => {
+
+    const response = await fetch('http://127.0.0.1:8000/api/workspaces/allProjects', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+    });
+    const data = await response.json();
+    
+    return data;
+});
+
+const projectsSlice = createSlice({
+    name: 'projects',
+    initialState: {
+        projects: null,
+        statusProjects: 'idle',
+        errorProjects: null,
+    },
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(projectsData.pending, (state) => {
+                state.statusProjects = 'loading';
+            })
+            .addCase(projectsData.fulfilled, (state, action) => {
+                state.statusProjects = 'succeeded';
+                state.projects = action.payload;
+            })
+            .addCase(projectsData.rejected, (state, action) => {
+                state.statusProjects = 'failed';
+                state.errorProjects = action.error.message;
+            });
+    },
+});
 
 //!add user:
 export const addUser = createAsyncThunk('newUser/addUser', async ({ token, newUser }) => {
@@ -381,11 +420,206 @@ const activitiesSlice = createSlice({
     },
 });
 
+
+//!delete workspace:
+export const deleteWorkspace = createAsyncThunk('delWorkspace/deleteWorkspace', async ({ token, id }) => {
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/auth/workspaces/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        return Promise.reject(error.message);
+    }
+});
+
+
+const deleteWorkspaceSlice = createSlice({
+    name: 'delWorkspace',
+    initialState: {
+        messageDeleteWorkspace: '',
+        statusDeleteWorkspace: 'idle',
+        errorDeleteWorkspace: null,
+    },
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(deleteWorkspace.pending, (state) => {
+                state.statusDeleteWorkspace = 'loading';
+            })
+            .addCase(deleteWorkspace.fulfilled, (state, action) => {
+                state.statusDeleteWorkspace = 'succeeded';
+                state.messageDeleteWorkspace = action.payload.message ;
+            })
+            .addCase(deleteWorkspace.rejected, (state, action) => {
+                state.statusDeleteWorkspace = 'failed';
+                state.errorDelete = action.error.message;
+            });
+    },
+});
+
+
+//!delete site:
+export const deleteSite = createAsyncThunk('delSite/deleteSite', async ({ token, id }) => {
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/auth/sites/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        return Promise.reject(error.message);
+    }
+});
+
+
+const deleteSiteSlice = createSlice({
+    name: 'delSite',
+    initialState: {
+        messageSiteDelete: '',
+        statusSiteDelete: 'idle',
+        errorSiteDelete: null,
+    },
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(deleteSite.pending, (state) => {
+                state.statusSiteDelete = 'loading';
+            })
+            .addCase(deleteSite.fulfilled, (state, action) => {
+                state.statusSiteDelete = 'succeeded';
+                state.messageSiteDelete = action.payload.message ;
+            })
+            .addCase(deleteSite.rejected, (state, action) => {
+                state.statusSiteDelete = 'failed';
+                state.errorSiteDelete = action.error.message;
+            });
+    },
+});
+
+//!add site:
+export const addSiteAsync = createAsyncThunk('newSite/addSiteAsync', async ({ token, newSite,workspace }) => {
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/auth/${workspace}/addSite`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(newSite)
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        return Promise.reject(error.message);
+    }
+});
+
+
+const addSiteSlice = createSlice({
+    name: 'newSite',
+    initialState: {
+        messageAddSite: '',
+        statusAddSite: 'idle',
+        errorAddSite: null,
+    },
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(addSiteAsync.pending, (state) => {
+                state.statusAddSite = 'loading';
+            })
+            .addCase(addSiteAsync.fulfilled, (state, action) => {
+                state.statusAddSite = 'succeeded';
+                state.messageAddSite = action.payload.message ;
+            })
+            .addCase(addSiteAsync.rejected, (state, action) => {
+                state.statusAddSite = 'failed';
+                state.errorAddSite = action.error.message;
+            });
+    },
+});
+
+
+
+//!update site:
+export const updateSite = createAsyncThunk(
+    'site/updateSite',
+    async ({updatedSite,  token }) => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/auth/update_site', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(updatedSite)
+            });
+    
+            if (!response.ok) {
+            throw new Error('Network response was not ok');
+            }
+    
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            return Promise.reject(error.message);
+        }
+    }
+);
+
+const updateSiteSlice = createSlice({
+name: 'site',
+initialState: {
+    messageUpdateSite:'',
+    statusUpdateSite: 'idle',
+    errorUpdateSite: null
+},
+reducers: {},
+extraReducers: (builder) => {
+    builder
+    .addCase(updateSite.pending, (state) => {
+        state.statusUpdateSite = 'loading';
+    })
+    .addCase(updateSite.fulfilled, (state, action) => {
+        state.statusUpdateSite = 'succeeded';
+        state.messageUpdateSite = action.payload.message;
+    })
+    .addCase(updateSite.rejected, (state, action) => {
+        state.statusUpdateSite = 'failed';
+        state.errorUpdateSite = action.payload;
+    });
+}
+});
+
+export const addSiteReducer= addSiteSlice.reducer;
 export const activitiesReducer=activitiesSlice.reducer;
+export const projectsReducer=projectsSlice.reducer;
 export const usersPermissionsReducer=usersPermissionsSlice.reducer;
 export const workspaceReducer= workspacesSlice.reducer;
 export const siteReducer= sitesSlice.reducer;
 export const buildingReducer= buildingsSlice.reducer;
 export const addUserReducer= addUserSlice.reducer;
 export const deleteUserReducer= deleteUserSlice.reducer;
+export const deleteWorkspaceReducer= deleteWorkspaceSlice.reducer;
+export const deleteSiteReducer= deleteSiteSlice.reducer;
 export const updateUserReducer= updateUserSlice.reducer;
+export const updateSiteReducer= updateSiteSlice.reducer;

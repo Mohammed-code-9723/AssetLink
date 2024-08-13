@@ -90,7 +90,13 @@ export default function LandingPage() {
                                 sx={{
                                     width:'50%',
                                     borderRadius: '20px',
-                                    background:'#088fa6' 
+                                    background:'#088fa6',
+                                    border:'1px solid rgb(21, 255, 169)',
+                                    '&:hover':{
+                                        boxShadow:'0 0 10px rgb(21, 255, 169)',
+                                        transition:'0.3s',
+                                        background:'#088fa6',
+                                    }
                                 }}>
                                     <FiLogIn />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{t('login')}
                                 </Button>
@@ -108,7 +114,13 @@ export default function LandingPage() {
                                 sx={{
                                     width:'50%',
                                     borderRadius: '20px',
-                                    background:'#088fa6' 
+                                    background:'#088fa6',
+                                    border:'1px solid rgb(21, 255, 169)',
+                                    '&:hover':{
+                                        boxShadow:'0 0 10px rgb(21, 255, 169)',
+                                        transition:'0.3s',
+                                        background:'#088fa6',
+                                    } 
                                 }}>
                                     <FiLogIn />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{t('login')}
                                 </Button>
@@ -149,7 +161,14 @@ export default function LandingPage() {
                                 position:'relative ',
                                 borderTopLeftRadius:'7px',
                                 borderBottomLeftRadius:'7px',
-                                height:'70vh'
+                                height:'100%',
+                            }}/>
+                            <img src="/assets/login.svg" alt="svgLogin" style={{
+                                width:'350px',
+                                position:'absolute ',
+                                top:'10%',
+                                left:'30px',
+                                height:'350px'
                             }}/>
                         </div>
                         <div className='form_model' style={{

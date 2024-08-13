@@ -21,6 +21,8 @@
     "buildings":"المباني",
     "components":"المكونات",
     "projects":"المشاريع",
+    "project":"مشروع",
+    "addProject":"إضافة مشروع",
     "city":"المدينة",
     "filter":"تطبيق الفلتر",
     "users":{
@@ -38,7 +40,10 @@
       "allWorkspaces":"جميع فضاءات العمل",
       "allSites":"جميع المواقع ",
       "allBuildings":"جميع المباني",
+      "allIncidents":"جميع الحوادث",
+      "allReports":"جميع التقارير",
       "allScenarios":"جميع السيناريوهات",
+      "allComponents":"جميع المكونات ",
       "totalUsers":"إجمالي المستخدمين",
       "totalWorkspaces":"إجمالي فضاءات العمل",
       "totalSites":"إجمالي المواقع",
@@ -51,6 +56,8 @@
       "showPS":"عرض المشاريع والمواقع",
       "show":"عرض المشاريع",
       "deleteW":"حذف فضاء العمل",
+      "updateW":"تحديث فضاء العمل",
+      "addW":"أضف فضاء العمل",
       "details":"التفاصيل"
 
     },

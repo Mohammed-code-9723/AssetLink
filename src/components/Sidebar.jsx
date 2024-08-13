@@ -29,6 +29,7 @@ import { MdWorkspacesFilled } from "react-icons/md";
 import { FaUserShield } from "react-icons/fa6";
 import { IoSettings } from "react-icons/io5";
 import { useTranslation } from 'react-i18next';
+import { PopoverPaper } from '@mui/material';
 
 export default function Sidebar({onToggle}) {
     const [expanded, setExpanded] = React.useState(true);
@@ -48,6 +49,7 @@ export default function Sidebar({onToggle}) {
         setExpanded(!expanded);
         onToggle();
     };
+    
     return (
         <div style={{ minWidth:expanded?260:'',paddingTop:'55px' ,height:'100%',boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
 
@@ -92,7 +94,7 @@ export default function Sidebar({onToggle}) {
                             >
                                 {
                                     user.role==="superadmin"?(
-                                        <Dropdown title={t("users.users")} icon={<Us style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                        <Dropdown title={t("users.users")}  icon={<Us style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
                                     <Dropdown.Item eventKey="4" className='Dropdown_items'>
                                         <NavLink to='/dashboard/SuperAdmin/AllUsers' className='main_links'>
                                             <FaUsers  style={{marginRight:'10px'}}/>
@@ -104,11 +106,16 @@ export default function Sidebar({onToggle}) {
                                     <Dropdown.Item eventKey="1" className='Dropdown_items'>
                                         <NavLink to='/dashboard/SuperAdmin/Permissions' className='main_links'>
                                             <FaUserShield   style={{marginRight:'10px'}}/>
-                                            <span>
-                                                {t("users.permissions")}
-                                            </span>
+                                                <span>
+                                                    {t("users.permissions")}
+                                                </span>
                                         </NavLink>
                                     </Dropdown.Item>
+                                    {/* {
+                                        !expanded&&(
+                                            
+                                        )
+                                    } */}
                                 </Dropdown>
                                     ):(
                                 <Dropdown title="Main Inventory" icon={<MdInventory style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
@@ -198,6 +205,30 @@ export default function Sidebar({onToggle}) {
                                                     <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
                                                     <span>
                                                         {t("users.allBuildings")}
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                            <Dropdown.Item eventKey="8"  className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/Components' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        {t("users.allComponents")}
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                            <Dropdown.Item eventKey="8"  className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/Incidents' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        {t("users.allIncidents")}
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                            <Dropdown.Item eventKey="8"  className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/Reports' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span> 
+                                                        {t("users.allReports")}
                                                     </span>
                                                 </NavLink>
                                             </Dropdown.Item>

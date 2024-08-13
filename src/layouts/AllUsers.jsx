@@ -327,15 +327,11 @@ export default function AllUsers() {
                         <MdAdd size={22} />&nbsp;&nbsp;{t('users.addUsers')}
                     </Button>
                 </center>
-                <div style={{ overflowX: 'scroll' }}>
+                <div className='table_container'>
                     <Table 
-                        borderAxis="bothBetween"
-                        stripe="odd"
-                        hoverRow
+                        hoverRow 
                         sx={{
-                            width:'100%',
-                            overflowX: 'scroll' 
-                            // background:'red'
+                            overflowX:'scroll'
                         }}
                     >
                         <thead>

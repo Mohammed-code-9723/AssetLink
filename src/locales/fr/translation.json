@@ -18,10 +18,12 @@
     "sites":"Les sites",
     "site":"site",
     "addSite":"ajouter un site",
+    "addProject":"ajouter un projet",
     "city":"Ville",
     "buildings":"Les bâtiments",
     "components":"Les composants",
     "projects":"Les projets",
+    "project":"Projet",
     "filter": "Appliquer le filtre",
     "users":{
       "users":"Utilisateurs",
@@ -38,6 +40,9 @@
       "allWorkspaces":"Touts les espaces de travail",
       "allSites":"Tous les sites",
       "allBuildings":"Tous les bâtiments",
+      "allIncidents": "Tous les incidents",
+      "allReports": "Tous les rapports",
+      "allComponents":"Tous les composents",
       "allScenarios":"Tous les scénarios",
       "totalUsers":"N° total d'utilisateurs",
       "totalWorkspaces":"N° total d'espaces de travail",
@@ -51,7 +56,11 @@
       "showPS": "Afficher les projets et les sites",
       "show":"Montrer les projets",
       "deleteW":"Supprimer l'espace de travail",
-      "details":"Détailes"
+      "details":"Détailes",
+      "updateW":"Mettre à jour l'espace de travail",
+      "addW":"ajouter un espace de travail"
+
+
 
     },
     "search":{

@@ -324,15 +324,15 @@
   
   @keyframes fade00 {
     0% {
-      background: #252525;
+      background: #061f64;
     }
   
     50% {
-      background: #000000;
+      background: #06582f;
     }
   
     100% {
-      background: #353535;
+      background: #4e5106;
     }
   }
   

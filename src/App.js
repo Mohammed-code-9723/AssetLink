@@ -23,6 +23,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 import WorkspacesSuperAdmin from './layouts/WorkspacesSuperAdmin';
 import Test from './layouts/Test';
 import SystemSettings from './layouts/SystemSettings';
+import SuperAdminAllSites from './layouts/SuperAdminAllSites';
+import SuperAdminAllBuildings from './layouts/SuperAdminAllBuildings';
+import SuperAdminAllComponents from './layouts/SuperAdminAllComponents';
+import SuperAdminAllIncidents from './layouts/SuperAdminAllIncidents';
+import SuperAdminAllReports from './layouts/SuperAdminAllReports';
 
 function App() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -43,7 +48,7 @@ function App() {
         }
         <div className='routes_container' style={{
           marginLeft:location.pathname==='/'|| location.pathname === '/Pricing'|| location.pathname === '/AboutUs'|| location.pathname === '/ContactUs'|| location.pathname === '/HowItWorks'?0:'',
-          width:location.pathname==='/'?'100%':'100%'}}>
+          width:location.pathname==='/'?'100%':'100%',overflowX:'scroll'}}>
           <Routes>
             <Route path="/" element={<LandingPage/>} />
             <Route path="/Pricing" element={<Pricing/>} />
@@ -54,7 +59,7 @@ function App() {
             <Route path="/tt" element={<Test/>} />
             
             <Route path="/dashboard" element={<Dashboard><Home /></Dashboard>} />
-            {/* <Route path="/dashboard/Site" element={<Dashboard><Site /></Dashboard>} /> */}
+            {/* <Route path="/dashboard/Site" element={<Dashboard></Dashboard>} /> */}
             <Route path="/dashboard/Building" element={<Dashboard><Building /></Dashboard>} />
             <Route path="/dashboard/Component" element={<Dashboard><Component /></Dashboard>} />
             <Route path="/dashboard/Energy" element={<Dashboard><Energy /></Dashboard>} />
@@ -62,6 +67,11 @@ function App() {
             <Route path="/dashboard/SuperAdmin" element={<ProtectedRoute><SuperAdminDashboard><SuperAdminHome /></SuperAdminDashboard></ProtectedRoute>} />
             <Route path="/dashboard/SuperAdmin/Permissions" element={<ProtectedRoute><SuperAdminDashboard><Permissions /></SuperAdminDashboard></ProtectedRoute>} />
             <Route path="/dashboard/SuperAdmin/Workspaces" element={<ProtectedRoute><SuperAdminDashboard><WorkspacesSuperAdmin/></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path="/dashboard/SuperAdmin/Sites" element={<ProtectedRoute><SuperAdminDashboard><SuperAdminAllSites /></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path="/dashboard/SuperAdmin/Buildings" element={<ProtectedRoute><SuperAdminDashboard><SuperAdminAllBuildings /></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path="/dashboard/SuperAdmin/Components" element={<ProtectedRoute><SuperAdminDashboard><SuperAdminAllComponents /></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path="/dashboard/SuperAdmin/Incidents" element={<ProtectedRoute><SuperAdminDashboard><SuperAdminAllIncidents /></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path="/dashboard/SuperAdmin/Reports" element={<ProtectedRoute><SuperAdminDashboard><SuperAdminAllReports /></SuperAdminDashboard></ProtectedRoute>} />
             <Route path="/dashboard/SuperAdmin/UpdateUser" element={<ProtectedRoute><SuperAdminDashboard><UpdateUser /></SuperAdminDashboard></ProtectedRoute>} />
             <Route path="/dashboard/SuperAdmin/AllUsers" element={<ProtectedRoute><SuperAdminDashboard><AllUsers /></SuperAdminDashboard></ProtectedRoute>} />
             <Route path="/dashboard/SuperAdmin/Settings" element={<ProtectedRoute><SuperAdminDashboard><SystemSettings /></SuperAdminDashboard></ProtectedRoute>} />
