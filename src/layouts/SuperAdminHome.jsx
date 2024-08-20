@@ -139,22 +139,22 @@ export default function SuperAdminHome() {
       };
     
 
-    const data = [
+    const data = [ 
         {
             name: 'Admins',
-            nbr: users?.users.filter((user)=>user.role!=="admin").length,
+            nbr: users?.users.filter((user)=>user.role==="admin").length,
         },
         {
             name: 'Managers',
-            nbr: users?.users.filter((user)=>user.role!=="manager").length,
+            nbr: users?.users.filter((user)=>user.role==="manager").length,
         },
         {
             name: 'Engineers',
-            nbr: users?.users.filter((user)=>user.role!=="ingenieur").length,
+            nbr: users?.users.filter((user)=>user.role==="ingenieur").length,
         },
         {
             name: 'Technicians',
-            nbr: users?.users.filter((user)=>user.role!=="technicien").length,
+            nbr: users?.users.filter((user)=>user.role==="technicien").length,
         },
         {
             name: 'Regular users',

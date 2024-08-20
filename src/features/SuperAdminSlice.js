@@ -610,6 +610,47 @@ extraReducers: (builder) => {
 }
 });
 
+//! all components:
+
+export const componentsData = createAsyncThunk('components/componentsData', async (token) => {
+
+    const response = await fetch('http://127.0.0.1:8000/api/auth/Components', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+    });
+    const data = await response.json();
+    
+    return data;
+});
+
+const componentsSlice = createSlice({
+    name: 'components',
+    initialState: {
+        components: null,
+        statusComponents: 'idle',
+        errorComponents: null,
+    },
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(componentsData.pending, (state) => {
+                state.statusComponents = 'loading';
+            })
+            .addCase(componentsData.fulfilled, (state, action) => {
+                state.statusComponents = 'succeeded';
+                state.components = action.payload;
+            })
+            .addCase(componentsData.rejected, (state, action) => {
+                state.statusComponents = 'failed';
+                state.errorComponents = action.error.message;
+            });
+    },
+});
+
+export const componentsReducer= componentsSlice.reducer;
 export const addSiteReducer= addSiteSlice.reducer;
 export const activitiesReducer=activitiesSlice.reducer;
 export const projectsReducer=projectsSlice.reducer;

@@ -10,14 +10,15 @@ import { BsLayersFill } from "react-icons/bs";
 import { MdDelete } from "react-icons/md";
 import { IoFilter } from "react-icons/io5";
 import { MdAdd } from "react-icons/md";
+import Chip from '@mui/joy/Chip';
 
-import { Cascader,Avatar,Toggle } from 'rsuite';
+import { Cascader,Avatar,Toggle, DateRangePicker} from 'rsuite';
 import Grid from '@mui/joy/Grid';
 import Table from '@mui/joy/Table';
 
-import { Pagination } from 'rsuite';
-import { Divider } from '@mui/joy';
-
+import { Pagination ,Loader, Notification , Uploader, Whisper,Tooltip} from 'rsuite'; 
+import { Divider, Textarea } from '@mui/joy';
+import { MdOutlineEventBusy } from "react-icons/md";
 
 import Modal from '@mui/joy/Modal';
 import ModalClose from '@mui/joy/ModalClose';
@@ -34,21 +35,26 @@ import DialogActions from '@mui/joy/DialogActions';
 import ModalDialog from '@mui/joy/ModalDialog';
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 
+import { componentsData, buildingsData,sitesData } from '../features/SuperAdminSlice';
+import { useDispatch,useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import LoaderComponent from './LoaderComponent';
 
-function createData(Code, Name, Site, Building, Quantity, Unit, Last_rehabilitation_year, Condition, Severity_Max, Risk_Level) {
-  return { Code, Name, Site, Building, Quantity, Unit, Last_rehabilitation_year, Condition, Severity_Max, Risk_Level };
-}
-
-const rows = [
-  createData('S57', 'Structural Column', 'Site 1', 'Building A', 50, 'pieces', 2015, 'C2', 'S3', 'R2'),
-  createData('I58', 'Ice Cream Sandwich Shop', 'Site 2', 'Building B', 200, 'square meters', 2018, 'C1', 'S1', 'R1'),
-  createData('E59', 'Eclair Bakery', 'Site 3', 'Building C', 30, 'pieces', 2012, 'C3', 'S2', 'R3'),
-  createData('C60', 'Cupcake Factory', 'Site 4', 'Building D', 150, 'square meters', 2020, 'C4', 'S4', 'R4'),
-  createData('G61', 'Gingerbread House', 'Site 5', 'Building E', 75, 'pieces', 2017, 'C2', 'S3', 'R2'),
-];
+import Card from '@mui/joy/Card';
+import CardContent from '@mui/joy/CardContent';
+import Fab from '@mui/material/Fab';
+import AddIcon from '@mui/icons-material/Add';
+import { fetchUsersData } from '../features/UserSlice';
+// import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
+import dayjs from 'dayjs';
 
 export default function SuperAdminAllComponents() {
+
   const [activePage, setActivePage] = React.useState(1);
+  const [itemsPerPage] = useState(10);
+  const startIndex = (activePage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
   const [selectedRow, setSelectedRow] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
   const [open, setOpen] = React.useState(false);
@@ -57,23 +63,62 @@ export default function SuperAdminAllComponents() {
   
   const [allComponents,setAllComponents]=useState([]);
 
+  const [LoaderState,setLoaderState]=useState(false);
+  const [openAddComponent,setOpenAddComponent]=useState(false);
+
+  const [notif,setNotif]=useState(false);
+  const [message,setMessage]=useState('');
+  const [buildingSite,setBuildingSite]=useState({});
+  
+  const { buildings, statusBuildings , errorBuildings } = useSelector((state) => state.buildings);
+  const { components, statusComponents , errorComponents } = useSelector((state) => state.components);
+  const { sites, statusSites , errorSites } = useSelector((state) => state.sites);
+  const { users, status, error } = useSelector((state) => state.users);
+  const [IncidentsModal,setIncidentsModal]=useState(false);
+  
+  const [newComponent,setNewComponent]=useState({code:null,name:null, quantity:null,condition:null,building_id:null,last_rehabilitation_year:null,risk_level:null,severity_max:null,description:null,severity_safety:null,severity_operations:null,severity_work_conditions:null,severity_environment:null,characteristics:null,severity_image:null,unit:null});
+
+  const token=localStorage.getItem('token');
+  const dispatch = useDispatch();
+  const {t}=useTranslation();
+
+  const [parentBuilding,setParentBuilding]=useState({});
+
   useEffect(()=>{
-    fetch( `http://127.0.0.1:8000/api/auth/Components`).then((response)=>response.json()).then((data)=>{
-          setAllComponents(data.allComponents);
-          console.log("resussuususlt: ",data.allComponents);
-        })
+    dispatch(buildingsData(token));
+    dispatch(componentsData(token));
+    dispatch(sitesData(token));
+    dispatch(fetchUsersData(token));
   },[]);
+
+  useEffect(()=>{
+    if(components){
+      setAllComponents(components.allComponents);
+    }
+  },[components,dispatch]);
 
   const HandleDelete=(row)=>{
     setOpenDelete(true);
     setDeletedRow(row);
+    setParentBuilding(buildings?.buildings?.find((building)=>building.id===row.building_id));
   }
 
   const handleRowClick = (row) => {
     setSelectedRow(row);
     setOpen(true);
     setIsDirty(false);
+    setParentBuilding(buildings?.buildings?.find((building)=>building.id===row.building_id));
   };
+
+  const HandleShowIncidents=(row)=>{
+    setSelectedRow(row);
+    setIncidentsModal(true);
+    setParentBuilding(buildings?.buildings?.find((building)=>building.id===row.building_id));
+  }
+
+  useEffect(()=>{
+    setBuildingSite(sites?.find((site)=>site.id===parentBuilding.site_id));
+  },[parentBuilding]);
 
   const handleInputChange = (field, value) => {
     setSelectedRow((prevState) => ({
@@ -83,10 +128,428 @@ export default function SuperAdminAllComponents() {
     setIsDirty(true);
   };
 
+    useEffect(()=>{
+          const intervalLoader=setTimeout(() => {
+            setLoaderState(false);
+          }, 3000);
+          return ()=>clearTimeout(intervalLoader);
+        },[LoaderState]);
+        
+    useEffect(()=>{
+      const intervalLoader=setTimeout(() => {
+        setNotif(false);
+        setMessage(null);
+      }, 6000);
+      return ()=>clearTimeout(intervalLoader);
+    },[notif]);
+
+  const confirmDelete = async () => { 
+    // alert(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${deletedRow?.building_id}/components/${deletedRow?.id}`)
+    try {
+          setLoaderState(true);
+          setOpenDelete(false);
+          // api/workspaces/{workspace}/buildings/{building}/components/{component} 
+      const workspace_id  = buildingSite.workspace_id; 
+        const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${deletedRow?.building_id}/components/deleteComponent`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body:JSON.stringify({id:deletedRow?.id})
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            setNotif(true);
+            setMessage(result.message);
+            setAllComponents(allComponents.filter((b)=>b.id!==deletedRow.id));
+            dispatch(buildingsData(token));
+            dispatch(componentsData(token));
+            setSelectedRow({})
+        } else {
+            console.error('Failed to delete the component:', result);
+            alert('Failed to delete the component.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the component.');
+    }
+};
+
+
+const handleUpdateComponent = async () => {
+
+  try {
+    setLoaderState(true); 
+
+    const workspace_id  = buildingSite?.workspace_id; 
+    const building_id =  selectedRow?.building_id; 
+    const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(selectedRow), 
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      setNotif(true);
+      setMessage(result.message);
+      setAllComponents(allComponents.map((component) => {
+        if (component.id === selectedRow.id) {
+          return { ...component, ...selectedRow };
+        }
+        return component;
+      }));
+      dispatch(componentsData(token));
+      setOpen(false);
+      setLoaderState(false); 
+      setSelectedRow({})
+    } else {
+      console.error('Failed to update the component:', result);
+      alert(`Failed to update the component: ${result.error || 'Unknown error'}`);
+    }
+  }catch (error) {
+    console.error('Error:', error); 
+    alert('An error occurred while updating the component.');
+  }
+};
+
+const emptyFields=()=>{
+    setNewComponent({code:null,name:null, quantity:null,condition:null,building_id:null,last_rehabilitation_year:null,risk_level:null,severity_max:null,description:null,severity_safety:null,severity_operations:null,severity_work_conditions:null,severity_environment:null,characteristics:null,severity_image:null,unit:null});
+    setOpenAddComponent(false);
+  }
+
+  const [imageURL, setImageURL] = useState('');
+
+  const handleFileUpload = (fileList) => {
+    if (fileList && fileList.length > 0) {
+      const file = fileList[0].blobFile;
+      const fileName = file.name;
+      // console.log("file: ");
+      // console.log(file);
+      // console.log("fileName: ");
+      // console.log(fileName);
+      setNewComponent({...newComponent,severity_image:file});
+
+      const imageURL = URL.createObjectURL(file);
+      setImageURL(imageURL);
+      // console.log("imageURL: ");
+      // console.log(imageURL);
+    }
+  };
+
+const handleAddComponent = async () => {
+  console.log(newComponent);
+
+  try {
+    setLoaderState(true); 
+
+    const workspace_id  = buildingSite?.workspace_id; 
+    const building_id =  selectedRow?.building_id; 
+    const formData = new FormData();
+
+    // Append each property from newComponent to the formData
+    Object.keys(newComponent).forEach(key => {
+      formData.append(key, newComponent[key]);
+    });
+
+    // Send the formData in the request body
+    const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/addComponent`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`, // Authorization token if needed
+      },
+      body: formData, // Sending FormData instead of JSON
+    }); 
+
+    const result = await response.json();
+
+    if (response.ok) {
+      setNotif(true);
+      setMessage(result.message);
+      setAllComponents([...allComponents,newComponent]);
+      dispatch(buildingsData(token));
+      setOpenAddComponent(false);
+      setLoaderState(false); 
+      setNewComponent({code:null,name:null, quantity:null,condition:null,building_id:null,last_rehabilitation_year:null,risk_level:null,severity_max:null,description:null,severity_safety:null,severity_operations:null,severity_work_conditions:null,severity_environment:null,characteristics:null,severity_image:null,unit:null});
+    } else {
+      console.error('Failed to add the component:', result);
+      alert(`Failed to add the component: ${result.error || 'Unknown error'}`);
+    }
+  }catch (error) {
+    console.error('Error:', error); 
+    alert('An error occurred while adding the component.');
+  }
+};
+
+  const formatCascaderDataBuildings = (buildings) => {
+    const bL = [...new Set(buildings?.map((building) =>({id:building.id,name: building.name,code:building.code})))];
+    
+    return bL.map((building) => ({
+      label: `${building.code} - ${building.name}`,
+      value: building.id,
+    }));
+  };
+  const cascaderDataBuildings = formatCascaderDataBuildings(buildings?.buildings);
+
+  const formatCascaderDataComponentsType = (allComponents) => {
+    const uniqueTypes = [];
+
+    for (let i = 0; i < allComponents?.length; i++) {
+      let elem = allComponents[i]?.name;
+      
+      if (!uniqueTypes.some(comp => comp.name === elem)) {
+        uniqueTypes.push({type: elem});
+      }
+    }
+
+    return uniqueTypes.map((comp) => ({
+      label: `${comp.type}`,
+      value: comp.type,
+    }));
+  };
+  const cascaderDataComponentsType = formatCascaderDataComponentsType(allComponents);
+
+  const formatCascaderDataComponentsCharacteristics = (allComponents) => {
+    const uniqueCharacteristics = [];
+
+    for (let i = 0; i < allComponents?.length; i++) {
+      let elem = allComponents[i]?.characteristics;
+      
+      if (!uniqueCharacteristics.some(comp => comp.characteristics === elem)) {
+        uniqueCharacteristics.push({characteristics: elem});
+      }
+    }
+
+    return uniqueCharacteristics.map((comp) => ({
+      label: `${comp.characteristics}`,
+      value: comp.characteristics,
+    }));
+  };
+  const cascaderDataComponentsCharacteristics = formatCascaderDataComponentsCharacteristics(allComponents);
+
+  const formatCascaderDataComponentsCondition = (allComponents) => {
+    const uniqueConditions = [];
+
+    for (let i = 0; i < allComponents?.length; i++) {
+      let elem = allComponents[i]?.condition;
+      
+      if (!uniqueConditions.some(condition => condition.condition === elem)) {
+        uniqueConditions.push({ condition: elem });
+      }
+    }
+
+    return uniqueConditions.map((comp) => ({
+      label: `${comp.condition}`,
+      value: comp.condition,
+    }));
+  };
+  const cascaderDataComponentsCondition = formatCascaderDataComponentsCondition(allComponents);
+
+  const formatCascaderDataComponentsRisk = (allComponents) => {
+    const uniqueRisks = [];
+
+    for (let i = 0; i < allComponents?.length; i++) {
+      let elem = allComponents[i]?.risk_level;
+      
+      if (!uniqueRisks.some(comp => comp.risk === elem)) {
+        uniqueRisks.push({ risk: elem });
+      }
+    }
+    
+    return uniqueRisks.map((comp) => ({
+      label: `${comp.risk}`,
+      value: comp.risk,
+    }));
+  };
+  const cascaderDataComponentsRisk = formatCascaderDataComponentsRisk(allComponents);
+
+
+  const formatCascaderDataComponentsUnit = (allComponents) => {
+    const uniqueUnits = [];
+
+    for (let i = 0; i < allComponents?.length; i++) {
+      let elem = allComponents[i]?.unit;
+      
+      if (!uniqueUnits.some(comp => comp.unit === elem)) {
+        uniqueUnits.push({ unit: elem });
+      }
+    }
+    
+    return uniqueUnits.map((comp) => ({
+      label: `${comp.unit}`,
+      value: comp.unit,
+    }));
+  };
+  const cascaderDataComponentsUnit = formatCascaderDataComponentsUnit(allComponents);
+
+
+  const [filteredComponents,setFilteredComponents]=useState([]);
+
+  const [filterByCode,setFilterCode]=useState(null);
+  const [filterByType,setFilterType]=useState(null);
+  const [filterByRisk,setFilterRisk]=useState(null);
+  const [filterCondition,setFilterCondition]=useState(null);
+  
+  const handleFilter=()=>{
+    const findBuildingID=buildings?.buildings?.find((building)=>building.id===filterByCode)?.id;
+    setFilteredComponents(components?.allComponents?.filter((comp)=> comp.name===filterByType || comp.condition===filterCondition || comp.risk_level===filterByRisk || comp.building_id===findBuildingID));
+    }
+  const handleClearFilter =()=>{
+      setFilterType(null);
+      setFilterCode(null);
+      setFilterCondition(null);
+      setFilteredComponents([]);
+    }
+
+
+    const getStatusColor=(status)=>{
+      if(status==='Open'){
+        return 'success';
+      }else if(status==='InProgress'){
+        return 'warning';
+      }else{
+        return 'danger'; 
+      }
+    }
+
+    const getUserName=(id)=>{
+      const findUserName=users?.users?.find((user)=>user.id===id)?.name;
+      return findUserName;
+    }
+
+    const [isEditIncident,setIsEditIncident]=useState(false);
+    const [incidentID,setIncidentID]=useState(null);
+    const handleUpdateIncidentInputs=(id)=>{
+      setIsEditIncident(true);
+      setIncidentID(id);
+    }
+
+    //!add incident:
+    const [newIncident,setNewIncident]=useState({title:null,description:null,status:null,user_id:null,component_id:null,building_id:null,created_at:null,updated_at:null});
+    const handleAddIncidentInputs=(field,value)=>{
+      setNewIncident((prevState) => ({
+        ...prevState,
+        [field]: value,
+      }));
+    }
+    const handleSaveIncident = async () => {
+      console.log(newIncident);
+      try {
+        setLoaderState(true);
+    
+        const workspace_id = buildingSite?.workspace_id;
+        const building_id = selectedRow?.building_id;
+    
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}/incidents/${incidentID}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(newIncident),
+          }
+        );
+    
+        const result = await response.json();
+    
+        if (response.ok) {
+          setNotif(true);
+          setMessage(result.message);
+    
+          // Update the incidents array in the selected component
+          setAllComponents((allComponents) =>
+            allComponents.map((component) => {
+              if (component.id === selectedRow.id) {
+                return {
+                  ...component,
+                  incidents: component.incidents.map((incident) =>
+                    incident.id === incidentID
+                      ? { ...incident, ...newIncident } // Update the incident with the new values
+                      : incident
+                  ),
+                };
+              }
+              return component;
+            })
+          );
+    
+          dispatch(componentsData(token));
+    
+          setIncidentsModal(false);
+          setIncidentID(null);
+          setLoaderState(false);
+          setNewIncident({
+            title: null,
+            description: null,
+            status: null,
+            user_id: null,
+            component_id: null,
+            building_id: null,
+            created_at: null,
+            updated_at: null,
+          });
+        } else {
+          console.error('Failed to update the component:', result);
+          alert(`Failed to update the component: ${result.error || 'Unknown error'}`);
+          setLoaderState(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while updating the component.');
+        setLoaderState(false);
+      }
+    };
+    
+
+    const formatCascaderDataUsers = (users) => {
+      const uniqueUsers = [];
+      
+      for (let i = 0; i < users?.users?.length; i++) {
+        let elem = users?.users[i]?.name;
+        
+        if (!uniqueUsers.some(comp => comp.name === elem)) {
+          uniqueUsers.push({name: elem,id:users?.users[i]?.id});
+        }
+      }
+  
+      return uniqueUsers.map((comp) => ({
+        label: `${comp.name}`,
+        value: comp.id,
+      }));
+    };
+    const cascaderDataUsers = formatCascaderDataUsers(users);
+
+    const formatCascaderDataComponents = (allComponents) => {
+      const uniqueTypes = [];
+  
+      for (let i = 0; i < allComponents?.length; i++) {
+        let elem = allComponents[i]?.name;
+        
+        if (!uniqueTypes.some(comp => comp.name === elem)) {
+          uniqueTypes.push({type: elem,id:allComponents[i]?.id});
+        }
+      }
+  
+      return uniqueTypes.map((comp) => ({
+        label: `${comp.type}`,
+        value: comp.id,
+      }));
+    };
+    const cascaderDataComponents = formatCascaderDataComponents(allComponents);
+
   return (
     <div>
       <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
-          {['Workspaces','workspace name','components'].map((item) => (
+          {[t('buildings'),t('components')].map((item) => (
           <Link className='Link_breadcrumbs' key={item} color="neutral" href="#sizes">
             <h5>
               {item}
@@ -99,6 +562,13 @@ export default function SuperAdminAllComponents() {
           <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> Components </span></h2>
           <img src="/assets/Components.svg" alt="comp_img" />
         </div>
+        {
+          (message&&notif)&&(
+              <Notification style={{width:'100%',zIndex: 100000 }} showIcon type="success" color='success' closable>
+              <strong><FaCheck/></strong> {message && message}.
+              </Notification>
+          )
+          }
         <Sheet variant="soft" color="neutral" sx={{ marginTop:'10px',p: 4,borderRadius:'5px',boxShadow:'0 0 5px rgba(176, 175, 175, 0.786)' }}>
           
           <div className='action_bottons'>
@@ -108,108 +578,181 @@ export default function SuperAdminAllComponents() {
           
           <div className='Cascader_container'>
             <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-              <Grid xs={12} lg={2} sm={12} md={12}>
-                <Cascader
-                    // data={data}
-                    className='Cascader_comp'
-                    placeholder="Project" 
-                />
+              <Grid xs={12} lg={3} sm={12} md={12}>
+                  <Cascader
+                      data={cascaderDataComponentsRisk}
+                      className='Cascader_comp'
+                      placeholder="Risk level" 
+                      columnWidth={200}
+                      popupStyle={{width:'12%'}}
+                      onChange={(value)=>setFilterRisk(value)}  
+                  />
               </Grid>
-              <Grid xs={12} lg={2} sm={12} md={12}>
-                <Cascader
-                    // data={data}
-                    className='Cascader_comp'
-                    placeholder="City (Department)" 
-                />
+              <Grid xs={12} lg={3} sm={12} md={12}>
+                  <Cascader
+                      data={cascaderDataBuildings}
+                      className='Cascader_comp'
+                      placeholder="Building" 
+                      columnWidth={200}
+                      popupStyle={{width:'12%'}}
+                      onChange={(value)=>setFilterCode(value)}  
+                  />
               </Grid>
-              <Grid xs={12} lg={2} sm={12} md={12}>
+              <Grid xs={12} lg={3} sm={12} md={12}>
                 <Cascader
-                    // data={data}
-                    className='Cascader_comp'
-                    placeholder="Site" 
-                />
+                      data={cascaderDataComponentsType}
+                      className='Cascader_comp'
+                      placeholder="Component Type" 
+                      columnWidth={200}
+                      popupStyle={{width:'12%'}}
+                      onChange={(value)=>setFilterType(value)}  
+                  />
+
               </Grid>
-              <Grid xs={12} lg={2} sm={12} md={12}>
-                <Cascader
-                    // data={data}
-                    className='Cascader_comp'
-                    placeholder="Building" 
-                />
-              </Grid>
-              <Grid xs={12} lg={2} sm={12} md={12}>
-                <Cascader
-                    // data={data}
-                    className='Cascader_comp'
-                    placeholder="Component Type" 
-                />
-              </Grid>
-              <Grid xs={12} lg={2} sm={12} md={12}>
-                <Cascader
-                    // data={data}
-                    className='Cascader_comp'
-                    placeholder="Ageing Condition" 
-                />
+              <Grid xs={12} lg={3} sm={12} md={12}>
+                  <Cascader
+                      data={cascaderDataComponentsCondition}
+                      className='Cascader_comp'
+                      placeholder="Ageing Condition" 
+                      columnWidth={200}
+                      popupStyle={{width:'12%'}}
+                      onChange={(value)=>setFilterCondition(value)}  
+                  />
               </Grid>
               <Grid xs={12} lg={12} sm={12} md={12}>
                 <center>
-                  <Button className='apply_Button' sx={{width:'50%'}}><IoFilter size={22}/>&nbsp;&nbsp;Apply filter</Button>
+                  <Button className='apply_Button' sx={{width:'50%'}} onClick={handleFilter}><IoFilter size={22}/>&nbsp;&nbsp;{t('filter')}</Button>
+                </center>
+              </Grid>
+              <Grid sx={{display:filteredComponents.length>0?'grid':'none'}} xs={12} lg={12} sm={12} md={12}>
+                <center>
+                  <Button className='apply_Button' sx={{width:'50%'}} onClick={handleClearFilter}><IoFilter size={22}/>&nbsp;&nbsp;{('search.clear')}</Button>
                 </center>
               </Grid>
             </Grid>
           </div>
           <div className='Add_container'>
-            <Button className='add_Button'><MdAdd size={22}/>&nbsp;&nbsp;Add Component</Button>
+            <Button className='add_Button' onClick={()=> setOpenAddComponent(true)}><MdAdd size={22}/>&nbsp;&nbsp;{t('addComponent')}</Button>
           </div>
           <div className='table_container'>
-            <Table hoverRow>
+            <Table hoverRow 
+            sx={{
+              overflowX:'scroll',
+              textAlign:'center'
+            }}>
               <thead>
                 <tr>
-                  <th>Code</th>
-                  <th>Name</th>
-                  <th>Site</th>
-                  <th>Building</th>
-                  <th>Quantity</th>
-                  <th>Unit</th>
-                  <th>Last rehabilitation year</th>
-                  <th>Condition</th>
-                  <th>Severity Max</th>
-                  <th>Risk Level</th>
-                  <th>Action</th>
+                  <th  style={{width:'50px',textAlign:'center'}}>Code</th>
+                  <th style={{width:'150px',textAlign:'center'}}>Name</th>
+                  <th  style={{width:'150px',textAlign:'center'}}>Quantity</th>
+                  <th  style={{width:'150px',textAlign:'center'}}>Unit</th>
+                  <th  style={{width:'150px',textAlign:'center'}}>Last rehabilitation year</th>
+                  <th  style={{width:'70px',textAlign:'center'}}>Condition</th>
+                  <th  style={{width:'100px',textAlign:'center'}}>Severity Max</th>
+                  <th  style={{width:'70px',textAlign:'center'}}>Risk Level</th>
+                  <th  style={{width:'150px',textAlign:'center'}}>Building</th>
+                  <th style={{width:'660px',textAlign:'center',paddingRight:'190px'}}>Description</th>
+                  <th style={{width:'100px',textAlign:'center',position:'absolute',right:'150px',display:'flex',justifyContent:'center',alignItems:'center',marginBottom:'-10px'}}>Incidents</th>
+                  <th style={{width:'100px',textAlign:'center',position:'absolute',right:0,display:'flex',justifyContent:'center',alignItems:'center',marginBottom:'-10px'}}>Action</th>
                 </tr>
               </thead>
               <tbody>
-              {rows.map((row) => (
-                <tr key={row.Code} className='table_row' onClick={()=>handleRowClick(row)}>
-                  <td>{row.Code}</td>
-                  <td>{row.Name}</td>
-                  <td>{row.Site}</td>
-                  <td>{row.Building}</td>
-                  <td>{row.Quantity}</td>
-                  <td>{row.Unit}</td>
-                  <td>{row.Last_rehabilitation_year}</td>
-                  <td>
-                    <Avatar circle style={{ background: row.Condition==='C1'?'green':(row.Condition==='C2')?'rgb(250, 218, 9)':(row.Condition==='C3')?'orange':'red' }}>{row.Condition}</Avatar>
-                  </td>
-                  <td>
-                    <Avatar circle style={{ background: row.Severity_Max==='S1'?'green':(row.Severity_Max==='S2')?'rgb(250, 218, 9)':(row.Severity_Max==='S3')?'orange':'red' }}>{row.Severity_Max}</Avatar>
-                  </td>
-                  <td>
-                    <Avatar circle style={{ background: row.Risk_Level==='R1'?'green':(row.Risk_Level==='R2')?'rgb(250, 218, 9)':(row.Risk_Level==='R3')?'orange':'red' }}>{row.Risk_Level}</Avatar>
-                  </td>
-                  <td>
-                    <Button sx={{
-                      background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
-                    }}
-                    onClick={(e)=>{
-                      e.stopPropagation();
-                      HandleDelete(row)
-                    }}
-                    >
-                      <MdDelete size={22}/>
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              {
+                allComponents.length>0?(
+
+                  filteredComponents.length>0?(
+                    filteredComponents.slice(startIndex, endIndex).map((row) => (
+                      <tr key={row.code} className='table_row' onClick={()=>handleRowClick(row)}>
+                        <td>{row.code}</td>
+                        <td>{row.name}</td>
+                        <td>{row.quantity}</td>
+                        <td>{row.unit}</td>
+                        <td>{row.last_rehabilitation_year}</td>
+                        <td>
+                          <Avatar circle style={{ background: row.condition==='C1'?'green':(row.condition==='C2')?'rgb(250, 218, 9)':(row.condition==='C3')?'orange':'red' }}>{row.condition}</Avatar>
+                        </td>
+                        <td>
+                          <Avatar circle style={{ background: row.severity_max==='S1'?'green':(row.severity_max==='S2')?'rgb(250, 218, 9)':(row.severity_max==='S3')?'orange':'red' }}>{row.severity_max}</Avatar>
+                        </td>
+                        <td>
+                          <Avatar circle style={{ background: row.risk_level==='R1'?'green':(row.risk_level==='R2')?'rgb(250, 218, 9)':(row.risk_level==='R3')?'orange':'red' }}>{row.risk_level}</Avatar>
+                        </td>
+                        <td>{buildings?.buildings?.find((building)=>building.id===row?.building_id)?.name}</td>
+                        <td>{row.description}</td>
+                        <td style={{width:'100px',textAlign:'center',position:'absolute',right:0}}>
+                          <Button sx={{
+                            background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
+                          }}
+                          onClick={(e)=>{
+                            e.stopPropagation();
+                            HandleDelete(row)
+                          }}
+                          >
+                            <MdDelete size={22}/>
+                          </Button>
+                        </td>
+                        <td style={{width:'100px',textAlign:'center',position:'absolute',right:'150px'}}>
+                          <Button
+                          sx={{
+                            background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
+                          }}
+                          onClick={(e)=>{
+                            e.stopPropagation(); 
+                            HandleShowIncidents(row)
+                          }}
+                          ><MdOutlineEventBusy/></Button>
+                        </td>
+                      </tr>
+                    ))
+                  ):(
+                    allComponents.slice(startIndex, endIndex).map((row) => (
+                      <tr key={row.code} className='table_row' onClick={()=>handleRowClick(row)}>
+                        <td>{row.code}</td>
+                        <td>{row.name}</td>
+                        <td>{row.quantity}</td>
+                        <td>{row.unit}</td>
+                        <td>{row.last_rehabilitation_year}</td>
+                        <td>
+                          <Avatar circle style={{ background: row.condition==='C1'?'green':(row.condition==='C2')?'rgb(250, 218, 9)':(row.condition==='C3')?'orange':'red' }}>{row.condition}</Avatar>
+                        </td>
+                        <td>
+                          <Avatar circle style={{ background: row.severity_max==='S1'?'green':(row.severity_max==='S2')?'rgb(250, 218, 9)':(row.severity_max==='S3')?'orange':'red' }}>{row.severity_max}</Avatar>
+                        </td>
+                        <td>
+                          <Avatar circle style={{ background: row.risk_level==='R1'?'green':(row.risk_level==='R2')?'rgb(250, 218, 9)':(row.risk_level==='R3')?'orange':'red' }}>{row.risk_level}</Avatar>
+                        </td>
+                        <td>{buildings?.buildings?.find((building)=>building.id===row?.building_id)?.name}</td>
+                        <td>{row.description}</td>
+                        <td style={{width:'100px',textAlign:'center',position:'absolute',right:0}}>
+                          <Button sx={{
+                            background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
+                          }}
+                          onClick={(e)=>{
+                            e.stopPropagation();
+                            HandleDelete(row)
+                          }}
+                          >
+                            <MdDelete size={22}/>
+                          </Button>
+                        </td>
+                        <td style={{width:'100px',textAlign:'center',position:'absolute',right:'150px'}}>
+                          <Button
+                          sx={{
+                            background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
+                          }}
+                          onClick={(e)=>{
+                            e.stopPropagation(); 
+                            HandleShowIncidents(row)
+                          }}
+                          ><MdOutlineEventBusy/></Button>
+                        </td>
+                      </tr>
+                    ))
+                  )
+                ):(
+                  <Loader content="Loading..." />
+                )
+              }
               </tbody>
             </Table>
           </div>
@@ -224,14 +767,15 @@ export default function SuperAdminAllComponents() {
               next
               first
               size="md"
-              total={100}
-              limit={10}
+              total={filteredComponents.length > 0 ? filteredComponents.length : allComponents.length}
+              limit={itemsPerPage}
               activePage={activePage}
               onChangePage={setActivePage}
             />
           </div>
         </Sheet>
       </div>
+      
       {/* Modal component information's */}
       <Modal
         aria-labelledby="modal-title"
@@ -262,7 +806,7 @@ export default function SuperAdminAllComponents() {
           > 
             <SiTestrail style={{color:'rgb(3, 110, 74)'}}/>
             <span>
-              Component {selectedRow!==null&&selectedRow.Name}
+              Component {selectedRow!==null&&selectedRow.name}
             </span>
           </Typography>
           <div>
@@ -280,18 +824,27 @@ export default function SuperAdminAllComponents() {
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
               <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>Standard Component Type</span><br />
-                  <Input
-                    readOnly
-                    value={`Immobilier - Générique ${selectedRow?.Name}` || ''}
-                    variant="outlined"
+                  <strong>Standard Component Type</strong><br /><br />
+                  <Cascader
+                      data={cascaderDataComponentsType.map((type)=>({label:`Immobilier - Générique ${type.value}`,value:type.value}))}
+                      defaultValue={cascaderDataComponentsType.find((type)=>type.value===selectedRow?.name)?.label || ''}
+                      columnWidth={600}
+                      
+                      style={{width:'100%'}}
+                      popupStyle={{width:'30%',zIndex:10000}}
+                      onChange={(value) => handleInputChange('name', value)}  
                   />
+
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>Characteristics</span><br />
-                  <Input
-                    readOnly
-                    variant="outlined"
+                  <strong>Characteristics</strong><br /><br />
+                  <Cascader
+                      data={cascaderDataComponentsCharacteristics}
+                      defaultValue={selectedRow?.characteristics || ''}
+                      columnWidth={600}
+                      style={{width:'100%'}}
+                      popupStyle={{width:'30%',zIndex:10000}}
+                      onChange={(value) => handleInputChange('characteristics',value)}
                   />
                 </Grid>
               </Grid>
@@ -300,27 +853,28 @@ export default function SuperAdminAllComponents() {
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <span>Name</span><br />
+                  <strong>Code</strong><br />
                   <Input
-                    value={selectedRow?.Name || ''}
-                    onChange={(e) => handleInputChange('Name', e.target.value)}
-                    variant="outlined"
-                  />
-                </Grid>
-                <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <span>Code</span><br />
-                  <Input
-                    value={selectedRow?.Code || ''}
-                    onChange={(e) => handleInputChange('Code', e.target.value)}
-                    variant="outlined"
+                    readOnly
+                    defaultValue={selectedRow?.code || ''}
+                    disabled
                   />
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>Parent Building</span><br />
-                  <Input
-                    value={selectedRow?.Building || ''}
-                    variant="outlined"
+                  <strong>Parent Building</strong><br />
+                  <Cascader
+                      data={buildings?.buildings?.map((building) => ({ label: building.name, value: building.id }))}
+                      defaultValue={parentBuilding?.id} // Use `buildingSite?.id` here
+                      placeholder="Parent Site"
+                      popupStyle={{ width: '25%', zIndex: 10000 }}
+                      columnWidth={350}
+                      style={{ width: '100%' }}
+                      onChange={(value) => handleInputChange('building_id', value)}
                   />
+                  {/* <Input
+                    defaultValue={buildings?.buildings?.find((building)=>building.id===selectedRow?.building_id)?.name || ''}
+                    variant="outlined"
+                  /> */}
                 </Grid>
               </Grid>
               <Divider>
@@ -328,27 +882,31 @@ export default function SuperAdminAllComponents() {
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>Quantity</span><br />
+                  <strong>Quantity</strong><br /><br />
                   <Input
-                    value={selectedRow?.Quantity || ''}
-                    onChange={(e) => handleInputChange('Quantity', e.target.value)}
+                    defaultValue={selectedRow?.quantity || ''}
+                    onChange={(e) => handleInputChange('quantity', e.target.value)}
                     variant="outlined"
+                    type='number'
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <span>Unit</span><br />
-                  <Input
-                    value={selectedRow?.Unit || ''}
-                    onChange={(e) => handleInputChange('Unit', e.target.value)}
-                    variant="outlined"
+                  <strong>Unit</strong><br /><br />
+                  <Cascader
+                      data={cascaderDataComponentsUnit}
+                      defaultValue={cascaderDataComponentsUnit.find((comp)=>comp.value===selectedRow?.unit)?.label || ''}
+                      columnWidth={600}
+                      style={{width:'100%'}}
+                      popupStyle={{width:'30%',zIndex:10000}}
+                      onChange={(value) => handleInputChange('unit', value)}
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <span>Last rehabilitation year</span><br />
+                  <strong>Last rehabilitation year</strong><br /><br />
                   <Input
-                  type='number'
-                    value={selectedRow?.Last_rehabilitation_year || ''}
-                    onChange={(e) => handleInputChange('Last_rehabilitation_year', e.target.value)}
+                    type='number'
+                    defaultValue={selectedRow?.last_rehabilitation_year || ''}
+                    onChange={(e) => handleInputChange('last_rehabilitation_year', e.target.value)}
                     variant="outlined"
                   />
                 </Grid>
@@ -359,84 +917,131 @@ export default function SuperAdminAllComponents() {
               <h4>Component condition</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>Condition</span><br />
-                  <Input
-                    value={selectedRow?.Condition || ''}
-                    placeholder="Region/State"
-                    variant="outlined"
-                    color={selectedRow?.Condition==='C1'?'success':(selectedRow?.Condition==='C2')?'warning':'danger'}
-                  />
+                  <strong>Condition</strong><br /><br />
+                  <div style={{display:'flex',width:'100%'}}>
+                    <Avatar  style={{ background: selectedRow?.condition==='C1'?'green':(selectedRow?.condition==='C2')?'rgb(250, 218, 9)':(selectedRow?.condition==='C3')?'orange':'red' }}>{selectedRow?.condition}</Avatar>
+                    <Input
+                      defaultValue={selectedRow?.condition || ''}
+                      placeholder="Condition"
+                      variant="outlined"
+                      sx={{width:'100%'}}
+                      onChange={(e) => handleInputChange('condition', e.target.value)}
+                      color={selectedRow?.condition==='C1'?'success':(selectedRow?.condition==='C2')?'warning':'danger'}
+                    />
+                  </div>
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>Is condition assumed ?</span><br />
-                  <Toggle defaultChecked color="cyan">
+                  <strong>Is condition assumed ?</strong><br /><br />
+                  <Toggle checked={(selectedRow?.condition)?true:false} color="cyan">
                   </Toggle>
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>Comment</span><br />
+                  <strong>Description</strong><br /><br />
                   <Input
-                    placeholder='Comment'
+                    defaultValue={selectedRow?.description || ''}
                     variant="outlined"
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    placeholder='Description'
                   />
                 </Grid>
               </Grid>
+              <h4>Risk level</h4>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                <Grid item xs={12} md={12} lg={12} sm={12}>
+                    <strong>Risk level </strong><br /><br />
+                    <div style={{display:'flex'}}>
+                      <Avatar  style={{ background: selectedRow?.risk_level==='R1'?'green':(selectedRow?.risk_level==='R2')?'rgb(250, 218, 9)':(selectedRow?.risk_level==='R3')?'orange':'red' }}>{selectedRow?.risk_level}</Avatar>
+                      <Input
+                        sx={{width:'100%'}}
+                        defaultValue={selectedRow?.risk_level || ''}
+                        variant="outlined"
+                        color={selectedRow?.risk_level==='R1'?'success':(selectedRow?.risk_level==='R2')?'warning':'danger'}
+                        onChange={(e) => handleInputChange('risk_level', e.target.value)}
+
+                      />
+                    </div>
+                  </Grid>
+              </Grid>
               <h4>Component Severity per Stakes</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Safety </span><br />
+              <Grid item xs={12} md={6} lg={6} sm={12}>
+                  <strong>Severity max </strong><br /><br />
                   <div style={{display:'flex'}}>
-                    <Avatar circle style={{ background: selectedRow?.Severity_Max==='S1'?'green':(selectedRow?.Severity_Max==='S2')?'rgb(250, 218, 9)':(selectedRow?.Severity_Max==='S3')?'orange':'red' }}>{selectedRow?.Severity_Max}</Avatar>
+                    <Avatar  style={{ background: selectedRow?.severity_max==='S1'?'green':(selectedRow?.severity_max==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_max==='S3')?'orange':'red' }}>{selectedRow?.severity_max}</Avatar>
                     <Input
                       sx={{width:'100%'}}
-                      value={selectedRow?.Severity_Max || ''}
+                      defaultValue={selectedRow?.severity_max || ''}
                       variant="outlined"
-                      color={selectedRow?.Severity_Max==='S1'?'success':(selectedRow?.Severity_Max==='S2')?'warning':'danger'}
+                      color={selectedRow?.severity_max==='S1'?'success':(selectedRow?.severity_max==='S2')?'warning':'danger'}
+                      onChange={(e) => handleInputChange('severity_max', e.target.value)}
+
                     />
                   </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Operations </span><br />
-                  <Input
-                  readOnly
-                    // value={selectedRow?.Floor_ares || ''}
-                    // onChange={(e) => handleInputChange('Floor_ares', e.target.value)}
-                    variant="outlined"
-                  />
+                  <strong>Safety </strong><br /><br />
+                  <div style={{display:'flex'}}>
+                    <Avatar  style={{ background: selectedRow?.severity_safety==='S1'?'green':(selectedRow?.severity_safety==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_safety==='S3')?'orange':'red' }}>{selectedRow?.severity_safety}</Avatar>
+                    <Input
+                      sx={{width:'100%'}}
+                      defaultValue={selectedRow?.severity_safety || ''}
+                      variant="outlined"
+                      color={selectedRow?.severity_safety==='S1'?'success':(selectedRow?.severity_safety==='S2')?'warning':'danger'}
+                      onChange={(e) => handleInputChange('severity_safety', e.target.value)}
+
+                    />
+                  </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Work Conditions </span><br />
-                  <Input
-                    readOnly
-                    // value={selectedRow?.Floor_ares || ''}
-                    // onChange={(e) => handleInputChange('Floor_ares', e.target.value)}
-                    variant="outlined"
-                  />
+                  <strong>Operations </strong><br /><br />
+                    <div style={{display:'flex'}}>
+                      <Avatar  style={{ background: selectedRow?.severity_operations==='S1'?'green':(selectedRow?.severity_operations==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_operations==='S3')?'orange':'red' }}>{selectedRow?.severity_operations}</Avatar>
+                      <Input
+                        sx={{width:'100%'}}
+                        defaultValue={selectedRow?.severity_operations || ''}
+                        variant="outlined"
+                        color={selectedRow?.severity_operations==='S1'?'success':(selectedRow?.severity_operations==='S2')?'warning':'danger'}
+                        onChange={(e) => handleInputChange('severity_operations', e.target.value)}
+                      />
+                    </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Environment</span><br />
-                  <Input
-                    readOnly
-                    // value={selectedRow?.Floor_ares || ''}
-                    // onChange={(e) => handleInputChange('Floor_ares', e.target.value)}
-                    variant="outlined"
-                  />
+                  <strong>Work Conditions </strong><br /><br />
+                    <div style={{display:'flex'}}>
+                      <Avatar  style={{ background: selectedRow?.severity_work_conditions==='S1'?'green':(selectedRow?.severity_work_conditions==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_work_conditions==='S3')?'orange':'red' }}>{selectedRow?.severity_work_conditions}</Avatar>
+                      <Input
+                        sx={{width:'100%'}}
+                        defaultValue={selectedRow?.severity_work_conditions || ''}
+                        variant="outlined"
+                        color={selectedRow?.severity_work_conditions==='S1'?'success':(selectedRow?.severity_work_conditions==='S2')?'warning':'danger'}
+                        onChange={(e) => handleInputChange('severity_work_conditions', e.target.value)}
+                      />
+                    </div>
+                </Grid>
+                <Grid item xs={12} md={6} lg={6} sm={12}>
+                  <strong>Environment</strong><br /><br />
+                    <div style={{display:'flex'}}>
+                      <Avatar  style={{ background: selectedRow?.severity_environment==='S1'?'green':(selectedRow?.severity_environment==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_environment==='S3')?'orange':'red' }}>{selectedRow?.severity_environment}</Avatar>
+                      <Input
+                        sx={{width:'100%'}}
+                        defaultValue={selectedRow?.severity_environment || ''}
+                        variant="outlined"
+                        color={selectedRow?.severity_environment==='S1'?'success':(selectedRow?.severity_environment==='S2')?'warning':'danger'}
+                        onChange={(e) => handleInputChange('severity_environment', e.target.value)}
+                      />
+                    </div>
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>Image </span><br />
-                  <Input
-                    readOnly
-                    // value={selectedRow?.Floor_ares || ''}
-                    // onChange={(e) => handleInputChange('Floor_ares', e.target.value)}
-                    variant="outlined"
-                  />
+                  <strong>Component image </strong><br /><br />
+                  <img src={`http://127.0.0.1:8000/${selectedRow?.severity_image}`} alt={selectedRow?.severity_image} style={{width:'100%'}}/>
                 </Grid>
               </Grid>
             </div>
             {
               isDirty&&(
                 <div className='action_buttons_validate_cancel'>
-                  <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={() => setOpen(false)}>Cancel</Button>
-                  <Button className='checkBtn' startDecorator={<FaCheck />}>Validate</Button>
+                  <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={()=>setOpen(false)}>{t("cancel")}</Button>
+                  <Button className='checkBtn' startDecorator={<FaCheck />} onClick={handleUpdateComponent}>{t('users.update')} {t('component')}</Button>
                 </div>
               )
             }
@@ -444,7 +1049,7 @@ export default function SuperAdminAllComponents() {
         </Sheet>
       </Modal>
 
-      {/* Modal delete site */}
+      {/* Modal delete component */}
       <Modal open={openDelete} onClose={() => setOpenDelete(false)}>
         <ModalDialog variant="outlined" role="alertdialog">
           <DialogTitle>
@@ -453,10 +1058,10 @@ export default function SuperAdminAllComponents() {
           </DialogTitle>
           <Divider />
           <DialogContent>
-            Are you sure you want to delete {deletedRow?.Name} ?
+            Are you sure you want to delete this component?
           </DialogContent>
           <DialogActions>
-            <Button variant="solid" color="danger" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
+            <Button variant="solid" color="danger" onClick={confirmDelete}>
               Confirm
             </Button>
             <Button variant="plain" color="neutral" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
@@ -464,6 +1069,655 @@ export default function SuperAdminAllComponents() {
             </Button>
           </DialogActions>
         </ModalDialog>
+      </Modal>
+
+      {/* Modal add component */}
+      <Modal
+        aria-labelledby="modal-title"
+        aria-describedby="modal-desc"
+        open={openAddComponent}
+        onClose={() => setOpenAddComponent(false)}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Sheet
+          variant="outlined"
+          sx={{
+            width:'70%',
+            maxHeight:'85vh',
+            borderRadius: 'md',
+            p: 3,
+            boxShadow: 'lg',
+            overflowY:'scroll'
+          }}
+        >
+          <ModalClose variant="plain" sx={{ m: 1 }} />
+          <Typography
+            component="h2"
+            id="modal-title"
+            level="h2"
+            textColor="inherit"
+            fontWeight="lg"
+            mb={1}
+          > 
+            <IoMdCreate style={{color:'rgb(3, 110, 74)'}}/>
+            <span>
+              Create component
+            </span>
+          </Typography>
+          <div>
+            <Divider>
+              <h3 id='title_H3'>
+                <IoIosInformationCircle/>
+                <span>
+                    Information
+                </span>
+              </h3>
+            </Divider>
+            <div className='info-container'>
+              <Divider>
+                <h4>Knowledge base linker</h4>
+              </Divider>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+              <Grid item xs={12} md={8} lg={6} sm={12}>
+                  <strong>Standard Component Type</strong><br /><br />
+                  <Cascader
+                      data={cascaderDataComponentsType.map((type)=>({label:`Immobilier - Générique ${type.value}`,value:type.value}))}
+                      // defaultValue={cascaderDataComponentsType.find((type)=>type.value===selectedRow?.name)?.label || ''}
+                      columnWidth={600}
+                      placeholder='Type'
+                      style={{width:'100%'}}
+                      popupStyle={{width:'30%',zIndex:10000}}
+                      onChange={(value) =>setNewComponent({...newComponent,name:value})}  
+                  />
+
+                </Grid>
+                <Grid item xs={12} md={8} lg={6} sm={12}>
+                  <strong>Characteristics</strong><br /><br />
+                  <Cascader
+                      data={cascaderDataComponentsCharacteristics}
+                      columnWidth={600}
+                      style={{width:'100%'}}
+                      popupStyle={{width:'30%',zIndex:10000}}
+                      onChange={(value) =>setNewComponent({...newComponent,characteristics:value})} 
+                      placeholder='characteristics' 
+                  />
+                </Grid>
+              </Grid>
+              <Divider>
+                <h4>Component Identification</h4>
+              </Divider>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                <Grid item xs={12} md={4} lg={6} sm={12}>
+                  <strong>Code</strong><br />
+                  <Input
+                    onChange={(e) =>setNewComponent({...newComponent,code:e.target.value})}  
+                    placeholder='code'
+                  />
+                </Grid>
+                <Grid item xs={12} md={8} lg={6} sm={12}>
+                  <strong>Parent Building</strong><br />
+                  <Cascader
+                      data={buildings?.buildings?.map((building) => ({ label: building.name, value: building.id }))}
+                      placeholder="Parent Site"
+                      popupStyle={{ width: '25%', zIndex: 10000 }}
+                      columnWidth={350}
+                      style={{ width: '100%' }}
+                      onChange={(value) =>setNewComponent({...newComponent,building_id:value})}  
+                  />
+                </Grid>
+              </Grid>
+              <Divider>
+                <h4>Information</h4>
+              </Divider>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                <Grid item xs={12} md={8} lg={6} sm={12}>
+                  <strong>Quantity</strong><br /><br />
+                  <Input
+                    placeholder="Quantity"
+                    onChange={(e) =>setNewComponent({...newComponent,quantity:e.target.value})}  
+                    variant="outlined"
+                    type='number'
+                  />
+                </Grid>
+                <Grid item xs={12} md={4} lg={6} sm={12}>
+                  <strong>Unit</strong><br /><br />
+                  <Cascader
+                      data={cascaderDataComponentsUnit}
+                      columnWidth={600}
+                      style={{width:'100%'}}
+                      popupStyle={{width:'30%',zIndex:10000}}
+                      placeholder="Unit"
+                      onChange={(value) =>setNewComponent({...newComponent,unit:value})} 
+                  />
+                </Grid>
+                <Grid item xs={12} md={4} lg={6} sm={12}>
+                  <strong>Last rehabilitation year</strong><br /><br />
+                  <Input
+                    type='number'
+                    placeholder="Last rehabilitation year"
+                    onChange={(e) =>setNewComponent({...newComponent,last_rehabilitation_year:e.target.value})} 
+                    variant="outlined"
+                  />
+                </Grid>
+              </Grid>
+              <Divider>
+                <h4>Ageing and severity</h4>
+              </Divider>
+              <h4>Component condition</h4>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                <Grid item xs={12} md={8} lg={6} sm={12}>
+                  <strong>Condition <span style={{color:'green'}}>C1</span> - <span style={{color:'rgb(250, 218, 9)'}}>C2</span> - <span style={{color:'orange'}}>C3</span> - <span style={{color:'red'}}>C4</span></strong><br /><br />
+                  <div style={{display:'flex',width:'100%'}}>
+                    <Avatar   style={{ background: newComponent?.condition==='C1'?'green':(newComponent?.condition==='C2')?'rgb(250, 218, 9)':(newComponent?.condition==='C3')?'orange':'red' }}>{(newComponent?.condition)?newComponent?.condition:'?'}</Avatar>
+                    <Input
+                      onChange={(e) =>setNewComponent({...newComponent,condition:e.target.value})} 
+                      placeholder="Condition"
+                      variant="outlined"
+                      sx={{width:'100%'}}
+                      color={newComponent?.condition==='C1'?'success':(newComponent?.condition==='C2')?'warning':'danger'}
+                    />
+                  </div>
+                </Grid>
+                <Grid item xs={12} md={8} lg={6} sm={12}>
+                  <strong>Is condition assumed ?</strong><br /><br />
+                  <Toggle checked={(newComponent?.condition)?true:false} color="cyan">
+                  </Toggle>
+                </Grid>
+                <Grid item xs={12} md={12} lg={12} sm={12}>
+                  <strong>Description</strong><br /><br />
+                  <Textarea
+                    minRows={8}
+                    variant="outlined"
+                    onChange={(e) =>setNewComponent({...newComponent,description:e.target.value})} 
+                    placeholder='Description'
+                  />
+                </Grid>
+              </Grid>
+              <h4>Risk level</h4>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                <Grid item xs={12} md={12} lg={12} sm={12}>
+                    <strong>Risk level <span style={{color:'green'}}>R1</span> - <span style={{color:'rgb(250, 218, 9)'}}>R2</span> - <span style={{color:'orange'}}>R3</span> - <span style={{color:'red'}}>R4</span></strong><br /><br />
+                    <div style={{display:'flex'}}>
+                      <Avatar  style={{ background: newComponent?.risk_level==='R1'?'green':(newComponent?.risk_level==='R2')?'rgb(250, 218, 9)':(newComponent?.risk_level==='R3')?'orange':'red' }}>{(newComponent?.risk_level)?newComponent?.risk_level:'?'}</Avatar>
+                      <Input
+                        sx={{width:'100%'}}
+                        variant="outlined"
+                        color={newComponent?.risk_level==='R1'?'success':(newComponent?.risk_level==='R2')?'warning':'danger'}
+                        onChange={(e) =>setNewComponent({...newComponent,risk_level:e.target.value})} 
+                        placeholder='Risk level'
+                      />
+                    </div>
+                  </Grid>
+              </Grid>
+              <h4>Component Severity per Stakes</h4>
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+              <Grid item xs={12} md={6} lg={6} sm={12}>
+                  <strong>Severity max <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                  <div style={{display:'flex'}}>
+                    <Avatar  style={{ background: newComponent?.severity_max==='S1'?'green':(newComponent?.severity_max==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_max==='S3')?'orange':'red' }}>{(newComponent?.severity_max)?newComponent?.severity_max:'?'}</Avatar>
+                    <Input
+                      sx={{width:'100%'}}
+                      variant="outlined"
+                      color={newComponent?.severity_max==='S1'?'success':(newComponent?.severity_max==='S2')?'warning':'danger'}
+                      onChange={(e) =>setNewComponent({...newComponent,severity_max:e.target.value})} 
+                      placeholder='Severity max '
+                    />
+                  </div>
+                </Grid>
+                <Grid item xs={12} md={6} lg={6} sm={12}>
+                  <strong>Safety <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                  <div style={{display:'flex'}}>
+                    <Avatar  style={{ background: newComponent?.severity_safety==='S1'?'green':(newComponent?.severity_safety==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_safety==='S3')?'orange':'red' }}>{(newComponent?.severity_safety)?newComponent?.severity_safety:'?'}</Avatar>
+                    <Input
+                      sx={{width:'100%'}}
+                      variant="outlined"
+                      color={newComponent?.severity_safety==='S1'?'success':(newComponent?.severity_safety==='S2')?'warning':'danger'}
+                      onChange={(e) =>setNewComponent({...newComponent,severity_safety:e.target.value})} 
+                      placeholder='Safety'
+                    />
+                  </div>
+                </Grid>
+                <Grid item xs={12} md={6} lg={6} sm={12}>
+                  <strong>Operations <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                    <div style={{display:'flex'}}>
+                      <Avatar  style={{ background: newComponent?.severity_operations==='S1'?'green':(newComponent?.severity_operations==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_operations==='S3')?'orange':'red' }}>{(newComponent?.severity_operations)?newComponent?.severity_operations:'?'}</Avatar>
+                      <Input
+                        sx={{width:'100%'}}
+                        variant="outlined"
+                        color={newComponent?.severity_operations==='S1'?'success':(newComponent?.severity_operations==='S2')?'warning':'danger'}
+                        onChange={(e) =>setNewComponent({...newComponent,severity_operations:e.target.value})} 
+                        placeholder='Operations'
+                      />
+                    </div>
+                </Grid>
+                <Grid item xs={12} md={6} lg={6} sm={12}>
+                  <strong>Work Conditions <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                    <div style={{display:'flex'}}>
+                      <Avatar  style={{ background: newComponent?.severity_work_conditions==='S1'?'green':(newComponent?.severity_work_conditions==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_work_conditions==='S3')?'orange':'red' }}>{(newComponent?.severity_work_conditions)?newComponent?.severity_work_conditions:'?'}</Avatar>
+                      <Input
+                        sx={{width:'100%'}}
+                        variant="outlined"
+                        color={newComponent?.severity_work_conditions==='S1'?'success':(newComponent?.severity_work_conditions==='S2')?'warning':'danger'}
+                        onChange={(e) =>setNewComponent({...newComponent,severity_work_conditions:e.target.value})} 
+                        placeholder='Operations'
+
+                      />
+                    </div>
+                </Grid>
+                <Grid item xs={12} md={6} lg={6} sm={12}>
+                  <strong>Environment <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                    <div style={{display:'flex'}}>
+                      <Avatar  style={{ background: newComponent?.severity_environment==='S1'?'green':(newComponent?.severity_environment==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_environment==='S3')?'orange':'red' }}>{(newComponent?.severity_environment)?newComponent?.severity_environment:'?'}</Avatar>
+                      <Input
+                        sx={{width:'100%'}}
+                        variant="outlined"
+                        color={newComponent?.severity_environment==='S1'?'success':(newComponent?.severity_environment==='S2')?'warning':'danger'}
+                        placeholder='Environment'
+                        onChange={(e) =>setNewComponent({...newComponent,severity_environment:e.target.value})} 
+                      />
+                    </div>
+                </Grid>
+                <Grid item xs={12} md={12} lg={12} sm={12}>
+                  <strong>Upload component image </strong><br /><br />
+                  <Uploader draggable onChange={handleFileUpload}>
+                    <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span>Click or Drag files to this area to upload</span>
+                    </div>
+                  </Uploader>
+                  {imageURL && (
+                    <div style={{ marginTop: 20 }}>
+                      <h3>Uploaded Image Preview:</h3>
+                      <img src={imageURL} alt="Uploaded Preview" style={{ maxWidth: '100%' }} />
+                    </div>
+                  )}
+                </Grid>
+              </Grid>
+            </div>
+              <div className='action_buttons_validate_cancel'>
+                <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={emptyFields}>{t("cancel")}</Button>
+                <Button className='checkBtn' startDecorator={<FaCheck />} onClick={handleAddComponent}>{t('addComponent')}</Button>
+              </div>
+          </div>
+        </Sheet>
+      </Modal>
+
+      {/*Loader component */}
+      <Modal
+          aria-labelledby="modal-title"
+          aria-describedby="modal-desc"
+          open={LoaderState}
+          onClose={() => setLoaderState(false)}
+          sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+      >
+        <LoaderComponent/>
+      </Modal>
+
+      {/* selected component Incidents  */}
+      <Modal
+        aria-labelledby="modal-title"
+        aria-describedby="modal-desc"
+        open={IncidentsModal}
+        onClose={() =>{
+          setIncidentsModal(false);
+          setIsEditIncident(false);
+          setNewIncident({title:null,description:null,status:null,user_id:null,component_id:null,building_id:null,created_at:null,updated_at:null});
+        }}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' ,mt: 5,paddingLeft:'60px' ,height:'100%',width:'100%'}}
+      >
+        <Sheet
+          variant="outlined"
+          sx={{
+            width: '100%',
+            height: '100%',
+            borderRadius: 'md',
+            p: 3,
+            pt: 4, 
+            marginTop:'80px',
+            boxShadow: 'lg',
+            overflowY: 'scroll',
+            overflowX: 'hidden',
+            background:'transparent'
+            // background:'linear-gradient(124deg, rgba(7, 29, 75, 0.673) 0%, rgba(9, 100, 61, 0.673) 100%)',
+
+          }}
+        >
+          <ModalClose variant="plain" sx={{ m: 1 }} />
+          <div style={{
+            width:'92%',
+            display:'flex',
+            justifyContent:'center',
+            alignItems:'center',
+            background:'white',
+            marginLeft:'30px',
+            marginBottom:'20px',
+            borderRadius:'10px',
+            boxShadow:'0px 0 2px rgb(1, 138, 143)'
+            }}>
+              <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
+                  {[t('buildings'),buildings?.buildings?.find((b)=>b.id===selectedRow?.building_id)?.name,t('components'),selectedRow?.name].map((item) => (
+                  <Link className='Link_breadcrumbs' key={item} color="neutral" href="#sizes">
+                    <h5>
+                      {item}
+                    </h5>
+                  </Link>
+                  ))}
+              </Breadcrumbs>
+          </div>
+          <div style={{position:'fixed',bottom:'20px',right:'10px'}}>
+            <Whisper  followCursor placement='left' speaker={<Tooltip style={{zIndex:10000}}>{t('addIncident')}</Tooltip>}>
+              <Fab color="primary" aria-label="add"  >
+                <AddIcon />
+              </Fab>
+            </Whisper>
+          </div>
+          <div style={{
+            width:'100%',
+            height:'100%',
+            textAlign:'center',
+            // flexWrap:'wrap',
+            overflowY: 'scroll',
+            overflowX: 'hidden',
+            paddingBottom: '100px',
+            paddingLeft:'30px'
+          }}>
+          {selectedRow ? (
+              selectedRow?.incidents?.map((incident,index)=>(
+                <Card variant="outlined" sx={{ width: '90%' ,height:'118vh',mb:3}}>
+                  <Sheet variant="outlined" color="neutral" sx={{ p: 1,height:'118vh',borderRadius:'10px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
+                  <CardContent>
+                    <center>
+                    <h5>Incident {index+1}</h5>
+                  </center>
+                  <center>
+                        {
+                          isEditIncident&&(incidentID===incident?.id)?(
+                            <>
+                            <h5 style={{ mb: 2 ,
+                              background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                              width: 'fit-content',
+                              color:'transparent',
+                              backgroundClip: 'text',
+                              webkitBackgroundClip: 'text',
+                              transition: '0.3s'
+                              }}>
+                            Title
+                            </h5>
+                            <Input
+                            sx={{width:'100%'}}
+                            defaultValue={incident?.title}
+                            onChange={(e)=>handleAddIncidentInputs('title',e.target.value)}  
+                            />
+                            </>
+                          ):(
+                            <h3 style={{ mb: 2 ,
+                              background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                              width: 'fit-content',
+                              color:'transparent',
+                              backgroundClip: 'text',
+                              webkitBackgroundClip: 'text',
+                              transition: '0.3s'
+                              }}>
+                            {incident.title}
+                            </h3> 
+                          )
+                        }
+                  </center>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
+                    <center>
+                      <h5 
+                      style={{ mb: 2 ,
+                        background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                        width: 'fit-content',
+                        color:'transparent',
+                        backgroundClip: 'text',
+                        webkitBackgroundClip: 'text',
+                        transition: '0.3s'
+                        }}>Description:</h5>
+                    </center>
+                      
+                      <br />
+                    <span >
+                      {
+                        isEditIncident&&(incidentID===incident?.id)?(
+                          <Textarea
+                          defaultValue={incident?.description}
+                          minRows={5}
+                          onChange={(e)=>handleAddIncidentInputs('description',e.target.value)}
+                          />
+                        ):(
+                          incident?.description
+                        )
+                      }
+                    </span>
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
+                    <center>
+                      <h5 
+                      style={{ mb: 2 ,
+                        background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                        width: 'fit-content',
+                        color:'transparent',
+                        backgroundClip: 'text',
+                        webkitBackgroundClip: 'text',
+                        transition: '0.3s'
+                        }}>Status:</h5> 
+                    </center>
+                      
+                      <br />
+                    {
+                      isEditIncident&&(incidentID===incident?.id)?(
+                        <Typography component='div' sx={{
+                          width:'100%',
+                          display:'flex',
+                          justifyContent:'space-around',
+                          alignItems:'center'
+                        }}>
+                          <Chip
+                          variant='solid'
+                          color={newIncident?.status?(newIncident?.status==="Open"?'success':'neutral'):(incident?.status==="Open"?'success':'neutral')}
+                          onClick={()=>setNewIncident({...newIncident,status:'Open'})}
+                          sx={{
+                            width:'300px',
+                            height:'30px'
+                          }}
+                          >
+                            {(newIncident?.status==="Open")&&<FaCheck/>}&nbsp;&nbsp;Open
+                          </Chip>
+                          <Chip
+                          variant='solid'
+                          color={newIncident?.status?(newIncident?.status==="InProgress"?'warning':'neutral'):(incident?.status==="InProgress"?'warning':'neutral')}
+                          onClick={()=>setNewIncident({...newIncident,status:'InProgress'})}
+                          sx={{
+                            width:'300px',
+                            height:'30px'
+                          }}
+                          >
+                            {(newIncident?.status==="InProgress")&&<FaCheck/>}&nbsp;&nbsp;In progress
+                          </Chip>
+                          <Chip
+                          variant='solid'
+                          color={newIncident?.status?(newIncident?.status==="Closed"?'danger':'neutral'):(incident?.status==="Closed"?'danger':'neutral')}
+                          onClick={()=>setNewIncident({...newIncident,status:'Closed'})}
+                          sx={{
+                            width:'300px',
+                            height:'30px'
+                          }}
+                          >
+                            {(newIncident?.status==="Closed")&&<FaCheck/>}&nbsp;&nbsp;Closed
+                          </Chip>
+                        </Typography>
+                      ):(
+                        <Chip
+                        variant='solid'
+                        color={getStatusColor(incident?.status)}
+                        >
+                          {incident?.status}
+                        </Chip>
+                      )
+                    }
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
+                    <center>
+                      <h5 
+                      style={{ mb: 2 ,
+                        background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                        width: 'fit-content',
+                        color:'transparent',
+                        backgroundClip: 'text',
+                        webkitBackgroundClip: 'text',
+                        transition: '0.3s'
+                        }}>Created by:</h5>
+                    </center>
+                      
+                      <br />
+                    {
+                      isEditIncident&&(incidentID===incident?.id)?(
+                        <Cascader
+                            data={cascaderDataUsers}
+                            defaultValue={cascaderDataUsers.find((user)=>user.value===incident?.user_id)?.value}
+                            placeholder="Users" 
+                            columnWidth={1250}
+                            style={{width:'100%'}}
+                            popupStyle={{width:'84%',zIndex:100000}}
+                            onChange={(value)=>handleAddIncidentInputs('user_id',value)}
+                        />
+                      ):(
+                        <p>
+                          {getUserName(incident?.user_id)}
+                        </p>
+                      )
+                    }
+                  </Typography>
+                  {
+                    isEditIncident&&(incidentID===incident?.id)?(
+                        <DateRangePicker
+                          character=' - '
+                          style={{width:'100%',zIndex:10000}}
+                          menuStyle={{zIndex:10000}}
+                          defaultValue={[dayjs(incident?.created_at), dayjs(incident?.updated_at)]}
+                          onChange={(value)=>setNewIncident({...newIncident,created_at:dayjs(value[0]).format('MM/DD/YYYY'),updated_at:dayjs(value[1]).format('MM/DD/YYYY')})}
+                        />
+                    ):(
+                      <>
+                      <Typography variant="body2" sx={{ mb: 2 }}>
+                        <center>
+                          <h5 
+                          style={{ mb: 2 ,
+                            background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                            width: 'fit-content',
+                            color:'transparent',
+                            backgroundClip: 'text',
+                            webkitBackgroundClip: 'text',
+                            transition: '0.3s'
+                            }}>Date Reported:</h5>
+                        </center>
+                          
+                          <br />
+                          {
+                            new Date(incident?.created_at).toLocaleDateString()
+                          }
+                      </Typography>
+                      <Typography variant="body2" sx={{ mb: 2 }}>
+                        <center>
+                          <h5 
+                          style={{ mb: 2 ,
+                            background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                            width: 'fit-content',
+                            color:'transparent',
+                            backgroundClip: 'text',
+                            webkitBackgroundClip: 'text',
+                            transition: '0.3s'
+                            }}>Last Updated:</h5>
+                        </center>
+                          
+                          <br />
+                          {
+                            new Date(incident?.updated_at).toLocaleDateString()
+                          }
+                      </Typography>
+                      </>
+                    )
+                  }
+                  <Typography variant="body2" sx={{ mb: 2 }}>
+                    <center>
+                      <h5 
+                      style={{ mb: 2 ,
+                        background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                        width: 'fit-content',
+                        color:'transparent',
+                        backgroundClip: 'text',
+                        webkitBackgroundClip: 'text',
+                        transition: '0.3s'
+                        }}>Parent building:</h5>
+                    </center>
+                      
+                      <br />
+                      {
+                        isEditIncident&&(incidentID===incident?.id)?(
+                          <Cascader
+                            data={cascaderDataBuildings}
+                            defaultValue={cascaderDataBuildings.find((b)=>b.value===incident?.building_id)?.value}
+                            placeholder="Buildings" 
+                            columnWidth={1250}
+                            style={{width:'100%'}}
+                            popupStyle={{width:'84%',zIndex:100000}}
+                            onChange={(value)=>handleAddIncidentInputs('building_id',value)}
+                          />
+                        ):(
+                          new Date(incident?.updated_at).toLocaleDateString()
+                        )
+                      }
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
+                    <center>
+                      <h5 
+                      style={{ mb: 2 ,
+                        background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                        width: 'fit-content',
+                        color:'transparent',
+                        backgroundClip: 'text',
+                        webkitBackgroundClip: 'text',
+                        transition: '0.3s'
+                        }}>Parent component:</h5>
+                    </center>
+                      
+                      <br />
+                      {
+                        isEditIncident&&(incidentID===incident?.id)?(
+                          <Cascader
+                            data={cascaderDataComponents}
+                            defaultValue={cascaderDataComponents.find((b)=>b.value===incident?.component_id)?.value}
+                            placeholder="Components" 
+                            columnWidth={1250}
+                            style={{width:'100%'}}
+                            popupStyle={{width:'84%',zIndex:100000}}
+                            onChange={(value)=>handleAddIncidentInputs('component_id',value)}
+                          />
+                        ):(
+                          new Date(incident?.updated_at).toLocaleDateString()
+                        )
+                      }
+                  </Typography>
+                  </CardContent>
+                    <CardContent orientation="horizontal" sx={{width:'100%',display:'flex',justifyContent:'space-around',position:'absolute',bottom:'10px'}}>
+                      {
+                        isEditIncident&&(incidentID===incident?.id)?(
+                          <Button color='info' level="body-xs" onClick={handleSaveIncident}>{t('users.save')}</Button>
+                        ):(
+                          <Button color='info' level="body-xs" onClick={()=>handleUpdateIncidentInputs(incident?.id)}>{t('users.update')}</Button>
+                        )
+                      }
+                      <Divider orientation="vertical"/>
+                      <Button color='info' level="body-xs">{t('users.delete')}</Button>
+                    </CardContent>
+                  </Sheet>
+                </Card>
+              ))
+            ) : (
+              <Typography>No incident selected</Typography>
+            )}
+            </div>
+        </Sheet>
       </Modal>
 
       </div>

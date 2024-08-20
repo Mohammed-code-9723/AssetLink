@@ -6,7 +6,7 @@ import axios from 'axios';
 import { Button, Switch,Grid } from '@mui/joy';
 import Typography from '@mui/joy/Typography';
 
-import { SiTestrail } from 'react-icons/si'
+import { SiTestrail } from 'react-icons/si';
 import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import Link from '@mui/joy/Link';
 
@@ -18,7 +18,7 @@ import { MdAdd } from "react-icons/md";
 import { Cascader } from 'rsuite';
 import Table from '@mui/joy/Table';
 
-import { Pagination } from 'rsuite';
+import { Pagination,Notification } from 'rsuite';
 import { Divider } from '@mui/joy';
 
 import Sheet from '@mui/joy/Sheet';
@@ -26,7 +26,6 @@ import Sheet from '@mui/joy/Sheet';
 import '../styles/Building.css';
 
 import { IoIosInformationCircle } from "react-icons/io";
-
 import Modal from '@mui/joy/Modal';
 import ModalClose from '@mui/joy/ModalClose';
 import { FaCheck } from "react-icons/fa";
@@ -36,7 +35,6 @@ import { IoMdCreate } from "react-icons/io";
 import { useTranslation } from 'react-i18next';
 
 
-
 import DialogTitle from '@mui/joy/DialogTitle';
 import DialogContent from '@mui/joy/DialogContent';
 import DialogActions from '@mui/joy/DialogActions';
@@ -44,6 +42,10 @@ import ModalDialog from '@mui/joy/ModalDialog';
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 
 import '../styles/SiteBuildingsMap.css';
+
+import { useDispatch,useSelector } from 'react-redux';
+import {sitesData, projectsData } from '../features/SuperAdminSlice';
+import LoaderComponent from './LoaderComponent';
 
 
 const createCustomIcon = () => {
@@ -72,7 +74,7 @@ function MoveToLocation({ lat, lon }) {
     return null;
 }
 
-export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
+export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBuildings, chosenSiteBuildings }) {
 
     const [polygonCoords, setPolygonCoords] = useState([]);
     const [customIcon, setCustomIcon] = useState(createCustomIcon());
@@ -88,7 +90,11 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
     const [openDelete, setOpenDelete] = React.useState(false);
     const [deletedRow,setDeletedRow]=useState({});
     const {t}=useTranslation();
-    
+    const token=localStorage.getItem('token');
+    const dispatch = useDispatch();
+
+    const { sites, statusSites , errorSites } = useSelector((state) => state.sites);
+
     useEffect(() => {
         const icon = createCustomIcon();
         setCustomIcon(icon);
@@ -97,18 +103,23 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
     useEffect(() => {
         if (chosenSiteBuildings && chosenSiteBuildings.length > 0) {
             const initialPolygonCoords = chosenSiteBuildings.map(building => {
-                const [latitude, longitude] = building.location.slice(1, -1).split(',').map(coord => parseFloat(coord));
+                const latitude = JSON.parse(building.location)[0];
+                const longitude = JSON.parse(building.location)[1];
                 return [latitude, longitude];
             });
             setPolygonCoords(initialPolygonCoords);
         }
     }, [chosenSiteBuildings]);
 
-    const firstBuildingLocation = (chosenSiteBuildings && chosenSiteBuildings.length > 0)
-        ? chosenSiteBuildings[0].location.slice(1, -1).split(',').map(coord => parseFloat(coord))
-        : [33.908089, -5.578308];
+    // const firstBuildingLocation = (chosenSiteBuildings && chosenSiteBuildings.length > 0)
+        // ? [JSON.parse(chosenSiteBuildings[0].location)[0],JSON.parse(chosenSiteBuildings[0].location)[1]]
+        // : [33.908089, -5.578308];
 
-        
+        const [LoaderState,setLoaderState]=useState(false);
+        const [notif,setNotif]=useState(false);
+        const [buildingSite,setBuildingSite]=useState({});
+        const [message,setMessage]=useState('');
+      
 
         const emptyFields=()=>{
             setNewBuilding({Name:'',Activity:'',Code:'',Site:'',ConstructionYear:'',LevelCount:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_ares:'',Comment:''});
@@ -116,6 +127,7 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
 
         const handleRowClick = (row) => {
             setSelectedRow(row);
+            setBuildingSite(sites?.find((site)=>site.id===row.site_id));
             setOpen(true);
             setIsDirty(false);
         };
@@ -127,23 +139,86 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
             }));
             setIsDirty(true);
         };
-        
+
         const HandleDelete=(row)=>{
             setOpenDelete(true);
             setDeletedRow(row);
+            setBuildingSite(sites?.find((site)=>site.id===row.site_id));
         }
+        
+        const confirmDelete = async () => { 
+            try {
+                setLoaderState(true);
+                setOpenDelete(false);
+                
+                const response = await fetch(`http://127.0.0.1:8000/api/auth/buildings/${deletedRow.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    
+                });
+        
+                const result = await response.json();
+        
+                if (response.ok) {
+                    setNotif(true);
+                    setMessage(result.message);
+                    setChosenSiteBuildings(chosenSiteBuildings.filter((b)=>b.id!==deletedRow.id));
+                    dispatch(sitesData(token)).then(()=>{
+                        setAllSites(sites);
+                    })
+                } else {
+                    console.error('Failed to delete the building:', result);
+                    alert('Failed to delete the building.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the building.');
+            }
+        };
+        
+
+          useEffect(()=>{
+            const intervalLoader=setTimeout(() => {
+              setLoaderState(false);
+            }, 3000);
+            return ()=>clearTimeout(intervalLoader);
+          },[LoaderState]);
+        
+          useEffect(()=>{
+            const intervalLoader=setTimeout(() => {
+              setNotif(false);
+              setMessage(null);
+            }, 6000);
+            return ()=>clearTimeout(intervalLoader);
+          },[notif]);
+
+  const formatCascaderDataSite = (sites) => {
+    const sitess = [...new Set(sites?.map((site) =>({name: site.name,code:site.code})))];
+    
+    return sitess.map((site) => ({
+      label: `${site.code} - ${site.name}`,
+      value: site.code,
+    }));
+  };
+  const cascaderDataSites = formatCascaderDataSite(sites);
 
     return (
         <div>
             <div style={{ flex: 1, height: '80vh',marginTop:'20px' }}>
-                <MapContainer center={firstBuildingLocation} zoom={6} style={{ height: '100%', width: '100%' }}>
+                <MapContainer center={[33.908089, -5.578308]} zoom={6} style={{ height: '100%', width: '100%' }}>
                     <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     />
                     {chosenSiteBuildings && chosenSiteBuildings.length > 0 && (
                         chosenSiteBuildings.map((loc, idx) => {
-                            const [latitude, longitude] = loc.location.slice(1, -1).split(',').map(coord => parseFloat(coord));
+                            // const [latitude, longitude] = loc.location.slice(1, -1).split(',').map(coord => parseFloat(coord));
+                            const latitudeLongitude = JSON.parse(loc.location);
+                            let latitude=latitudeLongitude[0];
+                            let longitude=latitudeLongitude[1];
                             return (
                                 <Marker key={idx} position={[latitude, longitude]} icon={customIcon}>
                                     <Popup>
@@ -187,6 +262,13 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                     <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> {t('Buildings')} </span></h2>
                     <img src="/assets/Buildings.svg" alt="bui_img" />
                 </div>
+                {
+                    (message&&notif)&&(
+                        <Notification style={{width:'100%',zIndex: 100000 }} showIcon type="success" color='success' closable>
+                        <strong><FaCheck/></strong> {message && message}.
+                        </Notification>
+                    )
+                }
                 <div className='action_bottons'>
                 <h6><BsLayersFill size={22}/>&nbsp;&nbsp;<span>Current</span></h6>
                 <h6><MdDelete size={22}/>&nbsp;&nbsp;<span>Recently deleted</span></h6>
@@ -257,7 +339,9 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                     {
                         chosenSiteBuildings.length>0?(
                             chosenSiteBuildings.map((site, idx) => {
-                                const [latitude, longitude] = site.location.slice(1, -1).split(',').map(coord => parseFloat(coord));
+                                const latitudeLongitude = JSON.parse(site.location);
+                                let latitude=latitudeLongitude[0];
+                                let longitude=latitudeLongitude[1];
                                 return (
                                     <tr key={site.code} onClick={()=>handleRowClick(site)} className='table_row'>
                                     <td>{site.code}</td>
@@ -274,14 +358,16 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                                     key={idx} onClick={() => setTargetLocation([latitude, longitude])}
                                     style={{width:'100%'}}>
                                         <Button sx={{
-                                            backgroundColor: 'blue',
-                                            marginRight:'5px',
-                                            width:'100%'
-                                        }}>Show details</Button>
-                                        <Button sx={{
-                                            backgroundColor: 'red',
-                                            width:'100%'
-                                        }}>Delete building</Button>
+                                            background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
+                                            zIndex:999
+                                            }}
+                                            onClick={(e)=>{
+                                            e.stopPropagation();
+                                            HandleDelete(site)
+                                            }}
+                                            >
+                                            <MdDelete size={22}/>
+                                        </Button>
                                     </td>
                                     </td>
                                     </tr>
@@ -344,7 +430,7 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                 > 
                     <SiTestrail style={{color:'rgb(3, 110, 74)'}}/>
                     <span>
-                    Building {selectedRow!==null&&selectedRow.Name}
+                    Building {selectedRow!==null&&selectedRow.name}
                     </span>
                 </Typography>
                 <div>
@@ -362,7 +448,7 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                         <Grid item xs={12} md={12} lg={12} sm={12}>
                         <span>Name</span><br />
                         <Input
-                            value={selectedRow?.Name || ''}
+                            value={selectedRow?.name || ''}
                             onChange={(e) => handleInputChange('Name', e.target.value)}
                             variant="outlined"
                         />
@@ -370,7 +456,7 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                         <Grid item xs={12} md={6} lg={6} sm={12}>
                         <span>Code</span><br />
                         <Input
-                            value={selectedRow?.Code || ''}
+                            value={selectedRow?.code || ''}
                             onChange={(e) => handleInputChange('Code', e.target.value)}
                             variant="outlined"
                         />
@@ -378,8 +464,11 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                         <Grid item xs={12} md={6} lg={6} sm={12}>
                         <span>Parent Site</span><br />
                         <Cascader
-                            // data={data}
+                            // value={{label:buildingSite?.name,value:buildingSite?.code} || ''}
+                            data={cascaderDataSites}
                             placeholder="Parent Site" 
+                            popupStyle={{width:'25%',zIndex:10000}}
+                            columnWidth={350}
                             style={{width:'100%'}}
                         />
                         </Grid>
@@ -398,7 +487,7 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                         <Grid item xs={12} md={12} lg={12} sm={12}>
                         <span>Address</span><br />
                         <Input
-                            value={selectedRow?.Address || ''}
+                            value={selectedRow?.address || ''}
                             onChange={(e) => handleInputChange('Address', e.target.value)}
                             variant="outlined"
                         />
@@ -411,7 +500,7 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                         <Grid item xs={12} md={6} lg={6} sm={12}>
                         <span>Country</span><br />
                         <Input
-                            value={selectedRow?.Country || ''}
+                            value={buildingSite?.country || ''}
                             onChange={(e) => handleInputChange('Country', e.target.value)}
                             variant="outlined"
                         />
@@ -419,7 +508,7 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                         <Grid item xs={12} md={6} lg={6} sm={12}>
                         <span>Zipcode</span><br />
                         <Input
-                            value={selectedRow?.ZipCode || ''}
+                            value={buildingSite?.zipcode || ''}
                             onChange={(e) => handleInputChange('ZipCode', e.target.value)}
                             variant="outlined"
                         />
@@ -434,7 +523,7 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                         <Grid item xs={12} md={6} lg={6} sm={12}>
                         <span>City</span><br />
                         <Input
-                            value={selectedRow?.City || ''}
+                            value={buildingSite?.city || ''}
                             onChange={(e) => handleInputChange('City', e.target.value)}
                             variant="outlined"
                         />
@@ -454,21 +543,21 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                         <Grid item xs={12} md={6} lg={6} sm={12}>
                         <span>Level Count</span><br />
                         <Input
-                            value={selectedRow?.Level_count || ''}
+                            value={selectedRow?.level_count || ''}
                             variant="outlined"
                         />
                         </Grid>
                         <Grid item xs={12} md={6} lg={6} sm={12}>
                         <span>Construction year </span><br />
                         <Input
-                            value={selectedRow?.Construction_year || ''}
+                            value={selectedRow?.year_of_construction || ''}
                             variant="outlined"
                         />
                         </Grid>
                         <Grid item xs={12} md={6} lg={6} sm={12}>
                         <span>Floor area (m²)</span><br />
                         <Input
-                            value={selectedRow?.Floor_area || ''}
+                            value={selectedRow?.surface || ''}
                             variant="outlined"
                             endDecorator={<Button sx={{height:'100%',marginRight:'-12px',background:'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)'}}>m²</Button>}
                         />
@@ -476,7 +565,7 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                         <Grid item xs={12} md={6} lg={6} sm={12}>
                         <span>Activity</span><br />
                         <Input
-                            value={selectedRow?.Activity || ''}
+                            value={selectedRow?.activity || ''}
                             variant="outlined"
                         />
                         </Grid>
@@ -561,14 +650,18 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                         </Grid>
                         <Grid item xs={12} md={6} lg={6} sm={12}>
                         <span>Parent Site</span><br />
+                        {/* <CheckPicker labelKey='label' placeholder={t('city')} onChange={(value)=>setNewBuilding({Site:value})} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataCities} className='Cascader_comp'/> */}
+
                         <Cascader
-                            // data={data}
+                            data={cascaderDataSites}
                             placeholder="Parent Site" 
                             style={{width:'100%'}}
-                            onChange={(e) => setNewBuilding({Site:e.target.value})}
+                            popupStyle={{width:'25%'}}
+                            columnWidth={350}
+                            onChange={(value) => setNewBuilding({Site:value})}
 
                         />
-                        </Grid>
+                        </Grid> 
                         <Grid item xs={12} md={6} lg={6} sm={12}>
                         <span>Correlation Code</span><br />
                         <Input
@@ -701,10 +794,10 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                 </DialogTitle>
                 <Divider />
                 <DialogContent>
-                    Are you sure you want to delete {deletedRow?.Name} ?
+                    Are you sure you want to delete {deletedRow?.name} ?
                 </DialogContent>
                 <DialogActions>
-                    <Button variant="solid" color="danger" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
+                    <Button variant="solid" color="danger" onClick={confirmDelete}>
                     Confirm
                     </Button>
                     <Button variant="plain" color="neutral" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
@@ -712,6 +805,30 @@ export default function SiteBuildingsMap({ siteName , chosenSiteBuildings }) {
                     </Button>
                 </DialogActions>
                 </ModalDialog>
+            </Modal>
+
+            {/*Loader component */}
+            <Modal
+                aria-labelledby="modal-title"
+                aria-describedby="modal-desc"
+                open={LoaderState}
+                onClose={() => setLoaderState(false)}
+                sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+            >
+                <Sheet
+                variant="outlined"
+                sx={{
+                    width:'100%',
+                    height:'98%',
+                    borderRadius: 'md',
+                    p: 3,
+                    boxShadow: 'lg',
+                    overflowY:'scroll'
+                }}
+                >
+                <ModalClose variant="plain" sx={{ m: 1 }} />
+                <LoaderComponent/>
+                </Sheet>
             </Modal>
         </div>
     );

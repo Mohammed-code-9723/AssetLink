@@ -24,9 +24,11 @@ import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 import { useTranslation } from 'react-i18next';
 import { Breadcrumbs,Link } from '@mui/joy';
 import { AutoComplete } from 'rsuite';
+import { hasPermission } from '../components/CheckPermissions';
 
 
 export default function AllUsers() {
+
     const dispatch = useDispatch();
     const user = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('token');
@@ -316,17 +318,21 @@ export default function AllUsers() {
                 <Button sx={{background:'linear-gradient(265deg, rgba(226,49,96,1) 0%, rgba(115,5,5,1) 100%)'}} onClick={()=>{setSearch("");setFilteredUsers(null)}}>{t('search.clear')}</Button>
             </div>
             <Sheet variant="outlined" color="neutral" sx={{ marginTop: '20px', p: 4, borderRadius: '10px' }}>
-                <center>
-                    <Button
-                        sx={{
-                            background: 'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)',
-                            width: '20%',
-                        }}
-                        onClick={handleAddUser}
-                    >
-                        <MdAdd size={22} />&nbsp;&nbsp;{t('users.addUsers')}
-                    </Button>
-                </center>
+                {
+                    hasPermission(user.permissions, 'user_management', 'create')&&(
+                        <center>
+                            <Button
+                                sx={{
+                                    background: 'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)',
+                                    width: '20%',
+                                }}
+                                onClick={handleAddUser}
+                            >
+                                <MdAdd size={22} />&nbsp;&nbsp;{t('users.addUsers')}
+                            </Button>
+                        </center>
+                    )
+                }
                 <div className='table_container'>
                     <Table 
                         hoverRow 
@@ -341,10 +347,14 @@ export default function AllUsers() {
                                 <th style={{ width: '30%',textAlign: 'center' }}>{t('email')}</th>
                                 {/* <th style={{ width: '30%',textAlign: 'center' }}>Password</th> */}
                                 <th style={{ width: '30%',textAlign: 'center' }}>{t('users.role')}</th>
-                                <th 
-                                style={{ width: '30%' , textAlign: 'center' }}>
-                                    {t('users.actions')}
-                                </th>
+                                {
+                                    hasPermission(user.permissions, 'user_management', ('update'||'delete'))&&(
+                                        <th 
+                                        style={{ width: '30%' , textAlign: 'center' }}>
+                                            {t('users.actions')}
+                                        </th>
+                                    )
+                                }
                             </tr>
                         </thead>
                         <tbody >
@@ -362,26 +372,30 @@ export default function AllUsers() {
                                             <td style={{ textAlign: 'center' }}>{user.name}</td>
                                             <td style={{ textAlign: 'center' }}>{user.email}</td>
                                             <td style={{ textAlign: 'center' }}>{user.role}</td>
-                                            <td style={{ display: 'flex', gap: '2px', justifyContent: 'center',flexWrap:'wrap' }}>
-                                                <Button
-                                                    sx={{ background: 'linear-gradient(265deg, rgba(226,49,96,1) 0%, rgba(115,5,5,1) 100%)' }}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDeleteUser(user);
-                                                    }}
-                                                >
-                                                    <MdDeleteSweep size={18} />&nbsp;{t('users.delete')}
-                                                </Button>
-                                                <Button
-                                                    sx={{ background: 'linear-gradient(265deg, rgba(49,153,226,1) 0%, rgba(21,31,51,1) 100%)' }}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleUpdateUser(user);
-                                                    }}
-                                                >
-                                                    <PiUserSwitchBold size={18} />&nbsp;{t('users.update')}
-                                                </Button>
-                                            </td>
+                                            {
+                                                hasPermission(user.permissions, 'user_management', ('update'||'delete'))&&(
+                                                    <td style={{ display: 'flex', gap: '2px', justifyContent: 'center',flexWrap:'wrap' }}>
+                                                        <Button
+                                                            sx={{ background: 'linear-gradient(265deg, rgba(226,49,96,1) 0%, rgba(115,5,5,1) 100%)' }}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteUser(user);
+                                                            }}
+                                                        >
+                                                            <MdDeleteSweep size={18} />&nbsp;{t('users.delete')}
+                                                        </Button>
+                                                        <Button
+                                                            sx={{ background: 'linear-gradient(265deg, rgba(49,153,226,1) 0%, rgba(21,31,51,1) 100%)' }}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleUpdateUser(user);
+                                                            }}
+                                                        >
+                                                            <PiUserSwitchBold size={18} />&nbsp;{t('users.update')}
+                                                        </Button>
+                                                    </td>
+                                                )
+                                            }
                                         </tr>
                                     )
                                 )):(users &&
@@ -397,26 +411,30 @@ export default function AllUsers() {
                                         <td style={{ textAlign: 'center' }}>{user.name}</td>
                                         <td style={{ textAlign: 'center' }}>{user.email}</td>
                                         <td style={{ textAlign: 'center' }}>{user.role}</td>
-                                        <td style={{ display: 'flex', gap: '2px', justifyContent: 'center',flexWrap:'wrap' }}>
-                                            <Button
-                                                sx={{ background: 'linear-gradient(265deg, rgba(226,49,96,1) 0%, rgba(115,5,5,1) 100%)' }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDeleteUser(user);
-                                                }}
-                                            >
-                                                <MdDeleteSweep size={18} />&nbsp;{t('users.delete')}
-                                            </Button>
-                                            <Button
-                                                sx={{ background: 'linear-gradient(265deg, rgba(49,153,226,1) 0%, rgba(21,31,51,1) 100%)' }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleUpdateUser(user);
-                                                }}
-                                            >
-                                                <PiUserSwitchBold size={18} />&nbsp;{t('users.update')}
-                                            </Button>
-                                        </td>
+                                        {
+                                            hasPermission(user.permissions, 'user_management', ('update'||'delete'))&&(
+                                                <td style={{ display: 'flex', gap: '2px', justifyContent: 'center',flexWrap:'wrap' }}>
+                                                    <Button
+                                                        sx={{ background: 'linear-gradient(265deg, rgba(226,49,96,1) 0%, rgba(115,5,5,1) 100%)' }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDeleteUser(user);
+                                                        }}
+                                                    >
+                                                        <MdDeleteSweep size={18} />&nbsp;{t('users.delete')}
+                                                    </Button>
+                                                    <Button
+                                                        sx={{ background: 'linear-gradient(265deg, rgba(49,153,226,1) 0%, rgba(21,31,51,1) 100%)' }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleUpdateUser(user);
+                                                        }}
+                                                    >
+                                                        <PiUserSwitchBold size={18} />&nbsp;{t('users.update')}
+                                                    </Button>
+                                                </td>
+                                            )
+                                        }
                                     </tr>
                                 )))
                             }

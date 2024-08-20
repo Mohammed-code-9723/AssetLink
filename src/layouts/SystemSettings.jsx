@@ -95,6 +95,7 @@ export default function SystemSettings() {
                         <Tab>Preferences</Tab>
                         <Tab>Notifications</Tab>
                         <Tab>Billings</Tab>
+                        <Tab>Profile</Tab>
                     </TabList>
                     <TabPanel value={0}>
                         <h5>General</h5>
@@ -125,24 +126,7 @@ export default function SystemSettings() {
                                         <Input type='text' value={'AssetLink'} />
                                     </Grid>
                                 </Grid>
-                            </div>
-                            <Divider>
-                                <p style={{textDecoration:'underline',margin:'30px 0'}}>
-                                    <b>Change your information's</b>
-                                </p>
-                            </Divider>  
-                            <div>
-                                <Grid container spacing={2} sx={{ flexGrow: 1,width:'100%',display:'flex',gap:'50px' ,justifyContent:'center'}}>
-                                    <Grid lg={12}>
-                                        <span>Email</span>
-                                        <Input type='text' placeholder="super admin email" />
-                                    </Grid>
-                                    <Grid lg={12}>
-                                        <span>Password</span>
-                                        <Input type='text' placeholder="super admin password" />
-                                    </Grid>
-                                </Grid>
-                            </div>
+                            </div> 
                         </div>
                     </TabPanel>
                     <TabPanel value={1}>
@@ -335,6 +319,33 @@ export default function SystemSettings() {
                                 </TableRow>
                             </TableBody>
                         </Table>
+                    </TabPanel>
+                    <TabPanel value={4}>
+                        <div>
+                            <Grid container spacing={2} sx={{ flexGrow: 1,width:'100%',display:'flex',gap:'50px' ,justifyContent:'center'}}>
+                                <Divider>
+                                    <p style={{textDecoration:'underline',margin:'30px 0'}}>
+                                        <b>Change your information's</b>
+                                    </p>
+                                </Divider> 
+                                <Grid lg={12}>
+                                    <span>Photo</span>
+                                    <Avatar circle />
+                                    <Uploader action="//jsonplaceholder.typicode.com/posts/">
+                                        <Button sx={{width:'110px',height:'40px'}}>Upload new</Button>
+                                    </Uploader>
+                                    <Button sx={{width:'110px',height:'40px'}}>Delete</Button>
+                                </Grid>
+                                <Grid lg={12}>
+                                    <span>Email</span>
+                                    <Input type='text' placeholder="super admin email" />
+                                </Grid>
+                                <Grid lg={12}>
+                                    <span>Password</span>
+                                    <Input type='text' placeholder="super admin password" />
+                                </Grid>
+                            </Grid>
+                        </div>
                     </TabPanel>
                 </Tabs>
             </div>

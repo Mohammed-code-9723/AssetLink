@@ -7,7 +7,7 @@ import Modal from '@mui/joy/Modal';
 import ModalClose from '@mui/joy/ModalClose';
 // import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
-import { Form } from 'rsuite';
+import { Form ,Carousel} from 'rsuite';
 import { useDispatch } from 'react-redux';
 import { login } from '../features/UserSlice';
 //

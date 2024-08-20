@@ -47,6 +47,7 @@ import { fetchUsersData } from '../features/UserSlice';
 import LoaderComponent from './LoaderComponent';
 import { Timeline, Loader } from 'rsuite';
 
+import { AutoComplete } from 'rsuite';
 
 // import { useTranslation } from 'react-i18next';
 
@@ -111,7 +112,10 @@ export default function SuperAdminAllSites() {
   const { messageSiteDelete, statusSiteDelete , errorSiteDelete } = useSelector((state) => state.deleteSiteRe);
   const {messageAddSite,statusAddSite,errorAddSite}=useSelector((state) => state.addSiteRe);
   const {messageUpdateSite,statusUpdateSite,errorUpdateSite}=useSelector((state) => state.updateSiteRe);
-
+  
+  const [itemsPerPage] = useState(10);
+  const startIndex = (activePage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
 
   const token=localStorage.getItem('token');
   const dispatch = useDispatch();
@@ -279,17 +283,19 @@ export default function SuperAdminAllSites() {
     return ()=>clearTimeout(intervalLoader);
   },[notif]);
 
+  const [filteredSites,setFilteredSites]=useState([]);
   const handleFilter=()=>{
-    setAllSites(sites?.filter((site)=>site.code!==filterBySite || site.name!==filterByCity));
+    setFilteredSites(allSites.filter((site)=>site.code===filterBySite || site.city===filterByCity));
   }
+
   const handleClearFilter =()=>{
-    dispatch(sitesData(token)).then(()=>{
-      setAllSites(sites);
-      setFilterCity(null);
-      setFilterSite(null);
-    })
-    
+    // dispatch(sitesData(token))
+    // setAllSites(sites);
+    setFilterCity(null);
+    setFilterSite(null);
+    setFilteredSites([]);
   }
+
   return (
     <div>
       <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
@@ -340,16 +346,33 @@ export default function SuperAdminAllSites() {
               <Grid xs={12} lg={3.33} sm={12} md={12}>
                 <Cascader
                     // data={data}
-                    menuStyle={{ zIndex: 1400 }}
+                    // menuStyle={{ zIndex: 1400 }}
                     className='Cascader_comp'
                     placeholder="Project" 
+                    popupStyle={{width:'25%'}}
+                    columnWidth={350}
                 />
               </Grid>
               <Grid xs={12} lg={3.33} sm={12} md={12}>
-                <CheckPicker labelKey='label' placeholder={t('site')} onChange={(value)=>setFilterSite(value)} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataSites} className='Cascader_comp'/>
+                {/* <CheckPicker labelKey='label' placeholder={t('site')} onChange={(value)=>setFilterSite(value)} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataSites} className='Cascader_comp'/> */}
+                <Cascader data={cascaderDataSites} 
+                  className='Cascader_comp'
+                  placeholder={t('site')}
+                  popupStyle={{width:'25%'}}
+                  columnWidth={350}
+                  onChange={(value)=>setFilterSite(value)}  
+                />
               </Grid>
               <Grid xs={12} lg={3.33} sm={12} md={12}>
-                <CheckPicker labelKey='label' placeholder={t('city')} onChange={(value)=>setFilterCity(value)} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataCities} className='Cascader_comp'/>
+                {/* <CheckPicker labelKey='label' placeholder={t('city')} onChange={(value)=>setFilterCity(value)} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataCities} className='Cascader_comp'/> */}
+                <Cascader data={cascaderDataCities} 
+                  className='Cascader_comp'
+                  placeholder={t('city')}
+                  popupStyle={{width:'25%'}}
+                  // menuAutoWidth
+                  columnWidth={350}
+                  onChange={(value)=>setFilterCity(value)}  
+                />
               </Grid>
               <Grid xs={12} lg={2} sm={12} md={12}>
                 <Button className='apply_Button' onClick={handleFilter}><IoFilter size={22}/>&nbsp;&nbsp;{t('filter')}</Button>
@@ -371,63 +394,105 @@ export default function SuperAdminAllSites() {
             // key={JSON.stringify(allSites)}
             hoverRow 
             sx={{
-              overflowX:'scroll'
+              overflowX:'scroll',
+              textAlign:'center'
             }}>
               <thead>
                 <tr>
-                  <th>Code</th>
-                  <th>Name</th>
-                  <th>Activity</th>
-                  <th style={{width:'20%'}}>Address</th>
-                  <th>ZipCode</th>
-                  <th>City</th>
-                  <th>Country</th>
-                  <th>Floor area</th>
-                  <th>Action</th>
-                  <th>Site Buildings</th>
+                  <th style={{width:'20px',textAlign:'center'}}>Code</th>
+                  <th style={{width:'50px',textAlign:'center'}}>Name</th>
+                  <th style={{width:'50px',textAlign:'center'}}>Activity</th>
+                  <th style={{width:'20%',textAlign:'center'}}>Address</th>
+                  <th style={{width:'50px',textAlign:'center'}}>ZipCode</th>
+                  <th style={{width:'50px',textAlign:'center'}}>City</th>
+                  <th style={{width:'50px',textAlign:'center'}}>Country</th>
+                  <th style={{width:'50px',textAlign:'center'}}>Floor area</th>
+                  <th style={{width:'50px',textAlign:'center'}}>Action</th>
+                  <th style={{width:'50px',textAlign:'center'}}>Site Buildings</th>
                 </tr>
               </thead>
               <tbody>
               {
               allSites&&allSites.length>0?(
-                allSites.map((row) => (
-                  <tr key={row.code} onClick={()=>handleRowClick(row)} className='table_row'>
-                    <td>{row.code}</td>
-                    <td>{row.name}</td>
-                    <td>{row.activity}</td>
-                    <td>{row.address}</td>
-                    <td>{row.zipcode}</td>
-                    <td>{row.city}</td>
-                    <td>{row.country}</td>
-                    <td>{row.floor_area}</td>
-                    <td>
-                      <Button sx={{
-                        background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
-                        zIndex:999
-                      }}
-                      onClick={(e)=>{
-                        e.stopPropagation();
-                        HandleDelete(row)
-                      }}
-                      >
-                        <MdDelete size={22}/>
-                      </Button>
-                    </td>
-                    <td>
-                      <Button sx={{
-                        background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
-                        zIndex:999
-                      }}
-                      onClick={(e)=>{
-                        e.stopPropagation();
-                        HandleShowBuildings(row)
-                      }}
-                      >
-                        <BsEye size={22}/>
-                      </Button>
-                    </td>
-                  </tr>
-                ))
+                filteredSites.length>0?(
+                  filteredSites.slice(startIndex, endIndex).map((row) => (
+                    <tr key={row.code} onClick={()=>handleRowClick(row)} className='table_row'>
+                      <td>{row.code}</td>
+                      <td>{row.name}</td>
+                      <td>{row.activity}</td>
+                      <td>{row.address}</td>
+                      <td>{row.zipcode}</td>
+                      <td>{row.city}</td>
+                      <td>{row.country}</td>
+                      <td>{row.floor_area}</td>
+                      <td>
+                        <Button sx={{
+                          background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
+                          zIndex:999
+                        }}
+                        onClick={(e)=>{
+                          e.stopPropagation();
+                          HandleDelete(row)
+                        }}
+                        >
+                          <MdDelete size={22}/>
+                        </Button>
+                      </td>
+                      <td>
+                        <Button sx={{
+                          background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
+                          zIndex:999
+                        }}
+                        onClick={(e)=>{
+                          e.stopPropagation();
+                          HandleShowBuildings(row)
+                        }}
+                        >
+                          <BsEye size={22}/>
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ):(
+                  allSites.slice(startIndex, endIndex).map((row) => (
+                    <tr key={row.code} onClick={()=>handleRowClick(row)} className='table_row'>
+                      <td>{row.code}</td>
+                      <td>{row.name}</td>
+                      <td>{row.activity}</td>
+                      <td>{row.address}</td>
+                      <td>{row.zipcode}</td>
+                      <td>{row.city}</td>
+                      <td>{row.country}</td>
+                      <td>{row.floor_area}</td>
+                      <td>
+                        <Button sx={{
+                          background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
+                          zIndex:999
+                        }}
+                        onClick={(e)=>{
+                          e.stopPropagation();
+                          HandleDelete(row)
+                        }}
+                        >
+                          <MdDelete size={22}/>
+                        </Button>
+                      </td>
+                      <td>
+                        <Button sx={{
+                          background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
+                          zIndex:999
+                        }}
+                        onClick={(e)=>{
+                          e.stopPropagation();
+                          HandleShowBuildings(row)
+                        }}
+                        >
+                          <BsEye size={22}/>
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )
               )  
               :
               (
@@ -448,8 +513,8 @@ export default function SuperAdminAllSites() {
               next
               first
               size="md"
-              total={100}
-              limit={10}
+              total={filteredSites.length > 0 ? filteredSites.length : allSites.length}
+              limit={itemsPerPage}
               activePage={activePage}
               onChangePage={setActivePage}
             />
@@ -815,10 +880,10 @@ export default function SuperAdminAllSites() {
               justifyContent:'center'
             }}
           >
-            {chosenSiteBuildings?.name}
+            <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span>{siteName} {t('buildings')}</span></h2>
           </Typography>
           <Typography level='div' id="modal-desc" textColor="text.tertiary">
-            <SiteBuildingsMap siteName={siteName} chosenSiteBuildings={chosenSiteBuildings} />
+            <SiteBuildingsMap setAllSites={setAllSites} siteName={siteName} chosenSiteBuildings={chosenSiteBuildings} setChosenSiteBuildings={setChosenSiteBuildings} />
           </Typography>
         </Sheet>
       </Modal>
@@ -872,20 +937,7 @@ export default function SuperAdminAllSites() {
         onClose={() => setLoaderState(false)}
         sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
       >
-        <Sheet
-          variant="outlined"
-          sx={{
-            width:'100%',
-            height:'98%',
-            borderRadius: 'md',
-            p: 3,
-            boxShadow: 'lg',
-            overflowY:'scroll'
-          }}
-        >
-          <ModalClose variant="plain" sx={{ m: 1 }} />
-          <LoaderComponent/>
-        </Sheet>
+        <LoaderComponent/>
       </Modal>
     </div>
   )

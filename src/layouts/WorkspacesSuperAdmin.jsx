@@ -449,15 +449,14 @@ export default function WorkspacesSuperAdmin() {
                           }
                         </Panel>
                       </CardContent>
-                      
                     </CardOverflow>
                     <Button style={{width:'100%'}} sx={{background:'linear-gradient(265deg, rgb(88, 5, 115) 0%, rgb(21, 107, 76) 50%, rgb(5, 48, 135) 100%)'}} onClick={()=>addWorkspace(user)}>
-                    <span style={{width:'20%'}}>
-                      <BiSolidAddToQueue/>
-                    </span>
-                    <span style={{width:'80%'}}>
-                      {t('users.addW')}
-                    </span>
+                      <span style={{width:'20%'}}>
+                        <BiSolidAddToQueue/>
+                      </span>
+                      <span style={{width:'80%'}}>
+                        {t('users.addW')}
+                      </span>
                   </Button>
                   </Card>
                 </Grid>

@@ -18,7 +18,6 @@ import SuperAdminHome from './layouts/SuperAdminHome';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import Permissions from './layouts/Permissions';
 import AllUsers from './layouts/AllUsers';
-import UpdateUser from './layouts/UpdateUser';
 import ProtectedRoute from './components/ProtectedRoute';
 import WorkspacesSuperAdmin from './layouts/WorkspacesSuperAdmin';
 import Test from './layouts/Test';
@@ -28,10 +27,14 @@ import SuperAdminAllBuildings from './layouts/SuperAdminAllBuildings';
 import SuperAdminAllComponents from './layouts/SuperAdminAllComponents';
 import SuperAdminAllIncidents from './layouts/SuperAdminAllIncidents';
 import SuperAdminAllReports from './layouts/SuperAdminAllReports';
+import OtherRolesWorkspaces from './layouts/OtherRolesWorkspaces';
+import AssignTasks from './layouts/AssignTasks';
+import Analytics from './layouts/Analytics';
 
 function App() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const location=useLocation();
+  const user=localStorage.getItem('user');
 
   return (
     <div className={`App ${isSidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>
@@ -72,9 +75,11 @@ function App() {
             <Route path="/dashboard/SuperAdmin/Components" element={<ProtectedRoute><SuperAdminDashboard><SuperAdminAllComponents /></SuperAdminDashboard></ProtectedRoute>} />
             <Route path="/dashboard/SuperAdmin/Incidents" element={<ProtectedRoute><SuperAdminDashboard><SuperAdminAllIncidents /></SuperAdminDashboard></ProtectedRoute>} />
             <Route path="/dashboard/SuperAdmin/Reports" element={<ProtectedRoute><SuperAdminDashboard><SuperAdminAllReports /></SuperAdminDashboard></ProtectedRoute>} />
-            <Route path="/dashboard/SuperAdmin/UpdateUser" element={<ProtectedRoute><SuperAdminDashboard><UpdateUser /></SuperAdminDashboard></ProtectedRoute>} />
             <Route path="/dashboard/SuperAdmin/AllUsers" element={<ProtectedRoute><SuperAdminDashboard><AllUsers /></SuperAdminDashboard></ProtectedRoute>} />
             <Route path="/dashboard/SuperAdmin/Settings" element={<ProtectedRoute><SuperAdminDashboard><SystemSettings /></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path="/dashboard/SuperAdmin/assignTasks" element={<ProtectedRoute><SuperAdminDashboard><AssignTasks /></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path="/dashboard/SuperAdmin/Analytics" element={<ProtectedRoute><SuperAdminDashboard><Analytics /></SuperAdminDashboard></ProtectedRoute>} />
+            <Route path={`/dashboard/${user?.role}/Workspaces`} element={<ProtectedRoute><SuperAdminDashboard><OtherRolesWorkspaces /></SuperAdminDashboard></ProtectedRoute>} />
           </Routes>
         </div>
       </div>

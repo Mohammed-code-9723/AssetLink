@@ -1,12 +1,13 @@
 .landing_container{
     background:linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%);
-    width:110%;
+    width:102%;
     margin:-20px;
     padding:10px;
     min-height:90dvh;
     display:flex;
     justify-content:space-around;
     align-items:center;
+    overflow-x: hidden;
 }
 .landing_container .hero_section{
     width:50%;

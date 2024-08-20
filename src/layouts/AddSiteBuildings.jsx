@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, Polygon, useMapEvents,T
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import axios from 'axios';
-import { Switch } from '@mui/joy';
+import { Switch ,Button} from '@mui/joy';
 import Typography from '@mui/joy/Typography';
 
 // Convert the icon to a data URL
@@ -22,10 +22,17 @@ const createCustomIcon = () => {
   });
 };
 
-function LocationMarker({ addLocation }) {
+function LocationMarker({ addLocation ,handleInputChange, setNewBuilding,newBuilding}) {
   useMapEvents({
     contextmenu(e) {
       addLocation([e.latlng.lat, e.latlng.lng]);
+      if(handleInputChange){
+        handleInputChange('location',JSON.stringify([e.latlng.lat, e.latlng.lng]))
+      }
+
+      if(newBuilding){
+        setNewBuilding({...newBuilding,location:JSON.stringify([e.latlng.lat, e.latlng.lng])});
+      }
     },
   });
   return null;
@@ -54,7 +61,7 @@ function MoveToLocation({ lat, lon }) {
   return null;
 }
 
-export default function AddSiteBuildings() {
+export default function AddSiteBuildings({setUpdateLocation,handleInputChange,setNewBuilding,newBuilding,justLocation}) {
   const [locations, setLocations] = useState([]);
   const [polygonCoords, setPolygonCoords] = useState([]);
   const [customIcon, setCustomIcon] = useState(null);
@@ -145,7 +152,7 @@ export default function AddSiteBuildings() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          <LocationMarker addLocation={addLocation} />
+          <LocationMarker addLocation={addLocation} handleInputChange={handleInputChange} setNewBuilding={setNewBuilding} newBuilding={newBuilding}/>
           {locations.map((loc, idx) => (
             <Marker key={idx} position={loc.coords} icon={customIcon}>
               <Popup>
@@ -173,7 +180,7 @@ export default function AddSiteBuildings() {
             </li>
           ))}
         </ul>
-        <Typography component="label" endDecorator={<Switch sx={{ ml: 1 }}
+        <Typography component="label" endDecorator={<Switch sx={{ ml: 1,display:(justLocation===true)?'none':'inline' }}
           checked={checked}
           onChange={(event) => setChecked(event.target.checked)}
         />}>
@@ -181,7 +188,7 @@ export default function AddSiteBuildings() {
         </Typography>
       </div>
       <hr />
-      <div>
+      <div style={{display:justLocation===true?'none':'block'}}>
         <center>
           <h3>Search for location</h3>
         </center>
@@ -195,6 +202,14 @@ export default function AddSiteBuildings() {
         <SearchResults searchResults={searchResults} handleSearchResultClick={handleSearchResultClick} />
         <hr />
         <button onClick={getUserLocation}>Get My Location</button>
+      </div>
+      <div style={{display:(justLocation===true)?'block':'none'}}>
+        <center>
+          <Button 
+          sx={{background:'linear-gradient(265deg, rgb(88, 5, 115) 0%, rgb(21, 107, 76) 50%, rgb(5, 48, 135) 100%)',width:'50%'}}
+          onClick={()=>{setUpdateLocation(false);}}
+          >Validate</Button>
+        </center>
       </div>
     </div>
   );

@@ -317,6 +317,13 @@ const handleSubmit = async (e) => {
                                 borderBottomLeftRadius:'7px',
                                 height:'70vh'
                             }}/>
+                            <img src="/assets/login.svg" alt="svgLogin" style={{
+                                width:'350px',
+                                position:'absolute ',
+                                top:'10%',
+                                left:'30px',
+                                height:'350px'
+                            }}/>
                         </div>
                         <div className='form_model' style={{
                             width:'60%',
