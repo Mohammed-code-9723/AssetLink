@@ -650,6 +650,48 @@ const componentsSlice = createSlice({
     },
 });
 
+
+//! all incidents:
+
+export const incidentsData = createAsyncThunk('incidents/incidentsData', async (token) => {
+
+    const response = await fetch('http://127.0.0.1:8000/api/workspaces/allSites', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+    });
+    const data = await response.json();
+    
+    return data;
+});
+
+const incidentsSlice = createSlice({
+    name: 'incidents',
+    initialState: {
+        sites: null,
+        statusSites: 'idle',
+        errorSites: null,
+    },
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(sitesData.pending, (state) => {
+                state.statusSites = 'loading';
+            })
+            .addCase(sitesData.fulfilled, (state, action) => {
+                state.statusSites = 'succeeded';
+                state.sites = action.payload;
+            })
+            .addCase(sitesData.rejected, (state, action) => {
+                state.statusSites = 'failed';
+                state.errorSites = action.error.message;
+            });
+    },
+});
+
+
 export const componentsReducer= componentsSlice.reducer;
 export const addSiteReducer= addSiteSlice.reducer;
 export const activitiesReducer=activitiesSlice.reducer;

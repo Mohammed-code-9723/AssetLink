@@ -513,7 +513,7 @@ export default function SuperAdminAllSites() {
               next
               first
               size="md"
-              total={filteredSites.length > 0 ? filteredSites.length : allSites.length}
+              total={filteredSites?.length > 0 ? filteredSites?.length : allSites?.length}
               limit={itemsPerPage}
               activePage={activePage}
               onChangePage={setActivePage}

@@ -14,6 +14,7 @@ import { login } from '../features/UserSlice';
 import '../styles/LandingPage.css';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import LoaderComponent from './LoaderComponent';
 
 
 export default function LandingPage() {
@@ -26,6 +27,9 @@ export default function LandingPage() {
     const [errorEmail,setErrorEmail]=useState({error:false});
     const [errorPassword,setErrorPassword]=useState({error:false});
 
+
+    const [LoaderState,setLoaderState]=useState(false);
+
     const {t } = useTranslation();
 
     
@@ -37,9 +41,11 @@ export default function LandingPage() {
             localStorage.removeItem('token');
         }
     },[])
-
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setOpen(false);
+        setLoaderState(true);
 
         if (email === '') {
             setErrorEmail({ error: true });
@@ -49,13 +55,11 @@ export default function LandingPage() {
             return;
         }
 
+
         try {
             const result = await dispatch(login({ email, password })).unwrap();
             localStorage.setItem('user', JSON.stringify(result.user));
             localStorage.setItem('token', result.token);
-            console.log(result.user);
-            console.log(result.token);
-            setOpen(false);
             navigate('/dashboard/SuperAdmin');
         } catch (error) {
             alert(error.message || 'Login failed');
@@ -71,6 +75,13 @@ export default function LandingPage() {
 
     }
 
+    useEffect(()=>{
+        const intervalLoader=setTimeout(() => {
+            setLoaderState(false);
+        }, 3000);
+        return ()=>clearTimeout(intervalLoader);
+    },[LoaderState]);
+    
     return (
         <>
             <div className='landing_container'>
@@ -219,6 +230,17 @@ export default function LandingPage() {
                             </div>
                         </div>
                     </Sheet>
+                </Modal>
+
+                {/* Loader modal */}
+                <Modal
+                    aria-labelledby="modal-title"
+                    aria-describedby="modal-desc"
+                    open={LoaderState}
+                    onClose={() => setLoaderState(false)}
+                    sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center',zIndex:1000000 }}
+                >
+                    <LoaderComponent/>
                 </Modal>
             </div>
             

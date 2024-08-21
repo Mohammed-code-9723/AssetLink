@@ -37,6 +37,7 @@ import DialogContent from '@mui/joy/DialogContent';
 import DialogActions from '@mui/joy/DialogActions';
 import ModalDialog from '@mui/joy/ModalDialog';
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
+import { useTranslation } from 'react-i18next';
 
 
     function createData(Code, Name, Site, Activity, Address, Construction_year, Floor_area, Level_count) {
@@ -52,6 +53,7 @@ import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
     ];
 
 export default function SuperAdminAllIncidents() {
+
     const [activePage, setActivePage] = React.useState(1);
     const [open, setOpen] = React.useState(false);
     const [addBuilding, setAddBuilding] = React.useState(false);
@@ -60,6 +62,7 @@ export default function SuperAdminAllIncidents() {
     const [newBuilding,setNewBuilding]=useState({Name:'',Activity:'',Code:'',Site:'',ConstructionYear:'',LevelCount:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_ares:'',Comment:''});
     const [openDelete, setOpenDelete] = React.useState(false);
     const [deletedRow,setDeletedRow]=useState({});
+    const {t } = useTranslation();
 
     const emptyFields=()=>{
         setNewBuilding({Name:'',Activity:'',Code:'',Site:'',ConstructionYear:'',LevelCount:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_ares:'',Comment:''});
@@ -86,8 +89,8 @@ export default function SuperAdminAllIncidents() {
     return (
         <div>
             <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
-            {['Workspaces','workspace name','Incidents'].map((item) => (
-                <Link className='Link_breadcrumbs' key={item} color="neutral" href="#sizes">
+            {[t('dashboard'),t('users.workspaces'),t('allIncidents')].map((item) => (
+                <Link key={item} color="neutral" href="#sizes">
                 <h5>
                 {item}
                 </h5>

@@ -26,6 +26,8 @@
     "buildings":"Les bâtiments",
     "components":"Les composants",
     "component":"Le composant",
+    "Incidents":"Incidents",
+    "Incident":"Incident",
     "projects":"Les projets",
     "project":"Projet",
     "filter": "Appliquer le filtre",

@@ -38,5 +38,7 @@
   width: calc(100% - 60px); /* Adjust remaining width */
 }
 .zsc{
-  background:linear-gradient(124deg, rgba(7, 29, 75, 0.673) 0%, rgba(9, 100, 61, 0.673) 100%);
+  background:rgba(255, 255, 255, 0.529);
+  background:linear-gradient(124deg, rgba(12,46,96,1) 0%, rgba(38,86,17,1) 46%, rgba(9,46,100,1) 100%);
+  color:(linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%))
 }

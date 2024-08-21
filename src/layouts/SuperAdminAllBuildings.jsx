@@ -327,8 +327,8 @@ export default function SuperAdminAllBuildings() {
   return (
     <div>
         <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
-          {['Workspaces','workspace name','Buildings'].map((item) => (
-            <Link className='Link_breadcrumbs' key={item} color="neutral" href="#sizes">
+          {[t('dashboard'),t('users.workspaces'),t('buildings')].map((item) => (
+            <Link  key={item} color="neutral" href="#sizes">
             <h5>
               {item}
             </h5>

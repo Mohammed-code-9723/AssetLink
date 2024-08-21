@@ -139,7 +139,7 @@ export default function SuperAdminAllComponents() {
       const intervalLoader=setTimeout(() => {
         setNotif(false);
         setMessage(null);
-      }, 6000);
+      }, 8000);
       return ()=>clearTimeout(intervalLoader);
     },[notif]);
 
@@ -287,6 +287,8 @@ const handleAddComponent = async () => {
     alert('An error occurred while adding the component.');
   }
 };
+
+  
 
   const formatCascaderDataBuildings = (buildings) => {
     const bL = [...new Set(buildings?.map((building) =>({id:building.id,name: building.name,code:building.code})))];
@@ -439,6 +441,63 @@ const handleAddComponent = async () => {
         [field]: value,
       }));
     }
+    const [openModalNewIncident,setOenModalNewIncident]=useState(false);
+
+    const handleAddIncident=async()=>{
+      console.log(newIncident);
+      try {
+        setOenModalNewIncident(false);
+        // setIncidentsModal(false);
+        setLoaderState(true);
+    
+        const workspace_id = buildingSite?.workspace_id;
+        const building_id = parentComponent?.building_id;
+    
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}/incidents/addIncident`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body:JSON.stringify(newIncident)
+          },
+        );
+    
+        const result = await response.json();
+    
+        if (response.ok) {
+          setNotif(true);
+          setMessage(result.message);
+
+          setSelectedRow({...selectedRow,incidents: [...selectedRow?.incidents,newIncident]});
+
+          setAllComponents((allComponents) =>
+            allComponents.map((component) => {
+              if (component.id === selectedRow.id) {
+                return {
+                  ...component,
+                  incidents: [...component?.incidents,newIncident]
+                };
+              }
+              return component;
+            })
+          );
+    
+          dispatch(componentsData(token));
+          setIncidentID(null);
+        } else {
+          console.error('Failed to deleting the incident:', result);
+          alert(`Failed to deleting the incident: ${result.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the incident.');
+      }
+    }
+
+    //!update incident:
     const handleSaveIncident = async () => {
       console.log(newIncident);
       try {
@@ -473,7 +532,7 @@ const handleAddComponent = async () => {
                   ...component,
                   incidents: component.incidents.map((incident) =>
                     incident.id === incidentID
-                      ? { ...incident, ...newIncident } // Update the incident with the new values
+                      ? { ...incident, ...newIncident } 
                       : incident
                   ),
                 };
@@ -509,6 +568,75 @@ const handleAddComponent = async () => {
       }
     };
     
+    //!delete incident:
+    const [parentComponent,setParentComponent]=useState(null);
+    const [deleteIncident,setOpenDeleteIncident]=useState(false);
+
+    const HandleDeleteIncident=(row,id)=>{
+      setOpenDeleteIncident(true);
+      setIncidentID(id);
+      setParentBuilding(buildings?.buildings?.find((building)=>building.id===row.building_id));
+      setParentComponent(allComponents?.find((component)=>component.id===row.component_id));
+    }
+    
+    const confirmDeleteIncident=async()=>{
+      // const workspace_id = buildingSite?.workspace_id;
+      // const building_id = parentComponent?.building_id;
+      // alert(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}/incidents/${incidentID}`);
+
+      try {
+        setOpenDeleteIncident(false);
+        // setIncidentsModal(false);
+        setLoaderState(true);
+    
+        const workspace_id = buildingSite?.workspace_id;
+        const building_id = parentComponent?.building_id;
+    
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}/incidents/deleteIncident`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body:JSON.stringify({id:incidentID})
+          },
+        );
+    
+        const result = await response.json();
+    
+        if (response.ok) {
+          setNotif(true);
+          setMessage(result.message);
+
+          setSelectedRow({...selectedRow,incidents: selectedRow?.incidents?.filter((incident) => incident.id !== incidentID)});
+
+          setAllComponents((allComponents) =>
+            allComponents.map((component) => {
+              if (component.id === selectedRow.id) {
+                return {
+                  ...component,
+                  incidents: component.incidents.filter(
+                    (incident) => incident.id !== incidentID
+                  ),
+                };
+              }
+              return component;
+            })
+          );
+    
+          dispatch(componentsData(token));
+          setIncidentID(null);
+        } else {
+          console.error('Failed to deleting the incident:', result);
+          alert(`Failed to deleting the incident: ${result.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the incident.');
+      }
+    }
 
     const formatCascaderDataUsers = (users) => {
       const uniqueUsers = [];
@@ -549,8 +677,8 @@ const handleAddComponent = async () => {
   return (
     <div>
       <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
-          {[t('buildings'),t('components')].map((item) => (
-          <Link className='Link_breadcrumbs' key={item} color="neutral" href="#sizes">
+          {[t('dashboard'),t('users.workspaces'),t('buildings'),t('components')].map((item) => (
+          <Link  key={item} color="neutral" href="#sizes">
             <h5>
               {item}
             </h5>
@@ -1087,7 +1215,8 @@ const handleAddComponent = async () => {
             borderRadius: 'md',
             p: 3,
             boxShadow: 'lg',
-            overflowY:'scroll'
+            overflowY:'scroll',
+            scrollBehavior: 'smooth'
           }}
         >
           <ModalClose variant="plain" sx={{ m: 1 }} />
@@ -1361,6 +1490,7 @@ const handleAddComponent = async () => {
           setIncidentsModal(false);
           setIsEditIncident(false);
           setNewIncident({title:null,description:null,status:null,user_id:null,component_id:null,building_id:null,created_at:null,updated_at:null});
+          setSelectedRow({});
         }}
         sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' ,mt: 5,paddingLeft:'60px' ,height:'100%',width:'100%'}}
       >
@@ -1403,9 +1533,9 @@ const handleAddComponent = async () => {
                   ))}
               </Breadcrumbs>
           </div>
-          <div style={{position:'fixed',bottom:'20px',right:'10px'}}>
+          <div style={{position:'fixed',bottom:'20px',right:'10px',zIndex:10000}}  >
             <Whisper  followCursor placement='left' speaker={<Tooltip style={{zIndex:10000}}>{t('addIncident')}</Tooltip>}>
-              <Fab color="primary" aria-label="add"  >
+              <Fab color="primary" aria-label="add" onClick={()=>setOenModalNewIncident(true)}  >
                 <AddIcon />
               </Fab>
             </Whisper>
@@ -1664,7 +1794,7 @@ const handleAddComponent = async () => {
                             onChange={(value)=>handleAddIncidentInputs('building_id',value)}
                           />
                         ):(
-                          new Date(incident?.updated_at).toLocaleDateString()
+                          cascaderDataBuildings.find((b)=>b.value===incident?.building_id)?.label
                         )
                       }
                   </Typography>
@@ -1694,7 +1824,7 @@ const handleAddComponent = async () => {
                             onChange={(value)=>handleAddIncidentInputs('component_id',value)}
                           />
                         ):(
-                          new Date(incident?.updated_at).toLocaleDateString()
+                          cascaderDataComponents.find((b)=>b.value===incident?.component_id)?.label
                         )
                       }
                   </Typography>
@@ -1708,7 +1838,7 @@ const handleAddComponent = async () => {
                         )
                       }
                       <Divider orientation="vertical"/>
-                      <Button color='info' level="body-xs">{t('users.delete')}</Button>
+                      <Button color='info' level="body-xs" onClick={()=>HandleDeleteIncident(incident,incident?.id)}>{t('users.delete')}</Button>
                     </CardContent>
                   </Sheet>
                 </Card>
@@ -1719,7 +1849,245 @@ const handleAddComponent = async () => {
             </div>
         </Sheet>
       </Modal>
+      
+      {/* Modal delete incident */}
+      <Modal open={deleteIncident} onClose={() => setOpenDeleteIncident(false)}>
+        <ModalDialog variant="outlined" role="alertdialog">
+          <DialogTitle>
+            <WarningRoundedIcon />
+            Confirmation
+          </DialogTitle>
+          <Divider />
+          <DialogContent>
+            Are you sure you want to delete this incident?
+          </DialogContent>
+          <DialogActions>
+            <Button variant="solid" color="danger" onClick={confirmDeleteIncident}>
+              Confirm
+            </Button>
+            <Button variant="plain" color="neutral" onClick={() =>{ setOpenDeleteIncident(false);setDeletedRow({})}}>
+              Cancel
+            </Button>
+          </DialogActions>
+        </ModalDialog>
+      </Modal>
 
-      </div>
+      {/*add Incident*/}
+      <Modal
+          aria-labelledby="modal-title"
+          aria-describedby="modal-desc"
+          open={openModalNewIncident}
+          onClose={() => setOenModalNewIncident(false)}
+          sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' ,zIndex:1000000}}
+      >
+        <Card variant="outlined" sx={{ width: '95%' ,height:'100%',background:'rgba(255, 255, 255, 0.529)',marginTop:'30px',overflowY:'scroll'}}>
+        <ModalClose variant="plain" sx={{ m: 1 }} />
+          <CardContent>
+            <center>
+            <h5>{t('addIncident')} </h5>
+          </center>
+          <center>
+            <h4 style={{ mb: 2 ,
+              background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+              width: 'fit-content',
+              color:'transparent',
+              backgroundClip: 'text',
+              webkitBackgroundClip: 'text',
+              transition: '0.3s'
+              }}>
+            Title
+            </h4>
+            <Input
+            sx={{width:'100%'}}
+            onChange={(e)=>handleAddIncidentInputs('title',e.target.value)}  
+            />
+          </center>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            <center>
+              <h4 
+              style={{ mb: 2 ,
+                background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                width: 'fit-content',
+                color:'transparent',
+                backgroundClip: 'text',
+                webkitBackgroundClip: 'text',
+                transition: '0.3s'
+                }}>Description:</h4>
+            </center>
+              
+              <br />
+            <span >
+              
+                  <Textarea
+                  minRows={5}
+                  onChange={(e)=>handleAddIncidentInputs('description',e.target.value)}
+                  />
+                
+            </span>
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            <center>
+              <h4 
+              style={{ mb: 2 ,
+                background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                width: 'fit-content',
+                color:'transparent',
+                backgroundClip: 'text',
+                webkitBackgroundClip: 'text',
+                transition: '0.3s'
+                }}>Status:</h4> 
+            </center>
+              
+              <br />
+            
+                <Typography component='div' sx={{
+                  width:'100%',
+                  display:'flex',
+                  justifyContent:'space-around',
+                  alignItems:'center'
+                }}>
+                  <Chip
+                  variant='solid'
+                  color={newIncident?.status&&(newIncident?.status==="Open"?'success':'neutral')}
+                  onClick={()=>setNewIncident({...newIncident,status:'Open'})}
+                  sx={{
+                    width:'300px',
+                    height:'30px'
+                  }}
+                  >
+                    {(newIncident?.status==="Open")&&<FaCheck/>}&nbsp;&nbsp;Open
+                  </Chip>
+                  <Chip
+                  variant='solid'
+                  color={newIncident?.status&&(newIncident?.status==="InProgress"?'warning':'neutral')}
+                  onClick={()=>setNewIncident({...newIncident,status:'InProgress'})}
+                  sx={{
+                    width:'300px',
+                    height:'30px'
+                  }}
+                  >
+                    {(newIncident?.status==="InProgress")&&<FaCheck/>}&nbsp;&nbsp;In progress
+                  </Chip>
+                  <Chip
+                  variant='solid'
+                  color={newIncident?.status&&(newIncident?.status==="Closed"?'danger':'neutral')}
+                  onClick={()=>setNewIncident({...newIncident,status:'Closed'})}
+                  sx={{
+                    width:'300px',
+                    height:'30px'
+                  }}
+                  >
+                    {(newIncident?.status==="Closed")&&<FaCheck/>}&nbsp;&nbsp;Closed
+                  </Chip>
+                </Typography>
+              
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            <center>
+              <h4 
+              style={{ mb: 2 ,
+                background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                width: 'fit-content',
+                color:'transparent',
+                backgroundClip: 'text',
+                webkitBackgroundClip: 'text',
+                transition: '0.3s'
+                }}>Created by:</h4>
+            </center>
+              
+              <br />
+                <Cascader
+                    data={cascaderDataUsers}
+                    placeholder="Users" 
+                    columnWidth={1250}
+                    style={{width:'100%'}}
+                    popupStyle={{width:'84%',zIndex:100000000}}
+                    onChange={(value)=>handleAddIncidentInputs('user_id',value)}
+                />
+          </Typography>
+            <DateRangePicker
+              character=' - '
+              style={{width:'100%',zIndex:1000000}}
+              menuStyle={{zIndex:10000000,width:'100%',overflowY:'scroll'}}
+              placement='top'
+              onChange={(value)=>setNewIncident({...newIncident,created_at:dayjs(value[0]).format('MM/DD/YYYY'),updated_at:dayjs(value[1]).format('MM/DD/YYYY')})}
+            />
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            <center>
+              <h4 
+              style={{ mb: 2 ,
+                background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                width: 'fit-content',
+                color:'transparent',
+                backgroundClip: 'text',
+                webkitBackgroundClip: 'text',
+                transition: '0.3s'
+                }}>Parent building:</h4>
+            </center> <br />
+            <Cascader
+              data={cascaderDataBuildings}
+              placeholder="Buildings" 
+              columnWidth={1250}
+              style={{width:'100%'}}
+              placement='top'
+              popupStyle={{width:'84%',zIndex:10000000}}
+              onChange={(value)=>handleAddIncidentInputs('building_id',value)}
+            />
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            <center>
+              <h4 
+              style={{ mb: 2 ,
+                background:'linear-gradient(124deg, rgb(6, 51, 147) 0%, rgb(8, 106, 63) 50%, rgb(128, 25, 117)100%)',
+                width: 'fit-content',
+                color:'transparent',
+                backgroundClip: 'text',
+                webkitBackgroundClip: 'text',
+                transition: '0.3s'
+                }}>Parent component:</h4>
+            </center>
+              
+              <br />
+            <Cascader
+              data={cascaderDataComponents}
+              placeholder="Components" 
+              columnWidth={1250}
+              placement='top'
+              style={{width:'100%',marginBottom:'30px'}}
+              popupStyle={{width:'84%',zIndex:10000000}}
+              onChange={(value)=>handleAddIncidentInputs('component_id',value)} 
+            />
+          </Typography>
+          </CardContent>
+          <CardContent orientation="horizontal" sx={{width:'100%',display:'flex',justifyContent:'space-around',marginBottom:'20px'}}>
+            <Button color='info' level="body-xs" onClick={handleAddIncident} 
+            sx={{
+              background:' linear-gradient(124deg, rgba(12,46,96,1) 0%, rgba(38,86,17,1) 46%, rgba(9,46,100,1) 100%)',
+              width:'90%',
+              borderRadius:'20px',
+              color:'white',
+              '&:hover':{
+                boxShadow:'0 0 6px rgb(128, 25, 117)',
+                transition:'0.3s'
+              }
+            }}
+            >{t('users.save')}</Button>
+            <Divider orientation="vertical"/>
+            <Button color='info' level="body-xs" onClick={()=>setOenModalNewIncident(false)} 
+              sx={{
+                background:' linear-gradient(124deg, rgba(12,46,96,1) 0%, rgba(38,86,17,1) 46%, rgba(9,46,100,1) 100%)',
+                width:'90%',
+                borderRadius:'20px',
+                color:'white',
+                '&:hover':{
+                  boxShadow:'0 0 6px rgb(128, 25, 117)',
+                  transition:'0.3s'
+                }
+              }}
+              >{t('cancel')}</Button>
+          </CardContent>
+        </Card>
+      </Modal>
+      </div> 
   )
 }
