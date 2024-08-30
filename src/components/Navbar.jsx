@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import '../styles/Navbar.css';
 import { Button } from '@mui/joy';
 import { SiHomeassistant } from "react-icons/si";
@@ -42,6 +42,7 @@ export default function Navbar() {
     const navigate=useNavigate();
     const location = useLocation();
     const token=localStorage.getItem('token');
+    const userInfo=JSON.parse(localStorage.getItem('user'));
 
     const {t,i18n } = useTranslation();
     const [codeF, setCodeF] = React.useState('gb');
@@ -91,7 +92,7 @@ const handleSubmit = async (e) => {
             console.log(result.user);
             console.log(result.token);
             setOpen(false);
-            navigate('/dashboard/SuperAdmin');
+            navigate('/dashboard/home/dashboard');
         } catch (error) {
             alert(error.message || 'Login failed');
         }
@@ -116,37 +117,28 @@ const handleSubmit = async (e) => {
         setAnchorEl(null);
     };
 
+    const [srcImage,setSrcImage]=useState('');
+    useEffect(()=>{
+        if(token){
+            setSrcImage(userInfo.photo);
+
+        }
+    },[token]);
+
     return (
         <div className='Nav_container' style={{height:navOpen?'330px':'35px'}}>
             <h1 className='logo'><SiHomeassistant style={{color:'white'}}/>&nbsp;&nbsp;&nbsp;<span style={{color:'white'}}>AssetLink</span></h1>
             {token ? (
                 
                 <>
-                    <Button
+                    {/* <Button
                         id='toggleButton'
                         onClick={toggleNavBar}
                     >
                         <GiHamburgerMenu size={25} />
-                    </Button>
+                    </Button> */}
                     <div className='navButtons_div'>
-                        <IconButton onClick={handleClick}>
-                            <Avatar src="https://i.pravatar.cc/150?u=2" />
-                        </IconButton>
-                        <Menu
-                            anchorEl={anchorEl&&anchorEl}
-                            open={Boolean(anchorEl&&anchorEl)}
-                            onClose={handleClose2}
-                            anchorOrigin={{
-                                vertical: 'bottom',
-                                horizontal: 'right',
-                            }}
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                        >
-                            <MenuItem onClick={logOut} ><RiLogoutCircleRLine/>&nbsp;&nbsp; Log Out</MenuItem>
-                        </Menu>
+                        
                         <Select
                             className='SelectLanguage'
                             defaultValue={codeF}
@@ -193,6 +185,29 @@ const handleSubmit = async (e) => {
                                 &nbsp;&nbsp;العربية
                             </Option>
                         </Select>
+                        <div className='menuProfile'>
+                            <IconButton onClick={handleClick}>
+                                <Avatar src={srcImage} alt='p'/>
+                                {/* <Avatar src="https://i.pravatar.cc/150?u=2" /> */}
+                            </IconButton>
+                            <Menu
+                                anchorEl={anchorEl&&anchorEl}
+                                open={Boolean(anchorEl&&anchorEl)}
+                                onClose={handleClose2}
+                                anchorOrigin={{
+                                    vertical: 'bottom',
+                                    horizontal: 'right',
+                                }}
+                                transformOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                }}
+                            >
+                                <MenuItem  disabled>{userInfo.name}</MenuItem>
+                                <MenuItem  ><NavLink to='/dashboard/Profile'><RiLogoutCircleRLine/>&nbsp;&nbsp; Profile</NavLink></MenuItem>
+                                <MenuItem onClick={logOut} ><RiLogoutCircleRLine/>&nbsp;&nbsp; Log Out</MenuItem>
+                            </Menu>
+                        </div>
                     </div>
                 </>
             ) : (

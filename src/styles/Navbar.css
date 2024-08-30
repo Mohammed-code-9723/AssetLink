@@ -93,6 +93,7 @@ nav .nav_links .navbar_links:hover {
     height: 40px !important;
     width: 145px !important;
 }
+
 @media (max-width: 984px) {
     .navButtons_div{
         margin-right: 100px;
@@ -100,7 +101,7 @@ nav .nav_links .navbar_links:hover {
     .Nav_container {
         flex-direction: column;
         overflow: hidden;
-        z-index: 1000;
+        z-index: 1000000;
     }
     #toggleButton{
         display: inline-flex;
@@ -138,15 +139,23 @@ nav .nav_links .navbar_links:hover {
 
 
     .logo {
-        margin-bottom: 10px;
-        margin-top: -10px;
+        
+        position: fixed;
+        left:5px;
+        /* margin-bottom: 10px; */
+        /* margin-top: -10px; */
+    }
+
+    .menuProfile{
+        position: fixed;
+        right: 20px;
     }
 
     .SelectLanguage{
-        position: absolute !important;
-        right: 100px;
+        position: fixed !important;
+        right: 150px;
         top: 8px;
-        width: 100px !important;
+        width: 50px !important;
     }
 
     #sheet {

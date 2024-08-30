@@ -2,13 +2,13 @@ import React,{useState,useEffect} from 'react'
 import { deleteWorkspace, workspacesData, projectsData } from '../features/SuperAdminSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsersData } from '../features/UserSlice';
-import { Panel, Placeholder, AutoComplete ,Notification} from 'rsuite';
+import { Panel, Placeholder, AutoComplete ,Notification,Message,SelectPicker,DatePicker} from 'rsuite';
 
 import Card from '@mui/joy/Card';
 import CardContent from '@mui/joy/CardContent';
 
 import CardOverflow from '@mui/joy/CardOverflow';
-import { Typography,Divider,Button, Sheet ,Stack, Chip} from '@mui/joy';
+import { Typography,Divider,Button, Sheet ,Stack, Chip,Textarea} from '@mui/joy';
 import Grid from '@mui/joy/Grid';
 import Modal from '@mui/joy/Modal';
 import ModalClose from '@mui/joy/ModalClose';
@@ -37,6 +37,10 @@ import FormLabel from '@mui/joy/FormLabel';
 import Input from '@mui/joy/Input';
 import { GrUpdate } from "react-icons/gr";
 import { BiSolidAddToQueue } from "react-icons/bi";
+import {hasPermission} from '../components/CheckPermissions';
+import { MdDelete } from 'react-icons/md';
+import dayjs from 'dayjs';
+
 
 const Header = props => {
   const { title, ...rest } = props;
@@ -54,49 +58,14 @@ const Header = props => {
   );
 };
 
-const columns = [
-  { field: 'id', headerName: 'ID', width: 70 },
-  { field: 'name', headerName: 'Name', width: 150 },
-  { field: 'start_year', headerName: 'Start Year', width: 130 },
-  { field: 'end_year', headerName: 'End Year', width: 130 },
-  { field: 'maintenance_strategy', headerName: 'Maintenance Strategy', width: 200 },
-  { field: 'budgetary_constraint', headerName: 'Budgetary Constraint', width: 200 },
-  {
-    field: 'status',
-    headerName: 'Status',
-    width: 150,
-    renderCell: (params) => (
-      <Chip
-        variant="outlined"
-        color={params.value === 'Active' ? 'success' : 'danger'}
-        startDecorator={params.value==='Active'?<FaCheck />:<ImCross/>}
-      >
-        {params.value}
-      </Chip>
-    ),
-  },
-  { field: 'duration', headerName: 'Duration (years)', width: 150 },
-  {
-    field: 'action',
-    headerName: 'Actions',
-    width: 150,
-    renderCell: (params) => (
-      <div>
-        <Button style={{width:'50%'}} sx={{background:'red'}} >
-            <RiDeleteBin6Fill/>
-        </Button>
-        <Button style={{width:'50%'}} sx={{background:'blue'}} >
-            <GrUpdate/>
-        </Button>
-      </div>
-    ),
-  },
-];
+
 
 export default function WorkspacesSuperAdmin() {
   
   const dispatch=useDispatch();
   const token = localStorage.getItem('token');
+  const userInfo=JSON.parse(localStorage.getItem('user'));
+
   const { users, status, error } = useSelector((state) => state.users);
   const { workspaces, statusWorkspaces , errorWorkspaces } = useSelector((state) => state.workspaces);
   const { projects, statusProjects , errorProjects } = useSelector((state) => state.projects);
@@ -148,7 +117,7 @@ export default function WorkspacesSuperAdmin() {
 
   const moreDetails=(workspace)=>{
     setOpenMoreDetails(true);
-    setChosenWorkspaceProjects(workspaces.find(w=>w.id===workspace.id).projects || []);
+    setChosenWorkspaceProjects(workspaces?.find(w=>w.id===workspace.id)?.projects);
     setChosenWorkspace(workspace);
   }
 
@@ -302,7 +271,7 @@ export default function WorkspacesSuperAdmin() {
   useEffect(()=>{
     dispatch(workspacesData(token)).then(()=>{
       dispatch(projectsData(token));
-      setChosenWorkspaceProjects(workspaces?.find(w=>w.id===chosenWorkspace?.id)?.projects || []);
+      setChosenWorkspaceProjects(workspaces?.find(w=>w.id===chosenWorkspace?.id)?.projects);
     });
   },[messageAddProject,messageUpdateProject])
 
@@ -312,6 +281,197 @@ export default function WorkspacesSuperAdmin() {
     }, 5000);
     return ()=>clearTimeout(intervalLoader);
   },[notif]);
+
+
+  
+  const [message,setMessage]=useState('');
+  const [openAddScenario,setOpenAddScenario]=useState(false);
+  const [openDeleteScenario,setOpenDeleteScenario]=useState(false);
+  const [openUpdateScenario,setOpenUpdateScenario]=useState(false);
+  const [cScenario_id,setCscenario_id]=useState(null);
+  const [cProject_id,setCproject_id]=useState(null);
+  const [addPFS,setAddPFS]=useState(false);
+  const [newScenario,setNewScenario]=useState({
+    name:null,
+    start_year:null,
+    end_year:null,
+    maintenance_strategy:null,
+    budgetary_constraint:null,
+    status:null,
+    project_id:null,
+  });
+  const handleChange = (name, value) => {
+    setNewScenario({
+        ...newScenario,
+        [name]: value
+    });
+};
+  const handleOpenDelete=(scenario_id,project_id)=>{
+    setCproject_id(project_id);
+    setCscenario_id(scenario_id);
+    setOpenDeleteScenario(true);
+  }
+
+  const handleOpenUpdate=()=>{
+    
+  }
+
+  //!
+//!add scenario
+const handleAddScenario = async (event,project_id) => {
+  event.preventDefault();
+  // handleChange('project_id',cProject_id);
+  newScenario.project_id=project_id;
+  alert(project_id);
+  alert(JSON.stringify(newScenario));
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${chosenWorkspace?.id}/projects/${cProject_id}/scenarios/addScenario`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(newScenario),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to add report');
+    }
+
+    const data = await response.json();
+    alert(data.message);
+    dispatch(projectsData(token));
+    setAddPFS(false);
+    setOpenAddScenario(false);
+    setNewScenario({
+      name:null,
+      start_year:null,
+      end_year:null,
+      maintenance_strategy:null,
+      budgetary_constraint:null,
+      status:null,
+      project_id:null,
+    });
+    return data;
+  } catch (error) {
+      console.error('Error adding report:', error);
+      return Promise.reject(error.message);
+  } 
+};
+
+//!update scenario:
+
+
+const handleUpdateScenario= async () => {
+  try {
+      const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${chosenWorkspace?.id}/projects/${cProject_id}/scenarios/updateScenario`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(newScenario),
+      });
+
+      if (!response.ok) {
+          throw new Error('Failed to update report');
+      }
+
+      const data = await response.json();
+      setMessage(data.message);
+      dispatch(projectsData(token));
+
+      setOpenUpdateScenario(false);
+      setNewScenario({
+        name:null,
+        start_year:null,
+        end_year:null,
+        maintenance_strategy:null,
+        budgetary_constraint:null,
+        status:null,
+        project_id:null,
+      });
+      return data;
+  } catch (error) {
+      console.error(error);
+  }
+};
+
+//!delete scenario:
+
+const handleDeleteScenario = async () => {
+  
+  try {
+    // '{workspace}/projects/{project}/scenarios'
+    const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${chosenWorkspace?.id}/projects/${cProject_id}/scenarios/deleteScenario`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        body:JSON.stringify({id:cScenario_id}) 
+      });
+
+      if (!response.ok) {
+          throw new Error('Failed to delete report');
+      }
+
+      const data = await response.json();
+      setMessage(data.message);
+      dispatch(projectsData(token));
+      setOpenDeleteScenario(false);
+      return data;
+  } catch (error) {
+      console.error('Error deleting report:', error);
+      return Promise.reject(error.message);
+  }
+};
+
+  //!
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 70 },
+    { field: 'name', headerName: 'Name', width: 150 },
+    { field: 'start_year', headerName: 'Start Year', width: 130 },
+    { field: 'end_year', headerName: 'End Year', width: 130 },
+    { field: 'maintenance_strategy', headerName: 'Maintenance Strategy', width: 200 },
+    { field: 'budgetary_constraint', headerName: 'Budgetary Constraint', width: 200 },
+    {
+      field: 'status',
+      headerName: 'Status',
+      width: 150,
+      renderCell: (params) => (
+        <Chip
+          variant="outlined"
+          color={params.value === 'Active' ? 'success' : 'danger'}
+          startDecorator={params.value==='Active'?<FaCheck />:<ImCross/>}
+        >
+          {params.value}
+        </Chip>
+      ),
+    },
+    { field: 'duration', headerName: 'Duration (years)', width: 150 },
+    {
+      field: 'action',
+      headerName: 'Actions',
+      width: 150,
+      renderCell: (params) => (
+        <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%' ,height:'fit-content', alignItems:'center' }}>
+        <Button
+          onClick={() => handleOpenUpdate(params.row,params.row.project_id)}
+          style={{ marginRight: '10px', background: 'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)', color: 'white',marginTop:'6px' }}
+        >
+          <GrUpdate/>
+        </Button>
+        <Button
+          onClick={() => handleOpenDelete(params.row.id,params.row.project_id)}
+          style={{marginRight: '10px', background: 'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)', color: 'white' ,marginTop:'6px'}}
+        >
+          <MdDelete/>
+        </Button>
+      </div>
+      ),
+    },
+  ];
 
   return (
     <div>
@@ -419,30 +579,42 @@ export default function WorkspacesSuperAdmin() {
                                   display:'flex',
                                   flexWrap:'wrap'
                                 }}>
-                                  <Button  style={{width:'100%'}} onClick={()=>moreDetails(workspace)}>
-                                    <span style={{width:'20%'}}>
-                                      <FaEye/>
-                                    </span>
-                                    <span style={{width:'80%'}}>
-                                      { t('users.showPS')}
-                                    </span>
-                                  </Button>
-                                  <Button style={{width:'100%'}} sx={{background:'red'}} onClick={()=>deleteWorkspaceById(workspace)}>
-                                    <span style={{width:'20%'}}>
-                                      <RiDeleteBin6Fill/>
-                                    </span>
-                                    <span style={{width:'80%'}}>
-                                      {t('users.deleteW')}
-                                    </span>
-                                  </Button>
-                                  <Button style={{width:'100%'}} sx={{background:'red'}} onClick={()=>updateWorkspace(workspace)}>
-                                    <span style={{width:'20%'}}>
-                                      <GrUpdate/>
-                                    </span>
-                                    <span style={{width:'80%'}}>
-                                      {t('users.updateW')}
-                                    </span>
-                                  </Button>
+                                  {
+                                    (hasPermission(userInfo.permissions, 'sites', 'read')&&hasPermission(userInfo.permissions, 'projects', 'create'))&&(
+                                      <Button  style={{width:'100%'}} onClick={()=>moreDetails(workspace)}>
+                                        <span style={{width:'20%'}}>
+                                          <FaEye/>
+                                        </span>
+                                        <span style={{width:'80%'}}>
+                                          { t('users.showPS')}
+                                        </span>
+                                      </Button>
+                                    )
+                                  }
+                                  {
+                                    hasPermission(userInfo.permissions, 'workspaces', 'delete')&&(
+                                      <Button style={{width:'100%'}} sx={{background:'red'}} onClick={()=>deleteWorkspaceById(workspace)}>
+                                        <span style={{width:'20%'}}>
+                                          <RiDeleteBin6Fill/>
+                                        </span>
+                                        <span style={{width:'80%'}}>
+                                          {t('users.deleteW')}
+                                        </span>
+                                      </Button>
+                                    )
+                                  }
+                                    {
+                                      hasPermission(userInfo.permissions, 'workspaces', 'update')&&(
+                                      <Button style={{width:'100%'}} sx={{background:'rgb(2, 148, 95)'}} onClick={()=>updateWorkspace(workspace)}>
+                                        <span style={{width:'20%'}}>
+                                          <GrUpdate/>
+                                        </span>
+                                        <span style={{width:'80%'}}>
+                                          {t('users.updateW')}
+                                        </span>
+                                      </Button>
+                                      )
+                                    }
                                 </CardContent>
                               </Card> 
                             ))
@@ -532,30 +704,42 @@ export default function WorkspacesSuperAdmin() {
                                   display:'flex',
                                   flexWrap:'wrap'
                                 }}>
-                                  <Button  style={{width:'100%'}} onClick={()=>moreDetails(workspace,workspace.projects,workspace.sites)}>
-                                    <span style={{width:'20%'}}>
-                                      <FaEye/>
-                                    </span>
-                                    <span style={{width:'80%'}}>
-                                      { t('users.showPS')}
-                                    </span>
-                                  </Button>
-                                  <Button style={{width:'100%'}} sx={{background:'red'}} onClick={()=>deleteWorkspaceById(workspace)}>
-                                    <span style={{width:'20%'}}>
-                                      <RiDeleteBin6Fill/>
-                                    </span>
-                                    <span style={{width:'80%'}}>
-                                      {t('users.deleteW')}
-                                    </span>
-                                  </Button>
-                                  <Button style={{width:'100%'}} sx={{background:'rgb(2, 148, 95)'}} onClick={()=>updateWorkspace(workspace)}>
-                                    <span style={{width:'20%'}}>
-                                      <GrUpdate/>
-                                    </span>
-                                    <span style={{width:'80%'}}>
-                                      {t('users.updateW')}
-                                    </span>
-                                  </Button>
+                                  {
+                                    (hasPermission(userInfo.permissions, 'sites', 'read')&&hasPermission(user.permissions, 'projects', 'create'))&&(
+                                      <Button  style={{width:'100%'}} onClick={()=>moreDetails(workspace)}>
+                                        <span style={{width:'20%'}}>
+                                          <FaEye/>
+                                        </span>
+                                        <span style={{width:'80%'}}>
+                                          { t('users.showPS')}
+                                        </span>
+                                      </Button>
+                                    )
+                                  }
+                                  {
+                                    hasPermission(userInfo.permissions, 'workspaces', 'delete')&&(
+                                      <Button style={{width:'100%'}} sx={{background:'red'}} onClick={()=>deleteWorkspaceById(workspace)}>
+                                        <span style={{width:'20%'}}>
+                                          <RiDeleteBin6Fill/>
+                                        </span>
+                                        <span style={{width:'80%'}}>
+                                          {t('users.deleteW')}
+                                        </span>
+                                      </Button>
+                                    )
+                                  }
+                                    {
+                                      hasPermission(userInfo.permissions, 'workspaces', 'update')&&(
+                                      <Button style={{width:'100%'}} sx={{background:'rgb(2, 148, 95)'}} onClick={()=>updateWorkspace(workspace)}>
+                                        <span style={{width:'20%'}}>
+                                          <GrUpdate/>
+                                        </span>
+                                        <span style={{width:'80%'}}>
+                                          {t('users.updateW')}
+                                        </span>
+                                      </Button>
+                                      )
+                                    }
                                 </CardContent>
                               </Card> 
                             ))
@@ -654,13 +838,13 @@ export default function WorkspacesSuperAdmin() {
                 }}
                 color="neutral" 
               >
-                {
-                  chosenWorkspaceProjects.length===0?(
+                { 
+                  chosenWorkspaceProjects?.length===0?(
                     <center>
                       <h3>This workspace has no projects</h3>
-                    </center>
+                    </center> 
                   ):(
-                    chosenWorkspaceProjects.map((project, index) => (
+                    chosenWorkspaceProjects?.map((project, index) => (
                       <Panel key={index} header={
                         <Stack spacing={10}  style={{
                           background: 'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)',
@@ -671,30 +855,38 @@ export default function WorkspacesSuperAdmin() {
                           <Stack spacing={2} direction="column" >
                             <div style={{ color: 'white' ,alignItems:'flex-start'}}>{project.name}</div>
                             <div style={{ color: 'var(--rs-text-secondary)', fontSize: 12,width:'100%',display:'flex',justifyContent:'space-evenly',flexWrap:'wrap',position:'relative'}}>
-                              <Button style={{width:'30%'}} sx={{background:'red'}} onClick={(e)=>{
-                                e.stopPropagation();
-                                handleDeleteProject(e,project.id)
-                                
-                                }}>
-                                <span style={{width:'20%'}}>
-                                  <RiDeleteBin6Fill/>
-                                </span>
-                                <span style={{width:'80%'}}>
-                                  {t('users.delete')} {t('project')}
-                                </span>
-                              </Button>
-                              <Button style={{width:'30%'}} sx={{background:'blue'}} onClick={(e)=>{
-                                e.stopPropagation();
-                                handleUpdateProject(e,project)
-                                
-                                }} >
-                                <span style={{width:'20%'}}>
-                                  <GrUpdate/>
-                                </span>
-                                <span style={{width:'80%'}}>
-                                  {t('users.update')} {t('project')}
-                                </span>
-                              </Button>
+                            {
+                              hasPermission(userInfo.permissions, 'projects', 'delete')&&(
+                                <Button style={{width:'30%'}} sx={{background:'red'}} onClick={(e)=>{
+                                  e.stopPropagation();
+                                  handleDeleteProject(e,project.id)
+                                  
+                                  }}>
+                                  <span style={{width:'20%'}}>
+                                    <RiDeleteBin6Fill/>
+                                  </span>
+                                  <span style={{width:'80%'}}>
+                                    {t('users.delete')} {t('project')}
+                                  </span>
+                                </Button>
+                              )
+                            }
+                            {
+                              hasPermission(userInfo.permissions, 'projects', 'update')&&(
+                                <Button style={{width:'30%'}} sx={{background:'blue'}} onClick={(e)=>{
+                                  e.stopPropagation();
+                                  handleUpdateProject(e,project)
+                                  
+                                  }} >
+                                  <span style={{width:'20%'}}>
+                                    <GrUpdate/>
+                                  </span>
+                                  <span style={{width:'80%'}}>
+                                    {t('users.update')} {t('project')}
+                                  </span>
+                                </Button>
+                              )
+                            }
                             </div>
                           </Stack>
                         </Stack>
@@ -726,6 +918,96 @@ export default function WorkspacesSuperAdmin() {
                           ) : (
                             <p>No scenarios found</p>
                           )}
+                          <div className='Add_container'>
+                            <Button style={{width:'50%'}} sx={{background:'linear-gradient(265deg, rgb(88, 5, 115) 0%, rgb(21, 107, 76) 50%, rgb(5, 48, 135) 100%)'}} 
+                            onClick={()=>setAddPFS(!addPFS)}>
+                              <span style={{width:'20%'}}>
+                                <BiSolidAddToQueue/>
+                              </span>
+                              <span style={{width:'80%'}}>
+                                {t('addScenario')}
+                              </span>
+                            </Button>
+                          </div>
+                          <div style={{display:addPFS?'flex':'none',width:'100%',justifyContent:'center',alignItems:'center'}}>
+                          <form
+                            onSubmit={(e)=>handleAddScenario(e,project?.id)}
+                          >
+                            <Stack spacing={2}>
+                            <FormControl>
+                                <FormLabel>Name</FormLabel>
+                                <Input
+                                  name="name"
+                                  autoFocus
+                                  required
+                                  placeholder='Scenario name'
+                                  onChange={(e)=>handleChange('name',e.target.value)}
+                                />
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel>Start year</FormLabel>
+                                <DatePicker
+                                  placeholder="Start Year"
+
+                                  style={{ width: 200 }}
+                                  menuStyle={{zIndex:10000}}
+                                  onChange={value => handleChange('start_year',dayjs(value).format('YYYY'))} 
+                                  ranges={[]} 
+                                  block
+                                />
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel>End year</FormLabel>
+                                <DatePicker
+                                  placeholder="End Year"
+                                  
+                                  style={{ width: 200 }}
+                                  menuStyle={{zIndex:10000}}
+                                  onChange={value => handleChange('end_year',dayjs(value).format('YYYY'))}
+                                  ranges={[]} 
+                                  block
+                                />
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel>Maintenances strategy</FormLabel>
+                                <Textarea
+                                  name="maintenance_strategy"
+                                  required
+                                  minRow={6}
+                                  placeholder='Maintenance strategy'
+                                  onChange={(e)=>handleChange('maintenance_strategy',e.target.value)}
+                                />
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel>Budgetary constraint</FormLabel>
+                                <Input
+                                  name="Budgetary constraint"
+                                  required
+                                  minRow={6}
+                                  placeholder='Budgetary constraint'
+                                  menuStyle={{zIndex:10000}}
+                                  onChange={(e)=>handleChange('budgetary_constraint',e.target.value)}
+                                />
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel>Status</FormLabel>
+                                <SelectPicker
+                                  data={[
+                                    {label:'Active',value:'Active'},
+                                    {label:'Inactive',value:'Inactive'},
+                                  ]}
+                                  name="status"
+                                  required
+                                  minRow={6}
+                                  placeholder='status'
+                                  menuStyle={{zIndex:10000}}
+                                  onChange={(value)=>handleChange('status',value)}
+                                />
+                              </FormControl>
+                              <Button type='submit'>Submit</Button>
+                            </Stack>
+                          </form>
+                        </div>
                         </div>
                       </Panel>
                     ))
@@ -761,20 +1043,28 @@ export default function WorkspacesSuperAdmin() {
                     </Stack>
                   </form>
                 </div>
-                <div className='Add_container'>
-                  <Button style={{width:'50%'}} sx={{background:'linear-gradient(265deg, rgb(88, 5, 115) 0%, rgb(21, 107, 76) 50%, rgb(5, 48, 135) 100%)'}} onClick={()=>setAddPF(!addPF)}>
-                    <span style={{width:'20%'}}>
-                      <BiSolidAddToQueue/>
-                    </span>
-                    <span style={{width:'80%'}}>
-                      {t('addProject')}
-                    </span>
-                  </Button>
-                </div>
+                {
+                  hasPermission(userInfo.permissions, 'projects', 'create')&&(
+                    <div className='Add_container'>
+                      <Button style={{width:'50%'}} sx={{background:'linear-gradient(265deg, rgb(88, 5, 115) 0%, rgb(21, 107, 76) 50%, rgb(5, 48, 135) 100%)'}} onClick={()=>setAddPF(!addPF)}>
+                        <span style={{width:'20%'}}>
+                          <BiSolidAddToQueue/>
+                        </span>
+                        <span style={{width:'80%'}}>
+                          {t('addProject')}
+                        </span>
+                      </Button>
+                    </div>
+                  )
+                }
               </Sheet>
             </div>
             {/* <Divider/> */}
-            <Site workspace={chosenWorkspace} projects={chosenWorkspaceProjects}/>
+            {
+              hasPermission(userInfo.permissions, 'sites', 'read')&&(
+                <Site workspace={chosenWorkspace} projects={chosenWorkspaceProjects}/>
+              )
+            }
           </div>
         </Sheet>
       </Modal>
@@ -965,6 +1255,28 @@ export default function WorkspacesSuperAdmin() {
               <Button type="submit">Submit</Button>
             </Stack>
           </form>
+        </ModalDialog>
+      </Modal>
+
+
+      <Modal open={openDeleteScenario} onClose={() => setOpenDeleteScenario(false)} sx={{zIndex:1000000000000}}>
+        <ModalDialog variant="outlined" role="alertdialog">
+        <DialogTitle>
+            <WarningRoundedIcon />
+            Confirmation
+        </DialogTitle>
+        <Divider />
+        <DialogContent>
+            Are you sure you want to delete this scenario ?
+        </DialogContent>
+        <DialogActions>
+            <Button variant="solid" color="danger" onClick={() => handleDeleteScenario()}>
+            Confirm
+            </Button>
+            <Button variant="plain" color="neutral" onClick={() => setOpenDeleteScenario(false)}>
+            Cancel
+            </Button>
+        </DialogActions>
         </ModalDialog>
       </Modal>
     </div>

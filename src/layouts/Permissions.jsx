@@ -36,6 +36,8 @@ const Header = props => {
 export default function Permissions() {
   const dispatch = useDispatch();
   const token = localStorage.getItem('token');
+  const userInfo = JSON.parse(localStorage.getItem('user'));
+
   const { users, status, error } = useSelector((state) => state.users);
   const { message, statusPermissions, errorPermissions } = useSelector((state) => state.usersPermissions);
   const [allUsers, setAllUsers] = useState([]);
@@ -46,7 +48,19 @@ export default function Permissions() {
 
   useEffect(() => {
     if (users) {
-      setAllUsers(users.users);
+      if (users) {
+        if(userInfo.role==="superadmin"){
+            setAllUsers(users?.users?.filter((user)=>user.role!=="superadmin"));
+        }else if(userInfo.role==="admin"){
+            setAllUsers(users?.users?.filter((user)=>user.role!=="superadmin"&&user.role!=="admin"));
+        }else if(userInfo.role==="manager"){
+            setAllUsers(users?.users?.filter((user)=>user.role!=="manager"&&user.role!=="superadmin"&&user.role!=="admin"));
+        }else if(userInfo.role==="ingenieur"){
+            setAllUsers(users?.users?.filter((user)=>user.role!=="manager"&&user.role!=="superadmin"&&user.role!=="admin"&&user.role!=="ingenieur"));
+        }else{
+            setAllUsers(users?.users);
+        }
+    }
     }
   }, [users]);
 

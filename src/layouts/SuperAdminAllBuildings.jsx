@@ -45,7 +45,7 @@ import { useDispatch,useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import LoaderComponent from './LoaderComponent';
 import AddSiteBuildings from './AddSiteBuildings';
-
+import { hasPermission } from '../components/CheckPermissions';
 
 export default function SuperAdminAllBuildings() {
 
@@ -65,12 +65,15 @@ export default function SuperAdminAllBuildings() {
   const [allBuildings,setAllBuildings]=useState([]);
   const { sites, statusSites , errorSites } = useSelector((state) => state.sites);
   const { buildings, statusBuildings , errorBuildings } = useSelector((state) => state.buildings);
+
   const token=localStorage.getItem('token');
+  const userInfo=JSON.parse(localStorage.getItem('user'));
+
   const dispatch = useDispatch();
   const {t } = useTranslation();
 
     useEffect(()=>{
-      dispatch(sitesData(token))
+      dispatch(sitesData({token}))
       dispatch(buildingsData(token));
     },[]); 
 
@@ -92,7 +95,7 @@ export default function SuperAdminAllBuildings() {
 
   const [chosenSiteBuildings,setChosenSiteBuildings]=useState([]);
   const [siteName,setSiteName]=useState(null);
-  const [openMapModal,setOpenMapModal]=useState(false);
+  const [openMapModalBuildings,setOpenMapModalBuildings]=useState(false);
 
 
   const handleRowClick = (row) => {
@@ -136,7 +139,7 @@ export default function SuperAdminAllBuildings() {
     const HandleShowBuildings=(row)=>{
       setChosenSiteBuildings([...chosenSiteBuildings,row]);
       setSiteName(sites?.find((site)=>site.id===row.id)?.name);
-      setOpenMapModal(true);
+      setOpenMapModalBuildings(true);
   }
 
   const confirmDelete = async () => { 
@@ -177,8 +180,8 @@ export default function SuperAdminAllBuildings() {
   
       const workspace_id  = buildingSite.workspace_id; 
       const building_id =  selectedRow.id; 
-      const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}`, {
-        method: 'PUT',
+      const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/updateBuilding`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -349,10 +352,10 @@ export default function SuperAdminAllBuildings() {
           }
           <Sheet variant="soft" color="neutral" sx={{ marginTop:'10px',p: 4,borderRadius:'5px',boxShadow:'0 0 5px rgba(176, 175, 175, 0.786)' }}>
             
-            <div className='action_bottons'>
+            {/* <div className='action_bottons'>
               <h6><BsLayersFill size={22}/>&nbsp;&nbsp;<span>Current</span></h6>
               <h6><MdDelete size={22}/>&nbsp;&nbsp;<span>Recently deleted</span></h6>
-            </div>
+            </div> */}
             
             <div className='Cascader_container'>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
@@ -360,7 +363,7 @@ export default function SuperAdminAllBuildings() {
                   <Cascader
                       // data={data}
                       className='Cascader_comp'
-                      placeholder="Project" 
+                      placeholder={t("project" )}
                       columnWidth={200}
                       popupStyle={{width:'12%'}}
                   />
@@ -369,7 +372,7 @@ export default function SuperAdminAllBuildings() {
                   <Cascader
                       data={cascaderDataSites}
                       className='Cascader_comp'
-                      placeholder="Site" 
+                      placeholder={t("site")} 
                       columnWidth={200}
                       popupStyle={{width:'12%'}}
                       onChange={(value)=>setFilterSite(value)}  
@@ -379,7 +382,7 @@ export default function SuperAdminAllBuildings() {
                   <Cascader
                       data={cascaderDataBuildings}
                       className='Cascader_comp'
-                      placeholder="Building" 
+                      placeholder={t("building" )}
                       columnWidth={200}
                       popupStyle={{width:'12%'}}
                       onChange={(value)=>setFilterCode(value)}  
@@ -389,7 +392,7 @@ export default function SuperAdminAllBuildings() {
                   <Cascader
                       data={cascaderDataCities}
                       className='Cascader_comp'
-                      placeholder="City (Department)" 
+                      placeholder={t("city")} 
                       columnWidth={200}
                       popupStyle={{width:'12%'}}
                       onChange={(value)=>setFilterCity(value)}  
@@ -413,25 +416,33 @@ export default function SuperAdminAllBuildings() {
                 </Grid>
               </Grid>
             </div>
-            <div className='Add_container'>
-              <Button className='add_Button' onClick={()=>setAddBuilding(true)}><MdAdd size={22}/>&nbsp;&nbsp;{t('addBuilding')}</Button>
-            </div>
+            {
+              hasPermission(userInfo.permissions,'buildings','create')&&(
+                <div className='Add_container'>
+                  <Button className='add_Button' onClick={()=>setAddBuilding(true)}><MdAdd size={22}/>&nbsp;&nbsp;{t('addBuilding')}</Button>
+                </div>
+              )
+            }
             <div className='table_container'>
               <Table hoverRow sx={{ overflowX: 'scroll' }}>
                 <thead>
                   <tr>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Site</th>
-                    <th>Activity</th>
-                    <th>Address</th>
-                    <th style={{width:'10%'}}>Location</th>
-                    <th>Construction Year</th>
-                    <th>Floor Area&nbsp;(m²)</th>
-                    <th>Type</th>
-                    <th>Level Count</th>
-                    <th>Action</th>
-                    <th>See location</th>
+                    <th>{t('componentsPage.code')}</th>
+                    <th>{t('componentsPage.name')}</th>
+                    <th>{t('site')}</th>
+                    <th>{t('buildingsPage.activity')}</th>
+                    <th>{t('buildingsPage.address')}</th>
+                    <th style={{width:'10%'}}>{t('buildingsPage.location')}</th>
+                    <th>{t('buildingsPage.construction_year')}</th>
+                    <th>{t('buildingsPage.Floor_area')}&nbsp;(m²)</th>
+                    <th>{t('buildingsPage.type')}</th>
+                    <th>{t('buildingsPage.level_count')}</th>
+                    {
+                      hasPermission(userInfo.permissions,'buildings','delete')&&(
+                        <th>{t('buildingsPage.action')}</th>
+                      )
+                    }
+                    <th>{t('buildingsPage.seeLocation')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -455,18 +466,22 @@ export default function SuperAdminAllBuildings() {
                         <td>{row.surface}</td>
                         <td>{row.type}</td>
                         <td>{row.level_count}</td>
-                        <td>
-                          <Button sx={{
-                            background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
-                          }}
-                          onClick={(e)=>{
-                            e.stopPropagation();
-                            HandleDelete(row)
-                          }}
-                          >
-                            <MdDelete size={22}/>
-                          </Button>
-                        </td>
+                        {
+                          hasPermission(userInfo.permissions,'buildings','delete')&&(
+                            <td>
+                              <Button sx={{
+                                background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
+                              }}
+                              onClick={(e)=>{
+                                e.stopPropagation();
+                                HandleDelete(row)
+                              }}
+                              >
+                                <MdDelete size={22}/>
+                              </Button>
+                            </td>
+                          )
+                        }
                         <td>
                           <Button sx={{
                             background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
@@ -499,18 +514,22 @@ export default function SuperAdminAllBuildings() {
                         <td>{row.surface}</td>
                         <td>{row.type}</td>
                         <td>{row.level_count}</td>
-                        <td>
-                          <Button sx={{
-                            background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
-                          }}
-                          onClick={(e)=>{
-                            e.stopPropagation();
-                            HandleDelete(row)
-                          }}
-                          >
-                            <MdDelete size={22}/>
-                          </Button>
-                        </td>
+                        {
+                          hasPermission(userInfo.permissions,'buildings','delete')&&(
+                            <td>
+                              <Button sx={{
+                                background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
+                              }}
+                              onClick={(e)=>{
+                                e.stopPropagation();
+                                HandleDelete(row)
+                              }}
+                              >
+                                <MdDelete size={22}/>
+                              </Button>
+                            </td>
+                          )
+                        }
                         <td>
                           <Button sx={{
                             background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
@@ -584,40 +603,50 @@ export default function SuperAdminAllBuildings() {
           > 
             <SiTestrail style={{color:'rgb(3, 110, 74)'}}/>
             <span>
-              Building {selectedRow!==null&&selectedRow.name}
+            {
+                (t('building')==="بناء")?(
+                  selectedRow !== null && selectedRow.name ? (`${t('building')}${selectedRow.name}`) : (t('building'))
+                ):(
+                  t('building')
+                )
+              }
+              
             </span>
           </Typography>
           <div>
             <Divider>
               <h3 id='title_H3'>
                 <IoIosInformationCircle/>
-                <span>Information</span>
+                <span>{('componentsPage.information')}</span>
               </h3>
             </Divider>
             <div className='info-container'>
               <Divider>
-                <h4>Information</h4>
+                <h4>{('componentsPage.information')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>Name</span><br />
+                  <span>{('componentsPage.name')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                     defaultValue={selectedRow?.name || ''}
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Code</span><br />
+                  <span>{('componentsPage.code')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                     defaultValue={selectedRow?.code || ''}
                     onChange={(e) => handleInputChange('code', e.target.value)}
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Parent Site</span><br />
+                  <span>{('buildingsPage.PS')}</span><br />
                   <Cascader
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                       data={sites?.map((site) => ({ label: site.name, value: site.id }))}
                       defaultValue={buildingSite?.id} // Use `buildingSite?.id` here
                       placeholder="Parent Site"
@@ -628,20 +657,22 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Correlation Code</span><br />
+                  <span>{('buildingsPage.CC')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                     placeholder="Correlation Code"
                     variant="outlined"
                   />
                 </Grid>
               </Grid>
               <Divider>
-                <h4>Address</h4>
+                <h4>{('buildingsPage.address')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>Address</span><br />
+                  <span>{('buildingsPage.address')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                     defaultValue={selectedRow?.address || ''}
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     variant="outlined"
@@ -649,12 +680,13 @@ export default function SuperAdminAllBuildings() {
                 </Grid>
               </Grid>
               <Divider>
-                <h4>Parent Site information</h4>
+                <h4>{('buildingsPage.PSI')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Country</span><br />
+                  <span>{('buildingsPage.Ctr')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                     readOnly
                     defaultValue={buildingSite?.country || ''}
                     onChange={(e) => handleInputChange('country', e.target.value)}
@@ -662,8 +694,9 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Zipcode</span><br />
+                  <span>{('buildingsPage.ZC')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                   readOnly
                     defaultValue={buildingSite?.zipcode || ''}
                     onChange={(e) => handleInputChange('zipcode', e.target.value)}
@@ -671,16 +704,18 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Region/State</span><br />
+                  <span>{('buildingsPage.RS')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                   readOnly
                     placeholder="Region/State"
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>City</span><br />
+                  <span>{t('city')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                   readOnly
                     defaultValue={buildingSite?.city || ''}
                     onChange={(e) => handleInputChange('city', e.target.value)}
@@ -690,6 +725,7 @@ export default function SuperAdminAllBuildings() {
                 <Grid item xs={12} md={6} lg={6} sm={12}>
                   <span>Department</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                   readOnly
                     placeholder="Department"
                     variant="outlined"
@@ -697,20 +733,22 @@ export default function SuperAdminAllBuildings() {
                 </Grid>
               </Grid>
               <Divider>
-                <h4>Characteristics</h4>
+                <h4>{('componentsPage.Characteristics')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Level Count</span><br />
+                  <span>{('buildingsPage.level_count')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                     defaultValue={selectedRow?.level_count || ''}
                     variant="outlined"
                     onChange={(e) => handleInputChange('level_count', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Construction year </span><br />
+                  <span>{('buildingsPage.construction_year')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                     defaultValue={selectedRow?.year_of_construction || ''}
                     variant="outlined"
                     type="number"
@@ -718,8 +756,9 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Floor area (m²)</span><br />
+                  <span>{('buildingsPage.Floor_area')}(m²)</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                     defaultValue={selectedRow?.surface || ''}
                     variant="outlined"
                     endDecorator={<Button sx={{height:'100%',marginRight:'-12px',background:'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)'}}>m²</Button>}
@@ -727,23 +766,26 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Activity</span><br />
+                  <span>{('buildingsPage.activity')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                     defaultValue={selectedRow?.activity || ''}
                     variant="outlined"
                     onChange={(e) => handleInputChange('activity', e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>Comment</span><br />
+                  <span>{('buildingsPage.Cmt')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                     variant="outlined"
                     placeholder='Comment'
                   />
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>Location</span><br />
+                  <span>{('buildingsPage.location')}</span><br />
                   <Input
+                  disabled={!hasPermission(userInfo.permissions,'buildings','update')}
                     onClick={()=>setUpdateLocation(true)}
                     value={selectedRow?.location}
                     variant="outlined"
@@ -803,19 +845,19 @@ export default function SuperAdminAllBuildings() {
           > 
             <IoMdCreate style={{color:'rgb(3, 110, 74)'}}/>
             <span>
-              Create Building
+              {t('buildingsPage.CB')}
             </span>
           </Typography>
           <div>
             <h3 id='title_H3'>
               <IoIosInformationCircle/>
-              <span>Information</span>
+              <span>{t('componentsPage.information')}</span>
             </h3>
             <div className='info-container'>
-              <h4>Information</h4>
+              <h4>{t('componentsPage.information')}</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>Name</span><br />
+                  <span>{t('componentsPage.name')}</span><br />
                   <Input
                     onChange={(e) => setNewBuilding({...newBuilding,name:e.target.value})}
                     variant="outlined"
@@ -823,7 +865,7 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Code</span><br />
+                  <span>{t('componentsPage.code')}</span><br />
                   <Input
                     onChange={(e) => setNewBuilding({...newBuilding,code:e.target.value})}
                     variant="outlined"
@@ -831,7 +873,7 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Parent Site</span><br />
+                  <span>{t('buildingsPage.PS')}</span><br />
                   <Cascader
                     data={cascaderDataSites}
                     placeholder="Parent Site" 
@@ -842,10 +884,10 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
               </Grid>
-              <h4>Address</h4>
+              <h4>{t('buildingsPage.address')}</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>Address</span><br />
+                  <span>{t('buildingsPage.address')}</span><br />
                   <Input
                     onChange={(e) => setNewBuilding({...newBuilding,address:e.target.value})}
                     variant="outlined"
@@ -854,55 +896,10 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
               </Grid>
-              {/* <h4>Parent Site information</h4>
+              <h4>{t('componentsPage.Characteristics')}</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Country</span><br />
-                  <Input
-                    onChange={(e) => setNewBuilding({Country:e.target.value})}
-                    variant="outlined"
-                    placeholder="Country"
-
-                  />
-                </Grid>
-                <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Zipcode</span><br />
-                  <Input
-                    onChange={(e) => setNewBuilding({Zipcode:e.target.value})}
-                    variant="outlined"
-                    placeholder="Zipcode"
-                  />
-                </Grid>
-                <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Region/State</span><br />
-                  <Input
-                    placeholder="Region/State"
-                    variant="outlined"
-                    onChange={(e) => setNewBuilding({Region_State:e.target.value})}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>City</span><br />
-                  <Input
-                    onChange={(e) => setNewBuilding({City:e.target.value})}
-                    variant="outlined"
-                    placeholder="City"
-                  />
-                </Grid>
-                <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Department</span><br />
-                  <Input
-                    placeholder="Department"
-                    variant="outlined"
-                    onChange={(e) => setNewBuilding({Department:e.target.value})}
-
-                  />
-                </Grid>
-              </Grid> */}
-              <h4>Characteristics</h4>
-              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Level Count</span><br />
+                  <span>{t('buildingsPage.level_count')}</span><br />
                   <Input
                     variant="outlined"
                     placeholder="Level Count"
@@ -911,7 +908,7 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Construction year </span><br />
+                  <span>{t('buildingsPage.construction_year')}</span><br />
                   <Input
                     variant="outlined"
                     placeholder="Construction year"
@@ -921,7 +918,7 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Floor area (m²)</span><br />
+                  <span>{t('buildingsPage.Floor_area')} (m²)</span><br />
                   <Input
                     variant="outlined"
                     placeholder="Floor area"
@@ -930,7 +927,7 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <span>Activity</span><br />
+                  <span>{t('buildingsPage.activity')}</span><br />
                   <Input
                     variant="outlined"
                     placeholder="Activity"
@@ -939,7 +936,7 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>Type</span><br />
+                  <span>{t('buildingsPage.type')}</span><br />
                   <Input
                     variant="outlined"
                     placeholder='Type'
@@ -948,7 +945,7 @@ export default function SuperAdminAllBuildings() {
                   />
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>Location</span><br />
+                  <span>{t('buildingsPage.location')}</span><br />
                   <Input
                     onClick={()=>setUpdateLocation(true)}
                     value={newBuilding.location}
@@ -966,8 +963,8 @@ export default function SuperAdminAllBuildings() {
                 }
               </div>
               <div className='action_buttons_validate_cancel'>
-                <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={emptyFields}>Cancel</Button>
-                <Button className='checkBtn' startDecorator={<FaCheck />} onClick={handleAddBuilding}>Validate</Button>
+                <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={emptyFields}>{t('Cancel')}</Button>
+                <Button className='checkBtn' startDecorator={<FaCheck />} onClick={handleAddBuilding}>{t('buildingsPage.CB')}</Button>
               </div>
           </div>
         </Sheet>
@@ -979,20 +976,20 @@ export default function SuperAdminAllBuildings() {
         <ModalDialog variant="outlined" role="alertdialog" sx={{width:'40%'}}>
           <DialogTitle>
             <WarningRoundedIcon />
-            Confirmation
+            {('componentsPage.confirmation')}
           </DialogTitle>
           <Divider />
           <DialogContent sx={{width:'100%'}}>
             <Typography level='div' id="modal-desc" textColor="text.tertiary">
-              Are you sure you want to delete building <strong>{deletedRow?.name}</strong> ?
+              {('componentsPage.questionD')} {t('building')}?
             </Typography>
           </DialogContent>
           <DialogActions>
             <Button variant="solid" color="danger" onClick={confirmDelete}>
-              Confirm
+              {('componentsPage.Confirm')}
             </Button>
             <Button variant="plain" color="neutral" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
-              Cancel
+              {('cancel')}
             </Button>
           </DialogActions>
         </ModalDialog>
@@ -1014,9 +1011,9 @@ export default function SuperAdminAllBuildings() {
       <Modal
         aria-labelledby="modal-title"
         aria-describedby="modal-desc"
-        open={openMapModal}
+        open={openMapModalBuildings}
         onClose={() => {
-          setOpenMapModal(false);
+          setOpenMapModalBuildings(false);
           setChosenSiteBuildings([]);
         }}
         sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' ,zIndex:1000,marginLeft:'50px',marginTop:'70px'}}

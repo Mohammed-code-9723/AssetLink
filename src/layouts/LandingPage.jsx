@@ -60,7 +60,7 @@ export default function LandingPage() {
             const result = await dispatch(login({ email, password })).unwrap();
             localStorage.setItem('user', JSON.stringify(result.user));
             localStorage.setItem('token', result.token);
-            navigate('/dashboard/SuperAdmin');
+            navigate('/dashboard/home/dashboard');
         } catch (error) {
             alert(error.message || 'Login failed');
         }

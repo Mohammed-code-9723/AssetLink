@@ -5,7 +5,7 @@ import '../styles/Sidebar.css';
 import 'rsuite/dist/rsuite.min.css';
 import { FaCity } from "react-icons/fa";
 import { Divider } from '@mui/joy';
-import { Sidenav, Nav } from 'rsuite';
+import { Sidenav, Nav, Tooltip } from 'rsuite';
 import { FaVectorSquare } from "react-icons/fa6";
 import { MdDashboard } from "react-icons/md";
 //
@@ -32,7 +32,6 @@ import { IoSettings } from "react-icons/io5";
 import { useTranslation } from 'react-i18next';
 import { Popover, Whisper, Button, Dropdown } from 'rsuite';
 import { hasPermission } from './CheckPermissions';
-
 
 export default function Sidebar({onToggle}) {
     const [expanded, setExpanded] = React.useState(true);
@@ -69,12 +68,15 @@ export default function Sidebar({onToggle}) {
                     <Nav activeKey={activeKey} style={{display:'flex',gap:55,flexDirection:'column',overflowX:'hidden'}} onSelect={setActiveKey}>
                         {
                             hasPermission(user.permissions, 'dashboard', 'read')&&(
-                            <NavLink to={user.role==="superadmin"?'/dashboard/SuperAdmin':'/dashboard'} eventKey="1" className='dash_links' style={{width:'100%',display:'flex',alignItems:'center',height:'50px'}}>
-                                <span style={{width:!expanded?'100%':'28%',display:'flex',alignItems:'center',justifyContent:'center'}}><MdDashboard  size={18}/></span>
-                                <span style={{ width: '90%' ,display:expanded?'inline':'none'}} >{t('dashboard')}</span>
-                            </NavLink>)
+                                <NavLink to={'/dashboard/home/dashboard'} eventKey="1" className='dash_links' style={{marginTop:'10px',width:'100%',display:'flex',alignItems:'center',height:'50px'}}
+                                    onClick={()=>!expanded?handleToggle():true}
+                                    >
+                                        <span style={{width:!expanded?'100%':'28%',display:'flex',alignItems:'center',justifyContent:'center'}}><MdDashboard  size={18}/></span> 
+                                        <span style={{ width: '90%' ,display:expanded?'inline':'none'}} >{t('dashboard')}</span> 
+                                    </NavLink>
+                            )
                         }
-                        {/* <div eventKey="2" style={{width:'100%',display:user.role==="superadmin"?'none':'flex'}}>
+                        {/* <div eventKey="2" style={{width:'100%',display:user.role==="superadmin"?'flex':'none'}}>
                             <span style={{width:!expanded?'100%':'28%',display:'flex',alignItems:'center',justifyContent:'center'}}><FaVectorSquare size={18}/></span>
                             <Cascader
                                 // data={data}
@@ -82,7 +84,7 @@ export default function Sidebar({onToggle}) {
                                 placeholder="All Workspaces" 
                             />
                         </div>
-                        <div eventKey="2" style={{width:'100%',display:user.role==="superadmin"?'none':'flex'}}>
+                        <div eventKey="2" style={{width:'100%',display:user.role==="superadmin"?'flex':'none'}}>
                             <span style={{width:!expanded?'100%':'28%',display:'flex',alignItems:'center',justifyContent:'center'}}><RiProjectorFill size={18}/></span>
                             <Cascader
                                 // data={data}
@@ -101,21 +103,26 @@ export default function Sidebar({onToggle}) {
                             >
                                 {
                                     hasPermission(user.permissions, 'user_management', 'read')&&(
-                                        <Dropdown style={{
+                                        <Dropdown
+                                        onClick={()=>!expanded?handleToggle():true}
+                                        style={{
                                             position:expanded?'relative':'absolute',
                                             right:0,
-                                            zIndex:1000000
-                                        }} title={t("users.users")}  icon={<Us style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement={expanded ? "rightStart" : "rightEnd"}>
-                                            <Dropdown.Item eventKey="4" className='Dropdown_items'>
-                                                <NavLink to='/dashboard/SuperAdmin/AllUsers' className='main_links'>
+                                            zIndex:1000000,
+                                            fontWeight:'bold'
+                                        }} title={t("users.users")}  
+                                        
+                                        icon={<Us style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement={expanded ? "rightStart" : "rightEnd"}>
+                                            <Dropdown.Item eventKey="4" className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/AllUsers' className='workspace_links'>
                                                     <FaUsers  style={{marginRight:'10px'}}/>
                                                     <span>
                                                         {t("users.allUsers")}
                                                     </span>
                                                 </NavLink>
                                             </Dropdown.Item>
-                                            <Dropdown.Item eventKey="1" className='Dropdown_items'>
-                                                <NavLink to='/dashboard/SuperAdmin/Permissions' className='main_links'>
+                                            <Dropdown.Item eventKey="1" className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/Permissions' className='workspace_links'>
                                                     <FaUserShield   style={{marginRight:'10px'}}/>
                                                         <span>
                                                             {t("users.permissions")}
@@ -136,7 +143,7 @@ export default function Sidebar({onToggle}) {
                             }} 
                             
                             >
-                                <Dropdown title={t("users.workspaces")} icon={<MdWorkspacesFilled size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                <Dropdown style={{fontWeight:'bold'}} onClick={()=>!expanded?handleToggle():true}  title={t("users.workspaces")} icon={<MdWorkspacesFilled size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
                                 {
                                     hasPermission(user.permissions, 'workspaces', 'read')&&(
                                         user.role==="superadmin"?(
@@ -150,7 +157,7 @@ export default function Sidebar({onToggle}) {
                                             </Dropdown.Item>
                                         ):(
                                             <Dropdown.Item eventKey="5"  className='Dropdown_item_workspace'>
-                                                <NavLink to={`/dashboard/${user.role}/Workspaces`} className='workspace_links'>
+                                                <NavLink to={`/dashboard/Workspaces`} className='workspace_links'>
                                                     <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
                                                     <span>
                                                         {t("users.allWorkspaces")}
@@ -162,38 +169,71 @@ export default function Sidebar({onToggle}) {
                                 }
                                 {
                                     hasPermission(user.permissions, 'sites', 'read')&&(
-                                        <Dropdown.Item eventKey="7"  className='Dropdown_item_workspace'>
-                                            <NavLink to='/dashboard/SuperAdmin/Sites' className='workspace_links'>
-                                                <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
-                                                <span>
-                                                    {t("users.allSites")}
-                                                </span>
-                                            </NavLink>
-                                        </Dropdown.Item>
+                                        (user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?(
+                                            <Dropdown.Item eventKey="7"  className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/Sites' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        {t("users.allSites")}
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                        ):(
+                                            <Dropdown.Item eventKey="7"  className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/Sites' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        {t("users.allSites")}
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                        )
                                     )
                                 }
                                 {
                                     hasPermission(user.permissions, 'buildings', 'read')&&(
-                                        <Dropdown.Item eventKey="8"  className='Dropdown_item_workspace'>
-                                            <NavLink to='/dashboard/SuperAdmin/Buildings' className='workspace_links'>
-                                                <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
-                                                <span>
-                                                    {t("users.allBuildings")}
-                                                </span>
-                                            </NavLink>
-                                        </Dropdown.Item>
+                                        (user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?(
+                                            <Dropdown.Item eventKey="8"  className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/Buildings' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        {t("users.allBuildings")}
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                        ):(
+                                            <Dropdown.Item eventKey="8"  className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/Buildings' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        {t("users.allBuildings")}
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                        )
                                     )
                                 }
                                 {
                                     hasPermission(user.permissions, 'components', 'read')&&(
-                                        <Dropdown.Item eventKey="8"  className='Dropdown_item_workspace'>
-                                            <NavLink to='/dashboard/SuperAdmin/Components' className='workspace_links'>
-                                                <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
-                                                <span>
-                                                    {t("users.allComponents")}
-                                                </span>
-                                            </NavLink>
-                                        </Dropdown.Item>
+                                        (user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?(
+                                            <Dropdown.Item eventKey="8"  className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/Components' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        {t("users.allComponents")}
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                        ):(
+                                            <Dropdown.Item eventKey="8"  className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/Components' className='workspace_links'>
+                                                    <MdWorkspacesFilled  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        {t("users.allComponents")}
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                        )
                                     )
                                 }
                                 {
@@ -232,10 +272,13 @@ export default function Sidebar({onToggle}) {
                             }} 
                             
                             >
-                                <Dropdown title={t("users.analytics")} icon={<FiBarChart2 size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
-                                    <Dropdown.Item eventKey="1" icon={<GiNetworkBars  style={{marginRight:'10px'}}/>}>
-                                        <NavLink to='/dashboard/SuperAdmin/Analytics' className='main_links'>
-                                            {t("users.analytics")}
+                                <Dropdown style={{fontWeight:'bold'}} onClick={()=>!expanded?handleToggle():true} title={t("users.analytics")} icon={<FiBarChart2 size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                    <Dropdown.Item eventKey="1" className='Dropdown_item_workspace'>
+                                        <NavLink to='/dashboard/SuperAdmin/Analytics' className='workspace_links'>
+                                            <GiNetworkBars  style={{marginRight:'10px'}}/>
+                                            <span>
+                                                {t("users.analytics")}
+                                            </span>
                                         </NavLink>
                                     </Dropdown.Item>
                                 </Dropdown>
@@ -251,10 +294,13 @@ export default function Sidebar({onToggle}) {
                                         alignItems:'center'
                                     }} 
                                     >
-                                        <Dropdown title="Assign tasks" icon={<FaTasks size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
-                                            <Dropdown.Item eventKey="1" icon={<FaTasks  style={{marginRight:'10px'}}/>}>
-                                                <NavLink to='/dashboard/SuperAdmin/assignTasks' className='main_links'>
-                                                    Assign tasks
+                                        <Dropdown style={{fontWeight:'bold'}} onClick={()=>!expanded?handleToggle():true} title="Assign tasks" icon={<FaTasks size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                            <Dropdown.Item eventKey="1" className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/assignTasks' className='workspace_links'>
+                                                    <FaTasks  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        Assign tasks
+                                                    </span>
                                                 </NavLink>
                                             </Dropdown.Item>
                                         </Dropdown>
@@ -263,7 +309,7 @@ export default function Sidebar({onToggle}) {
                             )
                         }
                         {
-                            user.role==="superadmin"&&(
+                            hasPermission(user.permissions, 'settings', 'read')&&(
                                 <div style={{width:'100%',display:'flex'}}>
                                     <Nav style={{
                                         width:'100%',
@@ -273,10 +319,13 @@ export default function Sidebar({onToggle}) {
                                     }} 
                                     
                                     >
-                                        <Dropdown title={t("users.settings")} icon={<IoSettings size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
-                                            <Dropdown.Item eventKey="1" icon={<IoSettings  style={{marginRight:'10px'}}/>}>
-                                                <NavLink to='/dashboard/SuperAdmin/Settings' className='main_links'>
+                                        <Dropdown style={{fontWeight:'bold'}} onClick={()=>!expanded?handleToggle():true} title={t("users.settings")} icon={<IoSettings size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                            <Dropdown.Item eventKey="1" className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/Settings' className='workspace_links'>
+                                                <IoSettings  style={{marginRight:'10px'}}/>
+                                                <span>
                                                     {t("users.settings")}
+                                                </span>
                                                 </NavLink>
                                             </Dropdown.Item>
                                         </Dropdown>
@@ -286,7 +335,7 @@ export default function Sidebar({onToggle}) {
                         }
                     </Nav>
                 </Sidenav.Body>
-                <Sidenav.Toggle onToggle={handleToggle} />
+                <Sidenav.Toggle onToggle={handleToggle} style={{width:'100%'}}/>
             </Sidenav>
         </div>
     );

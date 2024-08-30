@@ -47,6 +47,8 @@ import AddIcon from '@mui/icons-material/Add';
 import { fetchUsersData } from '../features/UserSlice';
 // import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import dayjs from 'dayjs';
+import { hasPermission } from '../components/CheckPermissions';
+
 
 export default function SuperAdminAllComponents() {
 
@@ -79,14 +81,17 @@ export default function SuperAdminAllComponents() {
   const [newComponent,setNewComponent]=useState({code:null,name:null, quantity:null,condition:null,building_id:null,last_rehabilitation_year:null,risk_level:null,severity_max:null,description:null,severity_safety:null,severity_operations:null,severity_work_conditions:null,severity_environment:null,characteristics:null,severity_image:null,unit:null});
 
   const token=localStorage.getItem('token');
+  const userInfo=JSON.parse(localStorage.getItem('user'));
   const dispatch = useDispatch();
   const {t}=useTranslation();
 
   const [parentBuilding,setParentBuilding]=useState({});
 
+
+
   useEffect(()=>{
     dispatch(buildingsData(token));
-    dispatch(componentsData(token));
+    dispatch(componentsData({token}));
     dispatch(sitesData(token));
     dispatch(fetchUsersData(token));
   },[]);
@@ -166,7 +171,7 @@ export default function SuperAdminAllComponents() {
             setMessage(result.message);
             setAllComponents(allComponents.filter((b)=>b.id!==deletedRow.id));
             dispatch(buildingsData(token));
-            dispatch(componentsData(token));
+            dispatch(componentsData({token}));
             setSelectedRow({})
         } else {
             console.error('Failed to delete the component:', result);
@@ -206,7 +211,7 @@ const handleUpdateComponent = async () => {
         }
         return component;
       }));
-      dispatch(componentsData(token));
+      dispatch(componentsData({token}));
       setOpen(false);
       setLoaderState(false); 
       setSelectedRow({})
@@ -444,7 +449,7 @@ const handleAddComponent = async () => {
     const [openModalNewIncident,setOenModalNewIncident]=useState(false);
 
     const handleAddIncident=async()=>{
-      console.log(newIncident);
+      // console.log(newIncident);
       try {
         setOenModalNewIncident(false);
         // setIncidentsModal(false);
@@ -485,11 +490,11 @@ const handleAddComponent = async () => {
             })
           );
     
-          dispatch(componentsData(token));
+          dispatch(componentsData({token}));
           setIncidentID(null);
         } else {
-          console.error('Failed to deleting the incident:', result);
-          alert(`Failed to deleting the incident: ${result.error || 'Unknown error'}`);
+          console.error('Failed to add the incident:', result);
+          alert(`Failed to add the incident: ${result.error || 'Unknown error'}`);
         }
       } catch (error) {
         console.error('Error:', error);
@@ -499,7 +504,7 @@ const handleAddComponent = async () => {
 
     //!update incident:
     const handleSaveIncident = async () => {
-      console.log(newIncident);
+      // console.log(newIncident);
       try {
         setLoaderState(true);
     
@@ -507,14 +512,14 @@ const handleAddComponent = async () => {
         const building_id = selectedRow?.building_id;
     
         const response = await fetch(
-          `http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}/incidents/${incidentID}`,
+          `http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}/incidents/updateIncident`,
           {
-            method: 'PUT',
+            method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify(newIncident),
+            body: JSON.stringify({newIncident:newIncident,id:incidentID}),
           }
         );
     
@@ -541,7 +546,7 @@ const handleAddComponent = async () => {
             })
           );
     
-          dispatch(componentsData(token));
+          dispatch(componentsData({token}));
     
           setIncidentsModal(false);
           setIncidentID(null);
@@ -626,7 +631,7 @@ const handleAddComponent = async () => {
             })
           );
     
-          dispatch(componentsData(token));
+          dispatch(componentsData({token}));
           setIncidentID(null);
         } else {
           console.error('Failed to deleting the incident:', result);
@@ -687,7 +692,7 @@ const handleAddComponent = async () => {
       </Breadcrumbs>
       <div>
         <div className='title_image'>
-          <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> Components </span></h2>
+          <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> {t('components')} </span></h2>
           <img src="/assets/Components.svg" alt="comp_img" />
         </div>
         {
@@ -699,10 +704,10 @@ const handleAddComponent = async () => {
           }
         <Sheet variant="soft" color="neutral" sx={{ marginTop:'10px',p: 4,borderRadius:'5px',boxShadow:'0 0 5px rgba(176, 175, 175, 0.786)' }}>
           
-          <div className='action_bottons'>
+          {/* <div className='action_bottons'>
             <h6><BsLayersFill size={22}/>&nbsp;&nbsp;<span>Current</span></h6>
             <h6><MdDelete size={22}/>&nbsp;&nbsp;<span>Recently deleted</span></h6>
-          </div>
+          </div> */}
           
           <div className='Cascader_container'>
             <Grid container spacing={2} sx={{ flexGrow: 1 }}>
@@ -759,9 +764,13 @@ const handleAddComponent = async () => {
               </Grid>
             </Grid>
           </div>
-          <div className='Add_container'>
-            <Button className='add_Button' onClick={()=> setOpenAddComponent(true)}><MdAdd size={22}/>&nbsp;&nbsp;{t('addComponent')}</Button>
-          </div>
+          {
+            hasPermission(userInfo.permissions,'components','create')&&(
+              <div className='Add_container'>
+                <Button className='add_Button' onClick={()=> setOpenAddComponent(true)}><MdAdd size={22}/>&nbsp;&nbsp;{t('addComponent')}</Button>
+              </div>
+            )
+          }
           <div className='table_container'>
             <Table hoverRow 
             sx={{
@@ -770,18 +779,26 @@ const handleAddComponent = async () => {
             }}>
               <thead>
                 <tr>
-                  <th  style={{width:'50px',textAlign:'center'}}>Code</th>
-                  <th style={{width:'150px',textAlign:'center'}}>Name</th>
-                  <th  style={{width:'150px',textAlign:'center'}}>Quantity</th>
-                  <th  style={{width:'150px',textAlign:'center'}}>Unit</th>
-                  <th  style={{width:'150px',textAlign:'center'}}>Last rehabilitation year</th>
-                  <th  style={{width:'70px',textAlign:'center'}}>Condition</th>
-                  <th  style={{width:'100px',textAlign:'center'}}>Severity Max</th>
-                  <th  style={{width:'70px',textAlign:'center'}}>Risk Level</th>
-                  <th  style={{width:'150px',textAlign:'center'}}>Building</th>
-                  <th style={{width:'660px',textAlign:'center',paddingRight:'190px'}}>Description</th>
-                  <th style={{width:'100px',textAlign:'center',position:'absolute',right:'150px',display:'flex',justifyContent:'center',alignItems:'center',marginBottom:'-10px'}}>Incidents</th>
-                  <th style={{width:'100px',textAlign:'center',position:'absolute',right:0,display:'flex',justifyContent:'center',alignItems:'center',marginBottom:'-10px'}}>Action</th>
+                  <th  style={{width:'50px',textAlign:'center'}}>{t('componentsPage.code')}</th>
+                  <th style={{width:'150px',textAlign:'center'}}>{t('componentsPage.name')}</th>
+                  <th  style={{width:'150px',textAlign:'center'}}>{t('componentsPage.quantity')}</th>
+                  <th  style={{width:'150px',textAlign:'center'}}>{t('componentsPage.unit')}</th>
+                  <th  style={{width:'150px',textAlign:'center'}}>{t('componentsPage.last_rehabilitation_year')}</th>
+                  <th  style={{width:'70px',textAlign:'center'}}>{t('componentsPage.condition')}</th>
+                  <th  style={{width:'100px',textAlign:'center'}}>{t('componentsPage.severity_max')}</th>
+                  <th  style={{width:'70px',textAlign:'center'}}>{t('componentsPage.risk_level')}</th>
+                  <th  style={{width:'150px',textAlign:'center'}}>{t('building')}</th>
+                  <th style={{width:'660px',textAlign:'center',paddingRight:'190px'}}>{t('componentsPage.description')}</th>
+                  {
+                    hasPermission(userInfo.permissions,'incidents','read')&&(
+                      <th style={{width:'100px',textAlign:'center',position:'absolute',right:'150px',display:'flex',justifyContent:'center',alignItems:'center',marginBottom:'-10px'}}>{t('Incidents')}</th>
+                    )
+                  }
+                  {
+                    hasPermission(userInfo.permissions,'components','delete')&&(
+                      <th style={{width:'100px',textAlign:'center',position:'absolute',right:0,display:'flex',justifyContent:'center',alignItems:'center',marginBottom:'-10px'}}>{t('buildingsPage.action')}</th>
+                    )
+                  }
                 </tr>
               </thead>
               <tbody>
@@ -806,30 +823,38 @@ const handleAddComponent = async () => {
                           <Avatar circle style={{ background: row.risk_level==='R1'?'green':(row.risk_level==='R2')?'rgb(250, 218, 9)':(row.risk_level==='R3')?'orange':'red' }}>{row.risk_level}</Avatar>
                         </td>
                         <td>{buildings?.buildings?.find((building)=>building.id===row?.building_id)?.name}</td>
-                        <td>{row.description}</td>
-                        <td style={{width:'100px',textAlign:'center',position:'absolute',right:0}}>
-                          <Button sx={{
-                            background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
-                          }}
-                          onClick={(e)=>{
-                            e.stopPropagation();
-                            HandleDelete(row)
-                          }}
-                          >
-                            <MdDelete size={22}/>
-                          </Button>
-                        </td>
-                        <td style={{width:'100px',textAlign:'center',position:'absolute',right:'150px'}}>
-                          <Button
-                          sx={{
-                            background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
-                          }}
-                          onClick={(e)=>{
-                            e.stopPropagation(); 
-                            HandleShowIncidents(row)
-                          }}
-                          ><MdOutlineEventBusy/></Button>
-                        </td>
+                        <td>{row.description}</td> 
+                        {
+                          hasPermission(userInfo.permissions,'incidents','read')&&(
+                            <td style={{width:'100px',textAlign:'center',position:'absolute',right:'150px'}}>
+                              <Button
+                              sx={{
+                                background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
+                              }}
+                              onClick={(e)=>{
+                                e.stopPropagation(); 
+                                HandleShowIncidents(row)
+                              }}
+                              ><MdOutlineEventBusy/></Button>
+                            </td>
+                          )
+                        }
+                        {
+                          hasPermission(userInfo.permissions,'components','delete')&&(
+                            <td style={{width:'100px',textAlign:'center',position:'absolute',right:0}}>
+                              <Button sx={{
+                                background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
+                              }}
+                              onClick={(e)=>{
+                                e.stopPropagation();
+                                HandleDelete(row)
+                              }}
+                              >
+                                <MdDelete size={22}/>
+                              </Button>
+                            </td>
+                          )
+                        }
                       </tr>
                     ))
                   ):(
@@ -851,29 +876,37 @@ const handleAddComponent = async () => {
                         </td>
                         <td>{buildings?.buildings?.find((building)=>building.id===row?.building_id)?.name}</td>
                         <td>{row.description}</td>
-                        <td style={{width:'100px',textAlign:'center',position:'absolute',right:0}}>
-                          <Button sx={{
-                            background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
-                          }}
-                          onClick={(e)=>{
-                            e.stopPropagation();
-                            HandleDelete(row)
-                          }}
-                          >
-                            <MdDelete size={22}/>
-                          </Button>
-                        </td>
-                        <td style={{width:'100px',textAlign:'center',position:'absolute',right:'150px'}}>
-                          <Button
-                          sx={{
-                            background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
-                          }}
-                          onClick={(e)=>{
-                            e.stopPropagation(); 
-                            HandleShowIncidents(row)
-                          }}
-                          ><MdOutlineEventBusy/></Button>
-                        </td>
+                        {
+                          hasPermission(userInfo.permissions,'incidents','read')&&(
+                            <td style={{width:'100px',textAlign:'center',position:'absolute',right:'150px'}}>
+                              <Button
+                              sx={{
+                                background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
+                              }}
+                              onClick={(e)=>{
+                                e.stopPropagation(); 
+                                HandleShowIncidents(row)
+                              }}
+                              ><MdOutlineEventBusy/></Button>
+                            </td>
+                          )
+                        }
+                        {
+                          hasPermission(userInfo.role,'components','delete')&&(
+                            <td style={{width:'100px',textAlign:'center',position:'absolute',right:0}}>
+                              <Button sx={{
+                                background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
+                              }}
+                              onClick={(e)=>{
+                                e.stopPropagation();
+                                HandleDelete(row)
+                              }}
+                              >
+                                <MdDelete size={22}/>
+                              </Button>
+                            </td>
+                          )
+                        }
                       </tr>
                     ))
                   )
@@ -934,7 +967,13 @@ const handleAddComponent = async () => {
           > 
             <SiTestrail style={{color:'rgb(3, 110, 74)'}}/>
             <span>
-              Component {selectedRow!==null&&selectedRow.name}
+              {
+                (t('component')==="المكون")?(
+                  selectedRow !== null && selectedRow.name ? (`${t('component')}${selectedRow.name}`) : (t('component'))
+                ):(
+                  t('component')
+                )
+              }
             </span>
           </Typography>
           <div>
@@ -942,18 +981,20 @@ const handleAddComponent = async () => {
               <h3 id='title_H3'>
                 <IoIosInformationCircle/>
                 <span>
-                    Information
+                    {t('componentsPage.information')}
                 </span>
               </h3>
             </Divider>
             <div className='info-container'>
               <Divider>
-                <h4>Knowledge base linker</h4>
+                <h4>{t('componentsPage.knowledge')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
               <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>Standard Component Type</strong><br /><br />
+                  <strong>{t('SCT')}</strong><br /><br />
                   <Cascader
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
+
                       data={cascaderDataComponentsType.map((type)=>({label:`Immobilier - Générique ${type.value}`,value:type.value}))}
                       defaultValue={cascaderDataComponentsType.find((type)=>type.value===selectedRow?.name)?.label || ''}
                       columnWidth={600}
@@ -965,8 +1006,10 @@ const handleAddComponent = async () => {
 
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>Characteristics</strong><br /><br />
+                  <strong>{t('componentsPage.Characteristics')}</strong><br /><br />
                   <Cascader
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
+
                       data={cascaderDataComponentsCharacteristics}
                       defaultValue={selectedRow?.characteristics || ''}
                       columnWidth={600}
@@ -977,22 +1020,24 @@ const handleAddComponent = async () => {
                 </Grid>
               </Grid>
               <Divider>
-                <h4>Component Identification</h4>
+                <h4>{t('componentsPage.CI')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <strong>Code</strong><br />
+                  <strong>{t('componentsPage.code')}</strong><br />
                   <Input
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
                     readOnly
                     defaultValue={selectedRow?.code || ''}
-                    disabled
+                    
                   />
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>Parent Building</strong><br />
+                  <strong>{t('PB')}</strong><br />
                   <Cascader
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
                       data={buildings?.buildings?.map((building) => ({ label: building.name, value: building.id }))}
-                      defaultValue={parentBuilding?.id} // Use `buildingSite?.id` here
+                      defaultValue={parentBuilding?.id} 
                       placeholder="Parent Site"
                       popupStyle={{ width: '25%', zIndex: 10000 }}
                       columnWidth={350}
@@ -1006,12 +1051,14 @@ const handleAddComponent = async () => {
                 </Grid>
               </Grid>
               <Divider>
-                <h4>Information</h4>
+                <h4>{t('ComponentsPage.information')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>Quantity</strong><br /><br />
+                  <strong>{t('componentsPage.quantity')}</strong><br /><br />
                   <Input
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
+
                     defaultValue={selectedRow?.quantity || ''}
                     onChange={(e) => handleInputChange('quantity', e.target.value)}
                     variant="outlined"
@@ -1019,8 +1066,10 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <strong>Unit</strong><br /><br />
+                  <strong>{t('componentsPage.unit')}</strong><br /><br />
                   <Cascader
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
+
                       data={cascaderDataComponentsUnit}
                       defaultValue={cascaderDataComponentsUnit.find((comp)=>comp.value===selectedRow?.unit)?.label || ''}
                       columnWidth={600}
@@ -1030,8 +1079,10 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <strong>Last rehabilitation year</strong><br /><br />
+                  <strong>{t('componentsPage.last_rehabilitation_year')}</strong><br /><br />
                   <Input
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
+
                     type='number'
                     defaultValue={selectedRow?.last_rehabilitation_year || ''}
                     onChange={(e) => handleInputChange('last_rehabilitation_year', e.target.value)}
@@ -1040,15 +1091,17 @@ const handleAddComponent = async () => {
                 </Grid>
               </Grid>
               <Divider>
-                <h4>Ageing and severity</h4>
+                <h4>{t('componentsPage.AS')}</h4>
               </Divider>
-              <h4>Component condition</h4>
+              <h4>{t('componentsPage.CC')}</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>Condition</strong><br /><br />
+                  <strong>{t('componentsPage.condition')}</strong><br /><br />
                   <div style={{display:'flex',width:'100%'}}>
                     <Avatar  style={{ background: selectedRow?.condition==='C1'?'green':(selectedRow?.condition==='C2')?'rgb(250, 218, 9)':(selectedRow?.condition==='C3')?'orange':'red' }}>{selectedRow?.condition}</Avatar>
                     <Input
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
+
                       defaultValue={selectedRow?.condition || ''}
                       placeholder="Condition"
                       variant="outlined"
@@ -1064,8 +1117,10 @@ const handleAddComponent = async () => {
                   </Toggle>
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <strong>Description</strong><br /><br />
+                  <strong>{t('componentsPage.description')}</strong><br /><br />
                   <Input
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
+
                     defaultValue={selectedRow?.description || ''}
                     variant="outlined"
                     onChange={(e) => handleInputChange('description', e.target.value)}
@@ -1073,13 +1128,15 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
               </Grid>
-              <h4>Risk level</h4>
+              <h4>{t('componentsPage.risk_level')}</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                    <strong>Risk level </strong><br /><br />
+                    <strong>{t('componentsPage.risk_level')}</strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: selectedRow?.risk_level==='R1'?'green':(selectedRow?.risk_level==='R2')?'rgb(250, 218, 9)':(selectedRow?.risk_level==='R3')?'orange':'red' }}>{selectedRow?.risk_level}</Avatar>
                       <Input
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
+
                         sx={{width:'100%'}}
                         defaultValue={selectedRow?.risk_level || ''}
                         variant="outlined"
@@ -1090,13 +1147,15 @@ const handleAddComponent = async () => {
                     </div>
                   </Grid>
               </Grid>
-              <h4>Component Severity per Stakes</h4>
+              <h4>{t('componentsPage.CSS')}</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
               <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>Severity max </strong><br /><br />
+                  <strong>{t('componentsPage.severity_max')} </strong><br /><br />
                   <div style={{display:'flex'}}>
                     <Avatar  style={{ background: selectedRow?.severity_max==='S1'?'green':(selectedRow?.severity_max==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_max==='S3')?'orange':'red' }}>{selectedRow?.severity_max}</Avatar>
                     <Input
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
+
                       sx={{width:'100%'}}
                       defaultValue={selectedRow?.severity_max || ''}
                       variant="outlined"
@@ -1107,10 +1166,12 @@ const handleAddComponent = async () => {
                   </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>Safety </strong><br /><br />
+                  <strong>{t('componentsPage.safety')} </strong><br /><br />
                   <div style={{display:'flex'}}>
                     <Avatar  style={{ background: selectedRow?.severity_safety==='S1'?'green':(selectedRow?.severity_safety==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_safety==='S3')?'orange':'red' }}>{selectedRow?.severity_safety}</Avatar>
                     <Input
+                    
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
                       sx={{width:'100%'}}
                       defaultValue={selectedRow?.severity_safety || ''}
                       variant="outlined"
@@ -1121,10 +1182,12 @@ const handleAddComponent = async () => {
                   </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>Operations </strong><br /><br />
+                  <strong>{t('componentsPage.operations')} </strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: selectedRow?.severity_operations==='S1'?'green':(selectedRow?.severity_operations==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_operations==='S3')?'orange':'red' }}>{selectedRow?.severity_operations}</Avatar>
                       <Input
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
+
                         sx={{width:'100%'}}
                         defaultValue={selectedRow?.severity_operations || ''}
                         variant="outlined"
@@ -1134,10 +1197,12 @@ const handleAddComponent = async () => {
                     </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>Work Conditions </strong><br /><br />
+                  <strong>{t('componentsPage.WC')}</strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: selectedRow?.severity_work_conditions==='S1'?'green':(selectedRow?.severity_work_conditions==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_work_conditions==='S3')?'orange':'red' }}>{selectedRow?.severity_work_conditions}</Avatar>
                       <Input
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
+
                         sx={{width:'100%'}}
                         defaultValue={selectedRow?.severity_work_conditions || ''}
                         variant="outlined"
@@ -1147,10 +1212,12 @@ const handleAddComponent = async () => {
                     </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>Environment</strong><br /><br />
+                  <strong>{t('componentsPage.environment')}</strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: selectedRow?.severity_environment==='S1'?'green':(selectedRow?.severity_environment==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_environment==='S3')?'orange':'red' }}>{selectedRow?.severity_environment}</Avatar>
                       <Input
+                      disabled={!hasPermission(userInfo.permissions,'components','update')}
+
                         sx={{width:'100%'}}
                         defaultValue={selectedRow?.severity_environment || ''}
                         variant="outlined"
@@ -1160,7 +1227,7 @@ const handleAddComponent = async () => {
                     </div>
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <strong>Component image </strong><br /><br />
+                  <strong>{t('componentsPage.C_image')} </strong><br /><br />
                   <img src={`http://127.0.0.1:8000/${selectedRow?.severity_image}`} alt={selectedRow?.severity_image} style={{width:'100%'}}/>
                 </Grid>
               </Grid>
@@ -1182,18 +1249,18 @@ const handleAddComponent = async () => {
         <ModalDialog variant="outlined" role="alertdialog">
           <DialogTitle>
             <WarningRoundedIcon />
-            Confirmation
+            {t("componentsPage.confirmation")} 
           </DialogTitle>
           <Divider />
           <DialogContent>
-            Are you sure you want to delete this component?
+            {t("componentsPage.questionD")} {t('component')}
           </DialogContent>
           <DialogActions>
             <Button variant="solid" color="danger" onClick={confirmDelete}>
-              Confirm
+            {t("componentsPage.Confirm")}
             </Button>
             <Button variant="plain" color="neutral" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
-              Cancel
+            {t("cancel")}
             </Button>
           </DialogActions>
         </ModalDialog>
@@ -1230,7 +1297,7 @@ const handleAddComponent = async () => {
           > 
             <IoMdCreate style={{color:'rgb(3, 110, 74)'}}/>
             <span>
-              Create component
+              {('componentsPage.CreateC')}
             </span>
           </Typography>
           <div>
@@ -1238,17 +1305,17 @@ const handleAddComponent = async () => {
               <h3 id='title_H3'>
                 <IoIosInformationCircle/>
                 <span>
-                    Information
+                {('componentsPage.information')}
                 </span>
               </h3>
             </Divider>
             <div className='info-container'>
               <Divider>
-                <h4>Knowledge base linker</h4>
+                <h4>{('componentsPage.knowledge')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
               <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>Standard Component Type</strong><br /><br />
+                  <strong>{('componentsPage.SCT')}</strong><br /><br />
                   <Cascader
                       data={cascaderDataComponentsType.map((type)=>({label:`Immobilier - Générique ${type.value}`,value:type.value}))}
                       // defaultValue={cascaderDataComponentsType.find((type)=>type.value===selectedRow?.name)?.label || ''}
@@ -1261,7 +1328,7 @@ const handleAddComponent = async () => {
 
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>Characteristics</strong><br /><br />
+                  <strong>{t('componentsPage.Characteristics')}</strong><br /><br />
                   <Cascader
                       data={cascaderDataComponentsCharacteristics}
                       columnWidth={600}
@@ -1273,7 +1340,7 @@ const handleAddComponent = async () => {
                 </Grid>
               </Grid>
               <Divider>
-                <h4>Component Identification</h4>
+                <h4>{('componentsPage.CI')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
@@ -1284,7 +1351,7 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>Parent Building</strong><br />
+                  <strong>{('componentsPage.PB')}</strong><br />
                   <Cascader
                       data={buildings?.buildings?.map((building) => ({ label: building.name, value: building.id }))}
                       placeholder="Parent Site"
@@ -1296,11 +1363,11 @@ const handleAddComponent = async () => {
                 </Grid>
               </Grid>
               <Divider>
-                <h4>Information</h4>
+                <h4>{('componentsPage.information')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>Quantity</strong><br /><br />
+                  <strong>{('componentsPage.quantity')}</strong><br /><br />
                   <Input
                     placeholder="Quantity"
                     onChange={(e) =>setNewComponent({...newComponent,quantity:e.target.value})}  
@@ -1309,7 +1376,7 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <strong>Unit</strong><br /><br />
+                  <strong>{('componentsPage.unit')}</strong><br /><br />
                   <Cascader
                       data={cascaderDataComponentsUnit}
                       columnWidth={600}
@@ -1320,7 +1387,7 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <strong>Last rehabilitation year</strong><br /><br />
+                  <strong>{('componentsPage.last_rehabilitation_year')}</strong><br /><br />
                   <Input
                     type='number'
                     placeholder="Last rehabilitation year"
@@ -1330,12 +1397,12 @@ const handleAddComponent = async () => {
                 </Grid>
               </Grid>
               <Divider>
-                <h4>Ageing and severity</h4>
+                <h4>{('componentsPage.AS')}</h4>
               </Divider>
-              <h4>Component condition</h4>
+              <h4>{('componentsPage.CC')}</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>Condition <span style={{color:'green'}}>C1</span> - <span style={{color:'rgb(250, 218, 9)'}}>C2</span> - <span style={{color:'orange'}}>C3</span> - <span style={{color:'red'}}>C4</span></strong><br /><br />
+                  <strong>{('componentsPage.condition')} <span style={{color:'green'}}>C1</span> - <span style={{color:'rgb(250, 218, 9)'}}>C2</span> - <span style={{color:'orange'}}>C3</span> - <span style={{color:'red'}}>C4</span></strong><br /><br />
                   <div style={{display:'flex',width:'100%'}}>
                     <Avatar   style={{ background: newComponent?.condition==='C1'?'green':(newComponent?.condition==='C2')?'rgb(250, 218, 9)':(newComponent?.condition==='C3')?'orange':'red' }}>{(newComponent?.condition)?newComponent?.condition:'?'}</Avatar>
                     <Input
@@ -1353,7 +1420,7 @@ const handleAddComponent = async () => {
                   </Toggle>
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <strong>Description</strong><br /><br />
+                  <strong>{('componentsPage.description')}</strong><br /><br />
                   <Textarea
                     minRows={8}
                     variant="outlined"
@@ -1362,10 +1429,10 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
               </Grid>
-              <h4>Risk level</h4>
+              <h4>{('componentsPage.risk_level')}</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                    <strong>Risk level <span style={{color:'green'}}>R1</span> - <span style={{color:'rgb(250, 218, 9)'}}>R2</span> - <span style={{color:'orange'}}>R3</span> - <span style={{color:'red'}}>R4</span></strong><br /><br />
+                    <strong>{('componentsPage.risk_level')} <span style={{color:'green'}}>R1</span> - <span style={{color:'rgb(250, 218, 9)'}}>R2</span> - <span style={{color:'orange'}}>R3</span> - <span style={{color:'red'}}>R4</span></strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: newComponent?.risk_level==='R1'?'green':(newComponent?.risk_level==='R2')?'rgb(250, 218, 9)':(newComponent?.risk_level==='R3')?'orange':'red' }}>{(newComponent?.risk_level)?newComponent?.risk_level:'?'}</Avatar>
                       <Input
@@ -1378,10 +1445,10 @@ const handleAddComponent = async () => {
                     </div>
                   </Grid>
               </Grid>
-              <h4>Component Severity per Stakes</h4>
+              <h4>{('componentsPage.CSS')}</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
               <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>Severity max <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                  <strong>{('componentsPage.severity_max')}<span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
                   <div style={{display:'flex'}}>
                     <Avatar  style={{ background: newComponent?.severity_max==='S1'?'green':(newComponent?.severity_max==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_max==='S3')?'orange':'red' }}>{(newComponent?.severity_max)?newComponent?.severity_max:'?'}</Avatar>
                     <Input
@@ -1394,7 +1461,7 @@ const handleAddComponent = async () => {
                   </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>Safety <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                  <strong>{('componentsPage.safety')} <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
                   <div style={{display:'flex'}}>
                     <Avatar  style={{ background: newComponent?.severity_safety==='S1'?'green':(newComponent?.severity_safety==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_safety==='S3')?'orange':'red' }}>{(newComponent?.severity_safety)?newComponent?.severity_safety:'?'}</Avatar>
                     <Input
@@ -1407,7 +1474,7 @@ const handleAddComponent = async () => {
                   </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>Operations <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                  <strong>{('componentsPage.operations')} <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: newComponent?.severity_operations==='S1'?'green':(newComponent?.severity_operations==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_operations==='S3')?'orange':'red' }}>{(newComponent?.severity_operations)?newComponent?.severity_operations:'?'}</Avatar>
                       <Input
@@ -1420,7 +1487,7 @@ const handleAddComponent = async () => {
                     </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>Work Conditions <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                  <strong>{('componentsPage.WC')}<span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: newComponent?.severity_work_conditions==='S1'?'green':(newComponent?.severity_work_conditions==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_work_conditions==='S3')?'orange':'red' }}>{(newComponent?.severity_work_conditions)?newComponent?.severity_work_conditions:'?'}</Avatar>
                       <Input
@@ -1434,7 +1501,7 @@ const handleAddComponent = async () => {
                     </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>Environment <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                  <strong>{('componentsPage.environment')} <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: newComponent?.severity_environment==='S1'?'green':(newComponent?.severity_environment==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_environment==='S3')?'orange':'red' }}>{(newComponent?.severity_environment)?newComponent?.severity_environment:'?'}</Avatar>
                       <Input
@@ -1447,7 +1514,7 @@ const handleAddComponent = async () => {
                     </div>
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <strong>Upload component image </strong><br /><br />
+                  <strong>{('componentsPage.U_ic')} </strong><br /><br />
                   <Uploader draggable onChange={handleFileUpload}>
                     <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <span>Click or Drag files to this area to upload</span>
@@ -1556,7 +1623,7 @@ const handleAddComponent = async () => {
                   <Sheet variant="outlined" color="neutral" sx={{ p: 1,height:'118vh',borderRadius:'10px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
                   <CardContent>
                     <center>
-                    <h5>Incident {index+1}</h5>
+                    <h5>{t('Incident')} {index+1}</h5>
                   </center>
                   <center>
                         {
@@ -1817,7 +1884,8 @@ const handleAddComponent = async () => {
                           <Cascader
                             data={cascaderDataComponents}
                             defaultValue={cascaderDataComponents.find((b)=>b.value===incident?.component_id)?.value}
-                            placeholder="Components" 
+                            value={newIncident.component_id!==null?newIncident.component_id:allComponents.find((b)=>b.id===incident?.component_id)?.id}
+                            placeholder="Components"  
                             columnWidth={1250}
                             style={{width:'100%'}}
                             popupStyle={{width:'84%',zIndex:100000}}
@@ -1859,14 +1927,14 @@ const handleAddComponent = async () => {
           </DialogTitle>
           <Divider />
           <DialogContent>
-            Are you sure you want to delete this incident?
+          {t("componentsPage.questionD")} {('Incident')}?
           </DialogContent>
           <DialogActions>
             <Button variant="solid" color="danger" onClick={confirmDeleteIncident}>
-              Confirm
+              {t('componentsPage.Confirm')}
             </Button>
             <Button variant="plain" color="neutral" onClick={() =>{ setOpenDeleteIncident(false);setDeletedRow({})}}>
-              Cancel
+              {t('Cancel')}
             </Button>
           </DialogActions>
         </ModalDialog>

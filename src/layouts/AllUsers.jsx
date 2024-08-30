@@ -30,7 +30,7 @@ import { hasPermission } from '../components/CheckPermissions';
 export default function AllUsers() {
 
     const dispatch = useDispatch();
-    const user = JSON.parse(localStorage.getItem('user'));
+    const userInfo = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('token');
     const { users, status, error } = useSelector((state) => state.users);
     const { message, statusAdd, errorAdd } = useSelector((state) => state.addUser);
@@ -54,6 +54,7 @@ export default function AllUsers() {
     const [checkboxReports,setCheckboxReports]=useState([]);
     const [checkboxUserManagement,setCheckboxUserManagement]=useState([]);
     const [checkboxSettings,setCheckboxSettings]=useState([]);
+    const [checkboxTasks,setCheckboxTasks]=useState([]);
 
     const [newUser, setNewUser] = useState({
         name: '',
@@ -70,7 +71,8 @@ export default function AllUsers() {
             incidents: checkboxIncidents,
             reports: checkboxReports,
             user_management:checkboxUserManagement,
-            settings: checkboxSettings
+            settings: checkboxSettings,
+            tasks:checkboxTasks
         }
     });
     const [updateUserState, setUpdateUserState] = useState({ id: '', name: '', email: '', password: '', role: '' });
@@ -98,10 +100,11 @@ export default function AllUsers() {
                 incidents: checkboxIncidents,
                 reports: checkboxReports,
                 user_management: checkboxUserManagement,
-                settings: checkboxSettings
+                settings: checkboxSettings,
+                tasks: checkboxTasks
             }
         }));
-    }, [checkboxDashboard, checkboxWorkspaces, checkboxProjects, checkboxSites, checkboxBuildings, checkboxComponents, checkboxIncidents, checkboxReports, checkboxUserManagement, checkboxSettings]);
+    }, [checkboxDashboard, checkboxWorkspaces, checkboxProjects, checkboxSites, checkboxBuildings, checkboxComponents, checkboxIncidents, checkboxReports, checkboxUserManagement, checkboxSettings,checkboxTasks]);
 
     const {t } = useTranslation();
     
@@ -111,7 +114,17 @@ export default function AllUsers() {
 
     useEffect(() => {
         if (users) {
-            setAllUsers(users.users);
+            if(userInfo.role==="superadmin"){
+                setAllUsers(users?.users?.filter((user)=>user.role!=="superadmin"));
+            }else if(userInfo.role==="admin"){
+                setAllUsers(users?.users?.filter((user)=>user.role!=="superadmin"&&user.role!=="admin"));
+            }else if(userInfo.role==="manager"){
+                setAllUsers(users?.users?.filter((user)=>user.role!=="manager"&&user.role!=="superadmin"&&user.role!=="admin"));
+            }else if(userInfo.role==="ingenieur"){
+                setAllUsers(users?.users?.filter((user)=>user.role!=="manager"&&user.role!=="superadmin"&&user.role!=="admin"&&user.role!=="ingenieur"));
+            }else{
+                setAllUsers([]);
+            }
         }
     }, [users]);
 
@@ -227,7 +240,14 @@ export default function AllUsers() {
         }
     };    
     
-
+    const handleTasksPermissions = (permission) => {
+        if (checkboxTasks.includes(permission)) {
+            setCheckboxTasks(checkboxTasks.filter(item => item !== permission));
+        } else {
+            setCheckboxTasks(permission);
+        }
+    };   
+    
     //! Add new user:
     const handleAddNewUser = () => {
         if (newUser.name === '' || newUser.email === '' || newUser.password === '' || newUser.role === '' || Object.values(newUser.permissions).flat().length === 0) {
@@ -289,6 +309,9 @@ export default function AllUsers() {
 
     return (
         <div>
+            {
+            hasPermission(userInfo.permissions, 'user_management', 'read')?(
+                <>
             <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
                 {[t('dashboard'),t('users.users'),t('users.allUsers')].map((item) => (
                 <Link key={item} color="neutral" href="#sizes">
@@ -319,7 +342,7 @@ export default function AllUsers() {
             </div>
             <Sheet variant="outlined" color="neutral" sx={{ marginTop: '20px', p: 4, borderRadius: '10px' }}>
                 {
-                    hasPermission(user.permissions, 'user_management', 'create')&&(
+                    hasPermission(userInfo.permissions, 'user_management', 'create')&&(
                         <center>
                             <Button
                                 sx={{
@@ -348,7 +371,7 @@ export default function AllUsers() {
                                 {/* <th style={{ width: '30%',textAlign: 'center' }}>Password</th> */}
                                 <th style={{ width: '30%',textAlign: 'center' }}>{t('users.role')}</th>
                                 {
-                                    hasPermission(user.permissions, 'user_management', ('update'||'delete'))&&(
+                                    hasPermission(userInfo.permissions, 'user_management', ('update'||'delete'))&&(
                                         <th 
                                         style={{ width: '30%' , textAlign: 'center' }}>
                                             {t('users.actions')}
@@ -373,7 +396,7 @@ export default function AllUsers() {
                                             <td style={{ textAlign: 'center' }}>{user.email}</td>
                                             <td style={{ textAlign: 'center' }}>{user.role}</td>
                                             {
-                                                hasPermission(user.permissions, 'user_management', ('update'||'delete'))&&(
+                                                hasPermission(userInfo.permissions, 'user_management', ('update'||'delete'))&&(
                                                     <td style={{ display: 'flex', gap: '2px', justifyContent: 'center',flexWrap:'wrap' }}>
                                                         <Button
                                                             sx={{ background: 'linear-gradient(265deg, rgba(226,49,96,1) 0%, rgba(115,5,5,1) 100%)' }}
@@ -399,7 +422,7 @@ export default function AllUsers() {
                                         </tr>
                                     )
                                 )):(users &&
-                                users.users.map((user, index) => (
+                                    allUsers.map((user, index) => (
                                     <tr
                                     key={index}
                                     onClick={(e) => {
@@ -412,7 +435,7 @@ export default function AllUsers() {
                                         <td style={{ textAlign: 'center' }}>{user.email}</td>
                                         <td style={{ textAlign: 'center' }}>{user.role}</td>
                                         {
-                                            hasPermission(user.permissions, 'user_management', ('update'||'delete'))&&(
+                                            hasPermission(userInfo.permissions, 'user_management', ('update'||'delete'))&&(
                                                 <td style={{ display: 'flex', gap: '2px', justifyContent: 'center',flexWrap:'wrap' }}>
                                                     <Button
                                                         sx={{ background: 'linear-gradient(265deg, rgba(226,49,96,1) 0%, rgba(115,5,5,1) 100%)' }}
@@ -560,10 +583,26 @@ export default function AllUsers() {
                                 onChange={(value) => handleInputChange(value, 'role')}
                                 style={{width:'100%',display:'flex',justifyContent:'space-evenly'}}
                             >
-                                <Radio value="Admin">Admin</Radio>
-                                <Radio value="Manager">Manager</Radio>
-                                <Radio value="Ingenieur">Ingenieur</Radio>
-                                <Radio value="Technicien">Technicien</Radio>
+                                {
+                                    userInfo.role==="superadmin"&&(
+                                        <Radio value="admin">Admin</Radio>
+                                    )
+                                }
+                                {
+                                    (userInfo.role==="admin"&&userInfo.role==="superadmin")&&(
+                                        <Radio value="manager">Manager</Radio>
+                                    )
+                                }
+                                {
+                                    (userInfo.role==="manager"&&userInfo.role==="admin"&&userInfo.role==="superadmin")&&(
+                                        <Radio value="ingenieur">Ingenieur</Radio>
+                                    )
+                                }
+                                {
+                                    (userInfo.role==="ingenieur"&&userInfo.role==="manager"&&userInfo.role==="admin"&&userInfo.role==="superadmin")&&(
+                                        <Radio value="technicien">Technicien</Radio>
+                                    )
+                                }
                             </RadioGroup>
                         </Form.Group>
                         <Form.Group controlId="permissions">
@@ -728,6 +767,23 @@ export default function AllUsers() {
                                 <Checkbox value="update">Update</Checkbox>
                                 <Checkbox value="delete">Delete</Checkbox>
                             </CheckboxGroup>
+                            <Divider>Task management</Divider>
+                            <CheckboxGroup
+                                inline
+                                // value={newUser.permissions.settings}
+                                onChange={(value) => handleTasksPermissions(value)}
+                                style={{
+                                    width:'100%',
+                                    display:'flex',
+                                    justifyContent:'space-evenly'
+                                }}
+                            >
+                                <Checkbox value="read">Read</Checkbox>
+                                <Checkbox value="create">Create</Checkbox>
+                                <Checkbox value="update">Update</Checkbox>
+                                <Checkbox value="delete">Delete</Checkbox>
+                            </CheckboxGroup>
+                            
                         </Form.Group>
                         <ButtonToolbar style={{
                             width:'100%',
@@ -855,6 +911,11 @@ export default function AllUsers() {
                 </DialogActions>
                 </ModalDialog>
             </Modal>
+            </>
+            ):(
+                <h1>You don't have permission to see all users</h1>
+            )
+            }
         </div>
     );
 }

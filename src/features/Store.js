@@ -14,7 +14,8 @@ import {
     deleteSiteReducer,
     addSiteReducer,
     updateSiteReducer,
-    componentsReducer
+    componentsReducer,
+    incidentsReducer
 } from '../features/SuperAdminSlice';
 
 export const store = configureStore({
@@ -34,6 +35,7 @@ export const store = configureStore({
         projects:projectsReducer,
         addSiteRe:addSiteReducer,
         updateSiteRe:updateSiteReducer,
-        components:componentsReducer
+        components:componentsReducer,
+        incidents:incidentsReducer
     },
 });

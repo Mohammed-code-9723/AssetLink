@@ -22,6 +22,7 @@
     "addComponent":"Add component",
     "addIncident":"Add incident",
     "buildings":"Buildings",
+    "building":"Building",
     "components":"Components",
     "Incidents":"Incidents",
     "Incident":"Incident",
@@ -31,6 +32,7 @@
     "project":"Project",
     "addProject":"Add new project",
     "filter":"Apply filter",
+    "reports": "Reports",
     "users":{
       "users":"Users",
       "allUsers":"All users",
@@ -78,5 +80,82 @@
     "workspaces":{
       "name":"Name",
       "description":"Description"
+    },
+    "componentsPage":{
+      "code":"Code",
+      "name":"Name",
+      "quantity":"Quantity",
+      "unit":"Unit",
+      "last_rehabilitation_year":"Last rehabilitation year",
+      "condition":"Condition",
+      "severity_max":"Severity Max",
+      "risk_level":"Resk Level",
+      "description":"Description",
+      "information":"Information",
+      "knowledge":"Knowledge base linker",
+      "SCT":"Standard Component Type",
+      "Characteristics":"Characteristics",
+      "CI":"Component Identification",
+      "PB":"Parent Building",
+      "AS":"Ageing and severity",
+      "CC":"Component condition",
+      "CSS":"Component Severity per Stakes",
+      "safety":"Safety",
+      "operations":"Operations",
+      "WC":"Work Conditions",
+      "environment":"Environment",
+      "C_image":"Component image ",
+
+      "confirmation":"Confirmation",
+      "questionD":"Are you sure you want to delete this ?",
+      "Confirm":"Confirm",
+      "U_iC":"Upload component image ",
+      "CreateC":"Create component"
+    },
+    "buildingsPage":{
+      "activity":"Activity",
+      "address":"Address",
+      "location":"Location",
+      "construction_year":"Construction Year",
+      "Floor_area":"Floor Area",
+      "type":"Type",
+      "level_count":"Level count",
+      "action":"Action",
+      "seeLocation":"See Location",
+
+      "PS":"Parent Site",
+      "CC":"Correlation Code",
+      "PSI":"Parent Site information",
+      "Ctr":"Country",
+      "ZC":"Zipcode",
+      "RS":"Region/State",
+      "Cmt":"Comment",
+      "CB":"Create building"
+      
+    },
+    "SitesPage":{
+      "SB":"Site Buildings",
+      "CS":"Create site",
+      "CPW":"Choose parent workspace"
+    },
+    "reportsPage":{
+      "RA":"Reports and Analytics",
+      "SDR":"Select Date Range",
+      "SP":"Select Project",
+      "SS":"Select Site",
+      "SIT":"Select Incident Type",
+      "SU":"Select User",
+      "TI":"Total Incidents",
+      "RI":"Resolved Incidents",
+      "ART":"Average Resolution Time",
+      "CI":"Critical Incidents",
+      "RID":"Report ID",
+      "T":"Title",
+      "RAB":"Report about",
+      "CB":"Created by",
+      "RM":"Maintenance",
+      "IPM":"Incidents per months",
+      "IPS":"Incidents per status"
     }
+    
 }

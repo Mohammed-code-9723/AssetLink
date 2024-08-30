@@ -3,8 +3,13 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 //! all workspaces:
 
 export const workspacesData = createAsyncThunk('workspaces/workspacesData', async (token) => {
+    const user=JSON.parse(localStorage.getItem('user'));
+    const url=(user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?
+    'http://127.0.0.1:8000/api/workspaces/allWorkspaces'
+    :
+    'http://127.0.0.1:8000/api/workspaces';
 
-    const response = await fetch('http://127.0.0.1:8000/api/workspaces/allWorkspaces', {
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -42,9 +47,14 @@ const workspacesSlice = createSlice({
 
 //! all sites:
 
-export const sitesData = createAsyncThunk('sites/sitesData', async (token) => {
+export const sitesData = createAsyncThunk('sites/sitesData', async ({token,value}) => {
+    const user=JSON.parse(localStorage.getItem('user'));
+    const url=(user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?
+    'http://127.0.0.1:8000/api/workspaces/allSites'
+    :
+    `http://127.0.0.1:8000/api/workspaces/${value}/sites`;
 
-    const response = await fetch('http://127.0.0.1:8000/api/workspaces/allSites', {
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -612,15 +622,31 @@ extraReducers: (builder) => {
 
 //! all components:
 
-export const componentsData = createAsyncThunk('components/componentsData', async (token) => {
+export const componentsData = createAsyncThunk('components/componentsData', async ({token,building_id,workspace_id,site_id}) => {
 
-    const response = await fetch('http://127.0.0.1:8000/api/auth/Components', {
+    const user=JSON.parse(localStorage.getItem('user'));
+    const url=(user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?
+    'http://127.0.0.1:8000/api/auth/Components'
+    :
+    `http://127.0.0.1:8000/api/workspaces/${workspace_id}/sites/${site_id}/buildings/${building_id}/components`;
+
+    const method=(user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?
+    {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
-    });
+    }:
+    {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body:JSON.stringify({building_id:building_id})
+    };
+    const response = await fetch(url, method);
     const data = await response.json();
     
     return data;
@@ -655,7 +681,14 @@ const componentsSlice = createSlice({
 
 export const incidentsData = createAsyncThunk('incidents/incidentsData', async (token) => {
 
-    const response = await fetch('http://127.0.0.1:8000/api/workspaces/allSites', {
+    const user=JSON.parse(localStorage.getItem('user'));
+
+    const url=(user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?(
+        'http://127.0.0.1:8000/api/auth/allIncidents'
+    ):(
+        'http://127.0.0.1:8000/api/workspaces/usersIncidents'
+    )
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -670,29 +703,30 @@ export const incidentsData = createAsyncThunk('incidents/incidentsData', async (
 const incidentsSlice = createSlice({
     name: 'incidents',
     initialState: {
-        sites: null,
-        statusSites: 'idle',
-        errorSites: null,
+        incidents: null,
+        statusIncidents: 'idle',
+        errorIncidents: null,
     },
     reducers: {},
     extraReducers: (builder) => {
         builder
-            .addCase(sitesData.pending, (state) => {
-                state.statusSites = 'loading';
+            .addCase(incidentsData.pending, (state) => {
+                state.statusIncidents = 'loading';
             })
-            .addCase(sitesData.fulfilled, (state, action) => {
-                state.statusSites = 'succeeded';
-                state.sites = action.payload;
+            .addCase(incidentsData.fulfilled, (state, action) => {
+                state.statusIncidents = 'succeeded';
+                state.incidents = action.payload;
             })
-            .addCase(sitesData.rejected, (state, action) => {
-                state.statusSites = 'failed';
-                state.errorSites = action.error.message;
+            .addCase(incidentsData.rejected, (state, action) => {
+                state.statusIncidents = 'failed';
+                state.errorIncidents = action.error.message;
             });
     },
 });
 
 
 export const componentsReducer= componentsSlice.reducer;
+export const incidentsReducer= incidentsSlice.reducer;
 export const addSiteReducer= addSiteSlice.reducer;
 export const activitiesReducer=activitiesSlice.reducer;
 export const projectsReducer=projectsSlice.reducer;

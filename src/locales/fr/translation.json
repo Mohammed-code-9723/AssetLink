@@ -24,6 +24,7 @@
     "addProject":"ajouter un projet",
     "city":"Ville",
     "buildings":"Les bâtiments",
+    "building":"bâtiment",
     "components":"Les composants",
     "component":"Le composant",
     "Incidents":"Incidents",
@@ -31,6 +32,7 @@
     "projects":"Les projets",
     "project":"Projet",
     "filter": "Appliquer le filtre",
+    "reports": "Les rapports",
     "users":{
       "users":"Utilisateurs",
       "allUsers":"Tous les utilisateurs",
@@ -78,6 +80,81 @@
     "workspaces":{
       "name":"Nom",
       "description":"Description"
+    },
+    "componentsPage":{
+      "code":"Code",
+      "name":"Nom",
+      "quantity":"Quantité",
+      "unit":"Unité",
+      "last_rehabilitation_year":"Dernière année de rééducation",
+      "condition":"Condition",
+      "severity_max":"Gravité Max",
+      "risk_level":"Niveau de risque",
+      "description":"Description",
+      "information":"Information",
+      "knowledge": "Lien de base de connaissances",
+      "SCT": "Type de composant standard",
+      "Characteristics": "Caractéristiques",
+      "CI": "Identification du composant",
+      "PB": "Bâtiment parent",
+      "AS": "Vieillissement et gravité",
+      "CC": "État du composant",
+      "CSS": "Gravité du composant par enjeu",
+      "safety": "Sécurité",
+      "operations": "Opérations",
+      "WC": "Conditions de travail",
+      "environment": "Environnement",
+      "C_image": "Image du composant",
+
+      "confirmation": "Confirmation",
+      "questionD": "Êtes-vous sûr de vouloir supprimer ce composant ?",
+      "Confirm": "Confirmer",
+      "CreateC": "Créer un composant",
+      "U_iC": "Télécharger l'image du composant"
+    },
+    "buildingsPage":{
+      "activity": "Activité",
+      "address": "Adresse",
+      "location": "Emplacement",
+      "construction_year": "Année de construction",
+      "Floor_area":"Surface au sol",
+      "type": "Type",
+      "level_count": "Nombre de niveaux",
+      "action": "Action",
+      "seeLocation": "Voir l'emplacement",
+
+      "PS": "Site parent",
+      "CC": "Code de corrélation",
+      "PSI": "Informations sur le site parent",
+      "Ctr": "Pays",
+      "ZC": "Code postal",
+      "RS": "Région/État",
+      "Cmt": "Commentaire",
+      "CB": "Créer un bâtiment"
+    },
+    "SitesPage":{
+      "SB":"Bâtiments du site ",
+      "CS":"Créer un site",
+      "CPW": "Choisir l'espace de travail parent"
+    },
+    "reportsPage":{
+      "RA": "Rapports et analyses",
+      "SDR": "Sélectionner une plage de dates",
+      "SP": "Sélectionner un projet",
+      "SS": "Sélectionner un site",
+      "SIT": "Sélectionner un type d'incident",
+      "SU": "Sélectionner un utilisateur",
+      "TI": "Nombre total d'incidents",
+      "RI": "Incidents résolus",
+      "ART": "Délai moyen de résolution",
+      "CI": "Incidents critiques",
+      "RID": "ID du rapport",
+      "T": "Titre",
+      "RAB": "Rapport sur",
+      "CB": "Créé par",
+      "RM": "Maintenance",
+      "IPM": "Incidents par mois",
+      "IPS": "Incidents par statut"
     }
   }
   

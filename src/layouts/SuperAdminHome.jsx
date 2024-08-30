@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useState , useEffect } from 'react'
 import '../styles/SuperAdminDahsboard.css';
 import { Navigate } from 'react-router-dom';
 
@@ -21,6 +21,7 @@ import { useDispatch,useSelector } from 'react-redux';
 import { Timeline, Loader } from 'rsuite';
 
 import { LineChart, Line,RadialBarChart, RadialBar} from 'recharts';
+import { Pagination , Notification , Uploader, Whisper} from 'rsuite'; 
 
 
 import refreshToken from '../features/SuperAdminSlice';
@@ -57,8 +58,10 @@ export default function SuperAdminHome() {
 
         dispatch(activitiesData(token));
         dispatch(workspacesData(token));
-        dispatch(sitesData(token));
-        dispatch(buildingsData(token));
+        dispatch(sitesData({token}));
+        if(user.role==="superadmin"||user.role==="admin"||user.role==="manager"){
+            dispatch(buildingsData(token));
+        }
 
     },[dispatch]);
     console.log(activities, statusActivities , errorActivities );
@@ -225,7 +228,70 @@ export default function SuperAdminHome() {
           amt: 2100,
         },
     ];
+
+    const [allReports,setAllReports]=useState([]);
+  const [allUserIncidents,setAllUserIncidents]=useState([]);
+  const [totalIncidents,setTotalIncidents]=useState('');
+  const [resolvedIncidents,setResolvedIncidents]=useState('');
+  const [criticalIncidents,setCriticalIncidents]=useState('');
+
+    useEffect(()=>{
+        try {
+        fetch(`http://127.0.0.1:8000/api/auth/allReports`, {
+            method: 'GET',
+            headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            },
+        }).then((response)=>response.json())
+        .then((result)=>{
+            setAllReports(result.allReports);
+            setTotalIncidents(result.totalIncidents);
+            setResolvedIncidents(result.resolvedIncidents);
+            setCriticalIncidents(result.criticalIncidents);
+            setAllUserIncidents(result.allUserIncidents);
+            
+        })
+        }catch (error) {
+        console.error('Error:', error); 
+        alert('An error occurred while getting the reports.');
+        }
+    },[])
+
+  const barChartData = allUserIncidents.reduce((acc, incident) => {
+    const month = new Date(incident.created_at).toLocaleString('en-US', { month: 'long' });
+  
+    if (!acc[month]) {
+      acc[month] = {
+        name: month,
+        incidents: 0,
+      };
+    }
+  
+    acc[month].incidents++;
+    return acc;
+  }, {});
+  
+  // Convert the object to an array
+  const barChartDataArray = Object.values(barChartData);
+
     
+  const financialData = [
+    { name: 'January', revenue: 10000, expenses: 7000, costPerIncident: 200 },
+    { name: 'February', revenue: 12000, expenses: 8000, costPerIncident: 250 },
+    { name: 'March', revenue: 15000, expenses: 9000, costPerIncident: 300 },
+    { name: 'April', revenue: 13000, expenses: 8500, costPerIncident: 220 },
+    { name: 'May', revenue: 14000, expenses: 8800, costPerIncident: 270 },
+    { name: 'June', revenue: 16000, expenses: 9200, costPerIncident: 310 },
+    { name: 'July', revenue: 17000, expenses: 9500, costPerIncident: 330 },
+  ];
+
+const [activePage, setActivePage] = React.useState(1);
+  const [itemsPerPage] = useState(10);
+  const startIndex = (activePage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
+  
     return (
         <div>
             <Breadcrumbs separator=">" aria-label="breadcrumbs" size="sm">
@@ -311,12 +377,22 @@ export default function SuperAdminHome() {
                                 </Avatar>
                                 <h6 style={{marginTop:'10px'}}>{t("users.totalSites")}</h6>
                                 <h5 style={{marginTop:'8px'}}>
-                                    {sites && sites.length > 0 ? (
-                                        <span>{sites.length}</span>
-                                    ) : (
-                                        <Loader content="Loading..." />
-                                    )
+                                    {
+                                        (user.role==="superadmin"||user.role==="admin"||user.role==="manager")?(
+                                            sites && sites.length > 0 ? (
+                                                <span>{sites.length}</span>
+                                            ) : (
+                                                <Loader content="Loading..." />
+                                            )
+                                        ):(
+                                            workspaces && workspaces.length > 0 ? (
+                                                <span>{workspaces.reduce((total, workspace) => total + (workspace?.sites?.length || 0), 0)}</span>
+                                            ) : (
+                                                <Loader content="Loading..." />
+                                            )
+                                        )
                                     }
+                                    
                                 </h5>
                             </Item>
                         </Sheet>
@@ -329,11 +405,23 @@ export default function SuperAdminHome() {
                                 </Avatar>
                                 <h6 style={{marginTop:'10px'}}>{t("users.totalBuildings")}</h6>
                                 <h5 style={{marginTop:'8px'}}>
-                                    {buildings && buildings.buildings.length > 0 ? (
-                                        <span>{buildings.buildings.length}</span>
-                                    ) : (
-                                        <Loader content="Loading..." />
-                                    )
+                                    {
+                                        (user.role==="superadmin"||user.role==="admin"||user.role==="manager")?(
+                                            buildings && buildings.buildings.length > 0 ? (
+                                                <span>{buildings.buildings.length}</span>
+                                            ) : (
+                                                <Loader content="Loading..." />
+                                            )
+                                        ):(
+                                            workspaces && workspaces.length > 0 ? (
+                                                <span>{workspaces.reduce((totalBuildings, workspace) => 
+                                                    totalBuildings + workspace.sites.reduce((siteTotal, site) => 
+                                                        siteTotal + (site?.buildings?.length || 0), 0), 0
+                                                )}</span>
+                                            ) : (
+                                                <Loader content="Loading..." />
+                                            )
+                                        )
                                     }
                                 </h5>
                             </Item>
@@ -345,30 +433,36 @@ export default function SuperAdminHome() {
                 <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                     <Grid sm={12} md={12} xs={12} lg={6}>
                         {/* <Item> */}
-                            <ResponsiveContainer width="100%" height="100%">
-                                <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{ marginTop:'20px',p: 1,borderRadius:'5px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
-                                <Item className='dash_items'>
-                                    <center>
-                                        <h4>Users by category</h4>
-                                    </center>
-                                <BarChart
-                                
-                                width={520}
-                                height={300}
-                                data={data}
-                                
-                                >
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" />
-                                <YAxis />
-                                <Tooltip />
-                                <Legend />
-                                <Bar dataKey="nbr"  fill="#8884d8" activeBar={<Rectangle fill="pink" stroke="blue" />} />
-                                {/* <Bar dataKey="uv" fill="#82ca9d" activeBar={<Rectangle fill="gold" stroke="purple" />} /> */}
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{ marginTop:'20px',p: 1,borderRadius:'5px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
+                                    <Item className='dash_items'>
+                                        <center>
+                                            <h4>Users by category</h4>
+                                        </center>
+                        {
+                            users&&users?.users?.length>0?( 
+                                    <BarChart
+                                    
+                                    width={520}
+                                    height={300}
+                                    data={data}
+                                    
+                                    >
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="nbr"  fill="#8884d8" activeBar={<Rectangle fill="pink" stroke="blue" />} />
+                                    {/* <Bar dataKey="uv" fill="#82ca9d" activeBar={<Rectangle fill="gold" stroke="purple" />} /> */}
                                 </BarChart>
-                                </Item>
+                            ):(
+                                <Loader content='...loading'/>
+                            )
+                        }
+                        </Item>
                         </Sheet>
-                            </ResponsiveContainer>
+                    </ResponsiveContainer>
                         {/* </Item> */}
                     </Grid>
                     <Grid sm={12} md={12} xs={12} lg={6}>
@@ -376,9 +470,23 @@ export default function SuperAdminHome() {
                         <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{ marginTop:'20px',p: 1,borderRadius:'5px' ,boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
                             <Item className='dash_items'>
                                 <center>
-                                    <h4>Risque's</h4>
+                                    <h4>{t('reportsPage.IPM')}</h4>
                                 </center>
-                                <PieChart width={530} height={300}>
+                                {
+                                    barChartDataArray.length>0?(
+                                        <BarChart width={520} height={300} data={barChartDataArray}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="name" />
+                                            <YAxis />
+                                            <Tooltip />
+                                            <Legend />
+                                            <Bar dataKey="incidents" fill="#8884d8" />
+                                        </BarChart>
+                                    ):(
+                                        <Loader content='...loading'/>
+                                    )
+                                }
+                                {/* <PieChart width={530} height={300}>
                                     <Pie
                                         dataKey="value"
                                         isAnimationActive={false}
@@ -390,41 +498,41 @@ export default function SuperAdminHome() {
                                         label
                                     />
                                     <Tooltip />
-                                </PieChart>
+                                </PieChart> */}
                             </Item>
                             </Sheet>
                         </ResponsiveContainer>
                     </Grid>
                     <Grid sm={12} md={12} xs={12} lg={12}>
-                        <ResponsiveContainer width="100%" height="100%">
-                        <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{ p: 1,borderRadius:'5px' ,boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{ p: 1, borderRadius: '5px', boxShadow: '0px 0 2px rgb(1, 138, 143)' }}>
                             <Item className='dash_items'>
                                 <center>
-                                    <h4>Others 1</h4>
+                                    <h4>Financial Overview</h4>
                                 </center>
                                 <LineChart
                                     width={1120}
                                     height={300}
-                                    data={dataLine}
+                                    data={financialData}
                                     margin={{
                                         top: 5,
-                                        // right: 30,
                                         left: 20,
                                         bottom: 5,
                                     }}
-                                    >
+                                >
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="name" />
                                     <YAxis yAxisId="left" />
                                     <YAxis yAxisId="right" orientation="right" />
                                     <Tooltip />
                                     <Legend />
-                                    <Line yAxisId="left" type="monotone" dataKey="pv" stroke="#8884d8" activeDot={{ r: 8 }} />
-                                    <Line yAxisId="right" type="monotone" dataKey="uv" stroke="#82ca9d" />
+                                    <Line yAxisId="left" type="monotone" dataKey="revenue" stroke="#8884d8" activeDot={{ r: 8 }} name="Revenue ($)" />
+                                    <Line yAxisId="left" type="monotone" dataKey="expenses" stroke="#82ca9d" name="Expenses ($)" />
+                                    <Line yAxisId="right" type="monotone" dataKey="costPerIncident" stroke="#ff7300" name="Cost Per Incident ($)" />
                                 </LineChart>
                             </Item>
-                            </Sheet>
-                        </ResponsiveContainer>
+                        </Sheet>
+                    </ResponsiveContainer>
                     </Grid>
                     <Grid sm={12} md={12} xs={12} lg={6}>
                         <ResponsiveContainer width="100%" height="100%">
@@ -457,11 +565,28 @@ export default function SuperAdminHome() {
                                 </center>
                                 <Timeline endless style={{marginTop:'20px'}}>
                                     {
-                                        activities&&activities.map((activity,index)=>(
-                                            <Timeline.Item> <strong>{activity.created_at}</strong> - <strong>{users&&users.users.find((user)=>user.id===activity.user_id).name}</strong> - {activity.action} - {activity.description}</Timeline.Item>
+                                        activities&&activities.slice(startIndex, endIndex).map((activity,index)=>(
+                                            <Timeline.Item key={index}> <strong>{activity.created_at}</strong> - <strong>{users&&users.users.find((user)=>user.id===activity.user_id).name}</strong> - {activity.action} - {activity.description}</Timeline.Item>
                                         ))
                                     }
                                 </Timeline>
+                                <center>
+                                    <Divider sx={{width:'80%',marginTop:'30px'}}/>
+                                </center>
+                                <div className='pagination_container'>
+                                    <Pagination
+                                    className='pagination_comp'
+                                    prev
+                                    last
+                                    next
+                                    first
+                                    size="md"
+                                    total={activities&&activities.length}
+                                    limit={itemsPerPage}
+                                    activePage={activePage}
+                                    onChangePage={setActivePage}
+                                    />
+                                </div>
                             </Item>
                         </Sheet>
                     </Grid>

@@ -50,101 +50,74 @@ import { Timeline, Loader } from 'rsuite';
 import { AutoComplete } from 'rsuite';
 import { hasPermission } from '../components/CheckPermissions';
 
-// import { useTranslation } from 'react-i18next';
+export default function OtherRolesSites() {
 
 
-export default function SuperAdminAllSites() {
+    const [activePage, setActivePage] = useState(1);
+    const [open, setOpen] = React.useState(false);
+    const [openDelete, setOpenDelete] = React.useState(false);
+    const [addSite, setAddSite] = React.useState(false);
+    const [selectedRow, setSelectedRow] = useState(null);
+    const [isDirty, setIsDirty] = useState(false);
 
+    const [newSite,setNewSite]=useState({Name:'',Activity:'',Code:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_area:''});
+    const [deletedRow,setDeletedRow]=useState({});
+    const [allSites,setAllSites]=useState([]);
 
-    // const columns = [
-    //     { field: 'id', headerName: 'ID', width: 70 },
-    //     { field: 'name', headerName: 'Name', width: 150 },
-    //     { field: 'start_year', headerName: 'Start Year', width: 130 },
-    //     { field: 'end_year', headerName: 'End Year', width: 130 },
-    //     { field: 'maintenance_strategy', headerName: 'Maintenance Strategy', width: 200 },
-    //     { field: 'budgetary_constraint', headerName: 'Budgetary Constraint', width: 200 },
-    //     {
-    //       field: 'status',
-    //       headerName: 'Status',
-    //       width: 150,
-    //       renderCell: (params) => (
-    //         <Chip
-    //           variant="outlined"
-    //           color={params.value === 'Active' ? 'success' : 'danger'}
-    //           startDecorator={params.value==='Active'?<FaCheck />:<ImCross/>}
-    //         >
-    //           {params.value}
-    //         </Chip>
-    //       ),
-    //     },
-    //     { field: 'duration', headerName: 'Duration (years)', width: 150 },
-    //     {
-    //       field: 'action',
-    //       headerName: 'Actions',
-    //       width: 150,
-    //       renderCell: (params) => (
-    //         <div>
-    //           <Button style={{width:'50%'}} sx={{background:'red'}} >
-    //               <RiDeleteBin6Fill/>
-    //           </Button>
-    //           <Button style={{width:'50%'}} sx={{background:'blue'}} >
-    //               <GrUpdate/>
-    //           </Button>
-    //         </div>
-    //       ),
-    //     },
-    //   ];
+    const { buildings, statusBuildings , errorBuildings } = useSelector((state) => state.buildings);
+    const { workspaces, statusWorkspaces , errorWorkspaces } = useSelector((state) => state.workspaces);
+    const { sites, statusSites , errorSites } = useSelector((state) => state.sites);
+    const { messageSiteDelete, statusSiteDelete , errorSiteDelete } = useSelector((state) => state.deleteSiteRe);
+    const {messageAddSite,statusAddSite,errorAddSite}=useSelector((state) => state.addSiteRe);
+    const {messageUpdateSite,statusUpdateSite,errorUpdateSite}=useSelector((state) => state.updateSiteRe);
     
+    const [itemsPerPage] = useState(10);
+    const startIndex = (activePage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
 
-  const [activePage, setActivePage] = useState(1);
-  const [open, setOpen] = React.useState(false);
-  const [openDelete, setOpenDelete] = React.useState(false);
-  const [addSite, setAddSite] = React.useState(false);
-  const [selectedRow, setSelectedRow] = useState(null);
-  const [isDirty, setIsDirty] = useState(false);
+    const token=localStorage.getItem('token');
+    const userInfo=JSON.parse(localStorage.getItem('user'));
+    const dispatch = useDispatch();
 
-  const [newSite,setNewSite]=useState({Name:'',Activity:'',Code:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_area:''});
-  const [deletedRow,setDeletedRow]=useState({});
-  const [allSites,setAllSites]=useState([]);
+    const [chosenWorkspace,setChosenWorkspace]=useState(null); 
+    const [addWS,setAddWS]=useState(null);
+    
+    const [chosenWorkspaceSites,setChosenWorkspaceSites]=useState(null);
 
-  const { buildings, statusBuildings , errorBuildings } = useSelector((state) => state.buildings);
-  const { workspaces, statusWorkspaces , errorWorkspaces } = useSelector((state) => state.workspaces);
-  const { sites, statusSites , errorSites } = useSelector((state) => state.sites);
-  const { messageSiteDelete, statusSiteDelete , errorSiteDelete } = useSelector((state) => state.deleteSiteRe);
-  const {messageAddSite,statusAddSite,errorAddSite}=useSelector((state) => state.addSiteRe);
-  const {messageUpdateSite,statusUpdateSite,errorUpdateSite}=useSelector((state) => state.updateSiteRe);
-  
-  const [itemsPerPage] = useState(10);
-  const startIndex = (activePage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
+    useEffect(()=>{
+        dispatch(workspacesData(token));
+    },[])
 
-  const token=localStorage.getItem('token');
-  const userInfo=JSON.parse(localStorage.getItem('user'));
-  const dispatch = useDispatch();
-  // const {t } = useTranslation();
+    const handleWorkspaceChange=(value)=>{
+        setChosenWorkspaceSites(value);
+        dispatch(sitesData({token,value}));
+        if (Array.isArray(sites)){
+            setAllSites(sites);
+        }
+    }
 
-
-  const [chosenWorkspace,setChosenWorkspace]=useState(null); 
-  const [addWS,setAddWS]=useState(null);
-  
-  useEffect(()=>{
-    dispatch(sitesData({token})).then(()=>{
-      setAllSites(sites);
-    })
-    dispatch(workspacesData({token}));
-  },[sites])
+    useEffect(()=>{
+        if (Array.isArray(sites)) {
+            setAllSites(sites);
+        }
+    },[sites])
 
 
-  const [filterByCity,setFilterCity]=useState(null); 
-  const [filterBySite,setFilterSite]=useState(null);
+    const [filterByCity,setFilterCity]=useState(null); 
+    const [filterBySite,setFilterSite]=useState(null);
 
-  const navigate=useNavigate();
-  const {t}=useTranslation();
+    const navigate=useNavigate();
+    const {t}=useTranslation();
 
+    
+  // const { sites, statusSites , errorSites } = useSelector((state) => state.sites);
+
+    
+    
     useEffect(()=>{
         // dispatch(sitesData(token));
         dispatch(buildingsData(token));
-    },[]); 
+    },[dispatch]); 
 
   const handleRowClick = (row) => {
     setSelectedRow(row);
@@ -165,65 +138,76 @@ export default function SuperAdminAllSites() {
     setNewSite({Name:'',Activity:'',Code:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_area:''});
   }
 
-  const HandleDelete=(row)=>{
-    setOpenDelete(true);
-    setDeletedRow(row);
-    setChosenWorkspace(row.workspace_id);
-  }
+    const HandleDelete=(row)=>{
+        setOpenDelete(true);
+        setDeletedRow(row);
+        setChosenWorkspace(row.workspace_id);
+    }
 
-  const handleInputsAddChange = (field, value) => {
-    setNewSite((prevState) => ({
-      ...prevState,
-      [field]: value,
-    }));
-    // setIsDirty(true);
-  };
-  const formatCascaderDataWorkspaces = (workspaces) => {
-    const workspacesDataa = [...new Set(workspaces?.map((workspace) =>({name: workspace.name,id:workspace.id})))];
+    const handleInputsAddChange = (field, value) => {
+        setNewSite((prevState) => ({
+        ...prevState,
+        [field]: value,
+        }));
+        // setIsDirty(true);
+    };
+    const formatCascaderDataWorkspaces = (workspaces) => {
+        const workspacesDataa = [...new Set(workspaces?.map((workspace) =>({name: workspace.name,id:workspace.id})))];
+        
+        return workspacesDataa.map((workspace) => ({
+        label: `${workspace.id} - ${workspace.name}`,
+        value: workspace.id,
+        }));
+    };
+
+    const formatCascaderData = (sites) => { 
+        if (Array.isArray(sites)) {
+            const cities = [...new Set(sites.map((site) => site.city))]; 
+            
+            return cities.map((city) => ({
+                label: city,
+                value: city,
+            }));
+        } else {
+            console.error('Expected an array for sites, but received:', sites);
+            return [];
+        }
+    };
     
-    return workspacesDataa.map((workspace) => ({
-      label: `${workspace.id} - ${workspace.name}`,
-      value: workspace.id,
-    }));
-  };
 
-  const formatCascaderData = (SuperAdminAllSites) => { 
-    const cities = [...new Set(SuperAdminAllSites?.map((site) => site.city))]; 
-    
-    return cities.map((city) => ({
-      label: city,
-      value: city,
-    }));
-  };
-
-  const formatCascaderDataSite = (allSites) => {
-    const sitess = [...new Set(allSites?.map((site) =>({name: site.name,code:site.code})))];
-    
-    return sitess.map((site) => ({
-      label: `${site.code} - ${site.name}`,
-      value: site.code,
-    }));
-  };
+    const formatCascaderDataSite = (sites) => {
+        if(Array.isArray(sites)){
+            const sitess = [...new Set(sites?.map((site) =>({name: site.name,code:site.code})))];
+            
+            return sitess.map((site) => ({
+            label: `${site.code} - ${site.name}`,
+            value: site.code,
+            }));
+        }else {
+            console.error('Expected an array for sites, but received:', sites);
+            return [];
+        }
+    };
 
 
-  const cascaderDataCities = formatCascaderData(allSites); 
-  const cascaderDataSites = formatCascaderDataSite(allSites);
-  const cascaderDataWorkspaces = formatCascaderDataWorkspaces(workspaces);
+    const cascaderDataCities = formatCascaderData(sites); 
+    const cascaderDataSites = formatCascaderDataSite(sites);
+    const cascaderDataWorkspaces = formatCascaderDataWorkspaces(workspaces);
 
-  const [openMapModal,setOpenMapModal]=useState(false);
-  const [openMapModalAddBuilding,setOpenMapModalAddBuilding]=useState(false);
+    const [openMapModal,setOpenMapModal]=useState(false);
+    const [openMapModalAddBuilding,setOpenMapModalAddBuilding]=useState(false);
 
-  const [LoaderState,setLoaderState]=useState(false);
-  const [notif,setNotif]=useState(false);
+    const [LoaderState,setLoaderState]=useState(false);
+    const [notif,setNotif]=useState(false);
 
-  const [chosenSiteBuildings,setChosenSiteBuildings]=useState([]);
-  const [siteName,setSiteName]=useState(null);
+    const [chosenSiteBuildings,setChosenSiteBuildings]=useState([]);
+    const [siteName,setSiteName]=useState(null);
 
-  const HandleShowBuildings=(row)=>{
-      setChosenSiteBuildings(buildings?.buildings?.filter((building)=>building.site_id===row.id));
-      setSiteName(sites?.find((site)=>site.id===row.id)?.name);
-      setOpenMapModal(true);
-  }
+    const HandleShowBuildings=(row)=>{
+        setChosenSiteBuildings(buildings.buildings.filter((building)=>building.site_id===row.id));
+        setSiteName(sites?.find((site)=>site.id===row.id)?.name);
+        setOpenMapModal(true);
+    }
 
 
   const handleAddSite = async () => {
@@ -232,7 +216,7 @@ export default function SuperAdminAllSites() {
     if (result.meta.requestStatus === 'fulfilled') {
       dispatch(workspacesData(token));
       // setAllSites(updatedWorkspaces.payload.find(w => w.id === workspace.id).sites);
-      dispatch(sitesData({token})).then(()=>{
+      dispatch(sitesData(token,chosenWorkspaceSites)).then(()=>{
         setAllSites(sites);
       })
     }
@@ -246,7 +230,7 @@ export default function SuperAdminAllSites() {
     if (result.meta.requestStatus === 'fulfilled') {
       dispatch(workspacesData(token));
       // setAllSites(updatedWorkspaces.payload.find(w => w.id === workspace.id).sites);
-      dispatch(sitesData({token})).then(()=>{
+      dispatch(sitesData(token,chosenWorkspaceSites)).then(()=>{
         setAllSites(sites);
       })
     }
@@ -260,7 +244,7 @@ export default function SuperAdminAllSites() {
     if (result.meta.requestStatus === 'fulfilled') {
       dispatch(workspacesData(token));
       // setAllSites(updatedWorkspaces.payload.find(w => w.id === workspace.id).sites);
-      dispatch(sitesData({token})).then(()=>{
+      dispatch(sitesData(token,chosenWorkspaceSites)).then(()=>{
         setAllSites(sites);
       })
       setDeletedRow({});
@@ -333,7 +317,29 @@ export default function SuperAdminAllSites() {
           <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> {t('sites')} </span></h2>
           <img src="/assets/Sites.svg" alt="sites_img" />
         </div>
+        <Grid container spacing={2} sx={{ flexGrow: 1 ,display:'flex',justifyContent:'center',mb:2}}>
+            <Grid xs={12} lg={6} sm={12} md={6}>
+                <center>
+                    <h3>Choose workspace to display sites</h3>
+                </center>
+                {/* <CheckPicker labelKey='label' placeholder={t('site')} onChange={(value)=>setFilterSite(value)} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataSites} className='Cascader_comp'/> */}
+                <Cascader data={cascaderDataWorkspaces} 
+                    className='Cascader_comp'
+                    placeholder={t('users.workspaces')}
+                    popupStyle={{width:'25%'}}
+                    columnWidth={600}
+                    onChange={(value)=>handleWorkspaceChange(value)}  
+                />
+            </Grid>
+        </Grid>
         <Sheet variant="outlined" color="neutral" sx={{ p: 1,borderRadius:'10px',boxShadow:'0px 0 2px rgb(1, 138, 143)' }}>
+                            {/* <Item className='itemsDash' style={{height:'70px',boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>  */}
+          
+          <div className='action_bottons'>
+            <h6><BsLayersFill size={22}/>&nbsp;&nbsp;<span>Current</span></h6>
+            <h6><MdDelete size={22}/>&nbsp;&nbsp;<span>Recently deleted</span></h6>
+          </div>
+          
           <div className='Cascader_container'>
             <Grid container spacing={2} sx={{ flexGrow: 1 }}>
               <Grid xs={12} lg={3.33} sm={12} md={12}>
@@ -341,7 +347,7 @@ export default function SuperAdminAllSites() {
                     // data={data}
                     // menuStyle={{ zIndex: 1400 }}
                     className='Cascader_comp'
-                    placeholder={t("project")} 
+                    placeholder="Project" 
                     popupStyle={{width:'25%'}}
                     columnWidth={350}
                 />
@@ -373,19 +379,19 @@ export default function SuperAdminAllSites() {
               {
               (filterByCity||filterBySite)&&(
                 <Grid xs={12} lg={12} sm={12} md={12}>
-                  <Button className='apply_Button' onClick={handleClearFilter}><IoFilter size={22}/>&nbsp;&nbsp;{('search.clear')}</Button>
+                  <Button className='apply_Button' onClick={handleClearFilter}><IoFilter size={22}/>&nbsp;&nbsp;Clear</Button>
                 </Grid>
               )
               }
             </Grid>
           </div>
-          {
-            hasPermission(userInfo.permissions,'sites','create')&&(
-              <div className='Add_container'>
-                <Button className='add_Button' onClick={()=>setAddSite(true)}><MdAdd size={22}/>&nbsp;&nbsp;{t('addSite')}</Button>
-              </div>
-            )
-          }
+          <div className='Add_container'>
+            {
+                hasPermission(userInfo.permission,'sites','create')&&(
+                    <Button className='add_Button' onClick={()=>setAddSite(true)}><MdAdd size={22}/>&nbsp;&nbsp;{t('addSite')}</Button>
+                )
+            }
+          </div>
           <div className='table_container'>
             <Table 
             // key={JSON.stringify(allSites)}
@@ -396,31 +402,31 @@ export default function SuperAdminAllSites() {
             }}>
               <thead>
                 <tr>
-                  <th style={{width:'20px',textAlign:'center'}}>{t('componentsPage.code')}</th>
-                  <th style={{width:'50px',textAlign:'center'}}>{t('componentsPage.name')}</th>
-                  <th style={{width:'50px',textAlign:'center'}}>{t('buildingsPage.activity')}</th>
-                  <th style={{width:'20%',textAlign:'center'}}>{t('buildingsPage.address')}</th>
-                  <th style={{width:'50px',textAlign:'center'}}>{t('buildingsPage.ZC')}</th>
-                  <th style={{width:'50px',textAlign:'center'}}>{t('city')}</th>
-                  <th style={{width:'50px',textAlign:'center'}}>{t('buildingsPage.Ctr')}</th>
-                  <th style={{width:'50px',textAlign:'center'}}>{t('buildingsPage.Floor_area')}</th>
+                  <th style={{width:'20px',textAlign:'center'}}>Code</th>
+                  <th style={{width:'50px',textAlign:'center'}}>Name</th>
+                  <th style={{width:'50px',textAlign:'center'}}>Activity</th>
+                  <th style={{width:'20%',textAlign:'center'}}>Address</th>
+                  <th style={{width:'50px',textAlign:'center'}}>ZipCode</th>
+                  <th style={{width:'50px',textAlign:'center'}}>City</th>
+                  <th style={{width:'50px',textAlign:'center'}}>Country</th>
+                  <th style={{width:'50px',textAlign:'center'}}>Floor area</th>
                   {
-                    hasPermission(userInfo.permissions,'sites','delete')&&(
-                      <th style={{width:'50px',textAlign:'center'}}>{t('buildingsPage.action')}</th>
+                    hasPermission(userInfo.permission,'sites','delete')&&(
+                        <th style={{width:'50px',textAlign:'center'}}>Action</th>
                     )
                   }
                   {
-                    hasPermission(userInfo.permissions,'buildings','read')&&(
-                      <th style={{width:'50px',textAlign:'center'}}>{t('SitesPage.SB')}</th>
+                    hasPermission(userInfo.permission,'buildings','read')&&(
+                        <th style={{width:'50px',textAlign:'center'}}>Site Buildings</th>
                     )
                   }
                 </tr>
               </thead>
               <tbody>
               {
-              allSites&&allSites.length>0?(
-                filteredSites.length>0?(
-                  filteredSites.slice(startIndex, endIndex).map((row) => (
+              sites&&allSites?.length>0?(
+                filteredSites?.length>0?(
+                  filteredSites?.slice(startIndex, endIndex).map((row) => (
                     <tr key={row.code} onClick={()=>handleRowClick(row)} className='table_row'>
                       <td>{row.code}</td>
                       <td>{row.name}</td>
@@ -431,45 +437,45 @@ export default function SuperAdminAllSites() {
                       <td>{row.country}</td>
                       <td>{row.floor_area}</td>
                       {
-                        hasPermission(userInfo.permissions,'sites','delete')&&(
-                          <td>
-                              <Button sx={{
+                        hasPermission(userInfo.permission,'sites','delete')&&(
+                            <td>
+                                <Button sx={{
                                 background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
                                 zIndex:999
-                              }}
-                              onClick={(e)=>{
+                                }}
+                                onClick={(e)=>{
                                 e.stopPropagation();
                                 HandleDelete(row)
-                              }}
-                              >
+                                }}
+                                >
                                 <MdDelete size={22}/>
-                              </Button>
-                          </td>
+                                </Button>
+                            </td>
                         )
                       }
                       {
-                        hasPermission(userInfo.permissions,'buildings','read')&&(
-                          <td>
-                            <Badge  content={row.buildings?.length>0?row.buildings?.length:'0'}>
-                              <Button sx={{
-                                background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
-                                // zIndex:999
-                              }}
-                              onClick={(e)=>{
-                                e.stopPropagation();
-                                HandleShowBuildings(row)
-                              }}
-                              >
-                                <BsEye size={22}/>
-                              </Button>
-                            </Badge>
-                          </td>
+                        hasPermission(userInfo.permission,'buildings','read')&&(
+                            <td>
+                                <Badge style={{zIndex:1000}} content={row.buildings?.length>0?row.buildings?.length:'0'}>
+                                    <Button sx={{
+                                    background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
+                                    zIndex:999
+                                    }}
+                                    onClick={(e)=>{
+                                    e.stopPropagation();
+                                    HandleShowBuildings(row)
+                                    }}
+                                    >
+                                    <BsEye size={22}/>
+                                    </Button>
+                                </Badge>
+                            </td>
                         )
                       }
                     </tr>
                   ))
                 ):(
-                  allSites.slice(startIndex, endIndex).map((row) => (
+                  allSites?.slice(startIndex, endIndex).map((row) => (
                     <tr key={row.code} onClick={()=>handleRowClick(row)} className='table_row'>
                       <td>{row.code}</td>
                       <td>{row.name}</td>
@@ -480,39 +486,39 @@ export default function SuperAdminAllSites() {
                       <td>{row.country}</td>
                       <td>{row.floor_area}</td>
                       {
-                        hasPermission(userInfo.permissions,'sites','delete')&&(
-                          <td>
-                            <Button sx={{
-                              background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
-                              zIndex:999
-                            }}
-                            onClick={(e)=>{
-                              e.stopPropagation();
-                              HandleDelete(row)
-                            }}
-                            >
-                              <MdDelete size={22}/>
-                            </Button>
-                          </td>
+                        hasPermission(userInfo.permission,'sites','delete')&&(
+                            <td>
+                                <Button sx={{
+                                background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
+                                zIndex:999
+                                }}
+                                onClick={(e)=>{
+                                e.stopPropagation();
+                                HandleDelete(row)
+                                }}
+                                >
+                                <MdDelete size={22}/>
+                                </Button>
+                            </td>
                         )
                       }
                       {
-                        hasPermission(userInfo.permissions,'buildings','read')&&(
-                          <td>
-                            <Badge  content={row.buildings?.length>0?row.buildings?.length:'0'}>
-                              <Button sx={{
-                                background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
-                                // zIndex:999
-                              }}
-                              onClick={(e)=>{
-                                e.stopPropagation();
-                                HandleShowBuildings(row)
-                              }}
-                              >
-                                <BsEye size={22}/>
-                              </Button>
-                            </Badge>
-                          </td>
+                        hasPermission(userInfo.permission,'buildings','read')&&(
+                            <td>
+                                <Badge style={{zIndex:1000}} content={row.buildings?.length>0?row.buildings?.length:'0'}>
+                                    <Button sx={{
+                                    background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
+                                    zIndex:999
+                                    }}
+                                    onClick={(e)=>{
+                                    e.stopPropagation();
+                                    HandleShowBuildings(row)
+                                    }}
+                                    >
+                                    <BsEye size={22}/>
+                                    </Button>
+                                </Badge>
+                            </td>
                         )
                       }
                     </tr>
@@ -563,8 +569,7 @@ export default function SuperAdminAllSites() {
             borderRadius: 'md',
             p: 3,
             boxShadow: 'lg',
-            overflowY:'scroll',
-            zIndex:10011
+            overflowY:'scroll'
           }}
         >
           <ModalClose variant="plain" sx={{ m: 1 }} />
@@ -578,100 +583,94 @@ export default function SuperAdminAllSites() {
           > 
             <SiTestrail style={{color:'rgb(3, 110, 74)'}}/>
             <span>
-            {
-                (t('site') === "الموقع") ? (
-                  selectedRow !== null && selectedRow.name ? (`${t('site')}${selectedRow.name}`) : (t('site'))
-                ) : (
-                  t('site')
-                )
-              }
+              Site {selectedRow!==null&&selectedRow.name}
             </span>
           </Typography>
           <div>
             <h3 id='title_H3'>
               <IoIosInformationCircle/>
-              <span>{('componentsPage.information')}</span>
+              <span>Information</span>
             </h3>
             <div className='info-container'>
-              <h4>{('componentsPage.information')}</h4>
+              <h4>Information</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>{('componentsPage.name')}</span><br />
+                  <span>Name</span><br />
                   <Input
-                  disabled={!hasPermission(userInfo.permissions,'sites','update')}
+                  disabled={hasPermission(userInfo.permission,'sites','update')}
                     defaultValue={selectedRow?.name || ''}
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <span>{('buildingsPage.activity')}</span><br />
+                  <span>Activity</span><br />
                   <Input
-                  disabled={!hasPermission(userInfo.permissions,'sites','update')}
+                  disabled={hasPermission(userInfo.permission,'sites','update')}
                     defaultValue={selectedRow?.activity || ''}
                     onChange={(e) => handleInputChange('activity', e.target.value)}
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <span>{('componentsPage.code')}</span><br />
+                  <span>Code</span><br />
                   <Input
-                  disabled={!hasPermission(userInfo.permissions,'sites','update')}
+                  disabled={hasPermission(userInfo.permission,'sites','update')}
                     defaultValue={selectedRow?.code || ''}
                     onChange={(e) => handleInputChange('code', e.target.value)}
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>{('buildingsPage.CC')}</span><br />
+                  <span>Correlation Code</span><br />
                   <Input
-                  disabled={!hasPermission(userInfo.permissions,'sites','update')}
+                  disabled={hasPermission(userInfo.permission,'sites','update')}
                     placeholder="Correlation Code"
                     variant="outlined"
                   />
                 </Grid>
               </Grid>
-              <h4>{('buildingsPage.address')}</h4>
+              <h4>Address</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>{('buildingsPage.address')}</span><br />
+                  <span>Address</span><br />
                   <Input
-                  disabled={!hasPermission(userInfo.permissions,'sites','update')}
+                    disabled={hasPermission(userInfo.permission,'sites','update')}
                     defaultValue={selectedRow?.address || ''}
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <span>{('buildingsPage.Ctr')}</span><br />
+                  <span>Country</span><br />
                   <Input
-                  disabled={!hasPermission(userInfo.permissions,'sites','update')}
+                  disabled={hasPermission(userInfo.permission,'sites','update')}
                     defaultValue={selectedRow?.country || ''}
                     onChange={(e) => handleInputChange('country', e.target.value)}
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <span>{('buildingsPage.ZC')}</span><br />
+                  <span>Zipcode</span><br />
                   <Input
-                  disabled={!hasPermission(userInfo.permissions,'sites','update')}
+                  disabled={hasPermission(userInfo.permission,'sites','update')}
                     defaultValue={selectedRow?.zipcode || ''}
                     onChange={(e) => handleInputChange('zipcode', e.target.value)}
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>{('buildingsPage.RS')}</span><br />
+                  <span>Region/State</span><br />
                   <Input
-                  disabled={!hasPermission(userInfo.permissions,'sites','update')}
+                  disabled={hasPermission(userInfo.permission,'sites','update')}
                     placeholder="Region/State"
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>{t('city')}</span><br />
+                  <span>City</span><br />
                   <Input
-                  disabled={!hasPermission(userInfo.permissions,'sites','update')}
+                  disabled={hasPermission(userInfo.permission,'sites','update')}
                     defaultValue={selectedRow?.city || ''}
                     onChange={(e) => handleInputChange('city', e.target.value)}
                     variant="outlined"
@@ -680,18 +679,18 @@ export default function SuperAdminAllSites() {
                 <Grid item xs={12} md={8} lg={6} sm={12}>
                   <span>Department</span><br />
                   <Input
-                  disabled={!hasPermission(userInfo.permissions,'sites','update')}
+                  disabled={hasPermission(userInfo.permission,'sites','update')}
                     placeholder="Department"
                     variant="outlined"
                   />
                 </Grid>
               </Grid>
-              <h4>{('componentsPage.Characteristics')}</h4>
+              <h4>Characteristics</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>{('buildingsPage.Floor_area')} </span><br />
+                  <span>Floor area </span><br />
                   <Input
-                  disabled={!hasPermission(userInfo.permissions,'sites','update')}
+                  disabled={hasPermission(userInfo.permission,'sites','update')}
                     defaultValue={selectedRow?.floor_area || ''}
                     onChange={(e) => handleInputChange('floor_area', e.target.value)}
                     variant="outlined"
@@ -727,8 +726,7 @@ export default function SuperAdminAllSites() {
             borderRadius: 'md',
             p: 3,
             boxShadow: 'lg',
-            overflowY:'scroll',
-            zIndex:10011
+            overflowY:'scroll'
           }}
         >
           <ModalClose variant="plain" sx={{ m: 1 }} />
@@ -742,19 +740,19 @@ export default function SuperAdminAllSites() {
           > 
             <IoMdCreate style={{color:'rgb(3, 110, 74)'}}/>
             <span>
-              {('SitesPage.CS')}
+              Create Site
             </span>
           </Typography>
           <div>
             <h3 id='title_H3'>
               <IoIosInformationCircle/>
-              <span>{('componentsPage.information')}</span>
+              <span>Information</span>
             </h3>
             <div className='info-container'>
-              <h4>{('componentsPage.information')}</h4>
+              <h4>Information</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>{('componentsPage.name')}</span><br />
+                  <span>Name</span><br />
                   <Input
                     onChange={(e) => handleInputsAddChange('Name', e.target.value)}
                     variant="outlined"
@@ -762,7 +760,7 @@ export default function SuperAdminAllSites() {
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <span>{('buildingsPage.activity')}</span><br />
+                  <span>Activity</span><br />
                   <Input
                     onChange={(e) => handleInputsAddChange('Activity', e.target.value)}
                     variant="outlined"
@@ -770,7 +768,7 @@ export default function SuperAdminAllSites() {
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <span>{('componentsPage.code')}</span><br />
+                  <span>Code</span><br />
                   <Input
                     onChange={(e) => handleInputsAddChange('Code', e.target.value)}
                     variant="outlined"
@@ -778,7 +776,7 @@ export default function SuperAdminAllSites() {
                   />
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>{('buildingsPage.CC')}</span><br />
+                  <span>Correlation Code</span><br />
                   <Input
                     onChange={(e) => handleInputsAddChange('Correlation_Code', e.target.value)}
                     placeholder="Correlation Code"
@@ -786,10 +784,10 @@ export default function SuperAdminAllSites() {
                   />
                 </Grid>
               </Grid>
-              <h4>{('buildingsPage.address')}</h4>
+              <h4>Address</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>{('buildingsPage.address')}</span><br />
+                  <span>Address</span><br />
                   <Input
                     onChange={(e) => handleInputsAddChange('Address', e.target.value)}
                     variant="outlined"
@@ -797,7 +795,7 @@ export default function SuperAdminAllSites() {
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <span>{('buildingsPage.Ctr')}</span><br />
+                  <span>Country</span><br />
                   <Input
                     onChange={(e) => handleInputsAddChange('Country', e.target.value)}
                     variant="outlined"
@@ -805,7 +803,7 @@ export default function SuperAdminAllSites() {
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <span>{('buildingsPage.ZC')}</span><br />
+                  <span>Zipcode</span><br />
                   <Input
                     onChange={(e) => handleInputsAddChange('Zipcode', e.target.value)}
                     variant="outlined"
@@ -813,7 +811,7 @@ export default function SuperAdminAllSites() {
                   />
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>{('buildingsPage.RS')}</span><br />
+                  <span>Region/State</span><br />
                   <Input
                     onChange={(e) => handleInputsAddChange('Region_State', e.target.value)}
                     placeholder="Region/State"
@@ -821,7 +819,7 @@ export default function SuperAdminAllSites() {
                   />
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <span>{t('city')}</span><br />
+                  <span>City</span><br />
                   <Input
                     placeholder="City"
                     onChange={(e) => handleInputsAddChange('City', e.target.value)}
@@ -837,10 +835,10 @@ export default function SuperAdminAllSites() {
                   />
                 </Grid>
               </Grid>
-              <h4>{t('componentsPage.Characteristics')}</h4>
+              <h4>Characteristics</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>{('buildingsPage.Floor_area')} </span><br />
+                  <span>Floor area </span><br />
                   <Input
                     onChange={(e) => handleInputsAddChange('Floor_area', e.target.value)}
                     variant="outlined"
@@ -848,30 +846,11 @@ export default function SuperAdminAllSites() {
                   />
                 </Grid>
               </Grid>
-              <h4>{('SitesPage.CPW')}</h4>
-              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                {/* <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <span>Choose the location of the site</span><br />
-                  <Button className='cancelBtn' startDecorator={<FaLocationDot/>}
-                  onClick={()=>setOpenMapModalAddBuilding(true)}
-                  >ADD LOCATION</Button>
-                </Grid> */}
-                <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <Cascader
-                    placement='top' 
-                    data={cascaderDataWorkspaces} 
-                    className='Cascader_comp'
-                    placeholder={t('users.workspaces')}
-                    popupStyle={{width:'25%',zIndex: 1400}}
-                    columnWidth={350}
-                    onChange={(value)=>setAddWS(value)}  
-                  />
-                </Grid>
-              </Grid>
+              
             </div>
               <div className='action_buttons_validate_cancel'>
-                <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={emptyFields}>{t('cancel')}</Button>
-                <Button className='checkBtn' onClick={handleAddSite} startDecorator={<FaCheck />}>{t('addSite')}</Button>
+                <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={emptyFields}>Cancel</Button>
+                <Button className='checkBtn' onClick={handleAddSite} startDecorator={<FaCheck />}>Validate</Button>
               </div>
           </div>
         </Sheet>
@@ -882,18 +861,18 @@ export default function SuperAdminAllSites() {
         <ModalDialog variant="outlined" role="alertdialog" sx={{width:'40%'}}>
           <DialogTitle>
             <WarningRoundedIcon />
-            {('componentsPage.confirmation')}
+            Confirmation
           </DialogTitle>
           <Divider />
           <DialogContent>
-          {('componentsPage.questionD')} {t('site')} ?
+            Are you sure you want to delete site <strong>{deletedRow?.name}</strong> ?
           </DialogContent>
           <DialogActions>
             <Button variant="solid" color="danger" onClick={confirmDelete}>
-            {('componentsPage.Confirm')}
+              Confirm
             </Button>
             <Button variant="plain" color="neutral" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
-            {('cancel')}
+              Cancel
             </Button>
           </DialogActions>
         </ModalDialog>
@@ -915,9 +894,7 @@ export default function SuperAdminAllSites() {
             borderRadius: 'md',
             p: 3,
             boxShadow: 'lg',
-            overflowY:'scroll',
-            zIndex:10011
-
+            overflowY:'scroll'
           }}
         >
           <ModalClose variant="plain" sx={{ m: 1 }} />
@@ -937,53 +914,12 @@ export default function SuperAdminAllSites() {
             <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span>{siteName} {t('buildings')}</span></h2>
           </Typography>
           <Typography level='div' id="modal-desc" textColor="text.tertiary">
-            <SiteBuildingsMap setAllSites={setAllSites} siteName={siteName} chosenSiteBuildings={chosenSiteBuildings} setChosenSiteBuildings={setChosenSiteBuildings} />
+            <SiteBuildingsMap setAllSites={setAllSites} siteName={siteName}  chosenSiteBuildings={chosenSiteBuildings} setChosenSiteBuildings={setChosenSiteBuildings} cascaderDataWorkspaces={cascaderDataWorkspaces}/>
           </Typography>
         </Sheet>
       </Modal>
 
-      {/*add site buildings map */}
-      <Modal
-        aria-labelledby="modal-title"
-        aria-describedby="modal-desc"
-        open={openMapModalAddBuilding}
-        onClose={() => setOpenMapModalAddBuilding(false)}
-        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-      >
-        <Sheet
-          variant="outlined"
-          sx={{
-            width:'100%',
-            height:'98%',
-            borderRadius: 'md',
-            p: 3,
-            boxShadow: 'lg',
-            overflowY:'scroll',
-            zIndex:10011
-
-          }}
-        >
-          <ModalClose variant="plain" sx={{ m: 1 }} />
-          <Typography
-            component="h2"
-            id="modal-title"
-            level="h4"
-            textColor="inherit"
-            fontWeight="lg"
-            mb={1}
-            sx={{
-              width:'100%',
-              display: 'flex',
-              justifyContent:'center'
-            }}
-          >
-            {chosenSiteBuildings?.name}
-          </Typography>
-          <Typography level='div' id="modal-desc" textColor="text.tertiary">
-            <AddSiteBuildings/>
-          </Typography>
-        </Sheet>
-      </Modal>
+      
 
       {/*Loader component */}
       <Modal

@@ -17,6 +17,7 @@ import { MdAdd } from "react-icons/md";
 
 import { Cascader } from 'rsuite';
 import Table from '@mui/joy/Table';
+import { FaLocationDot } from "react-icons/fa6";
 
 import { Pagination,Notification } from 'rsuite';
 import { Divider } from '@mui/joy';
@@ -41,11 +42,15 @@ import DialogActions from '@mui/joy/DialogActions';
 import ModalDialog from '@mui/joy/ModalDialog';
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 
-import '../styles/SiteBuildingsMap.css';
+import '../styles/SiteBuildingsMap.css'; 
 
 import { useDispatch,useSelector } from 'react-redux';
 import {sitesData, projectsData } from '../features/SuperAdminSlice';
 import LoaderComponent from './LoaderComponent';
+import AddSiteBuildings from './AddSiteBuildings';
+import {  CheckPicker } from 'rsuite';
+import { deleteSite,buildingsData,addSiteAsync,updateSite,workspacesData} from '../features/SuperAdminSlice';
+import { hasPermission } from '../components/CheckPermissions';
 
 
 const createCustomIcon = () => {
@@ -86,14 +91,20 @@ export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBu
     const [addBuilding, setAddBuilding] = React.useState(false);
     const [selectedRow, setSelectedRow] = useState(null);
     const [isDirty, setIsDirty] = useState(false);
-    const [newBuilding,setNewBuilding]=useState({Name:'',Activity:'',Code:'',Site:'',ConstructionYear:'',LevelCount:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_ares:'',Comment:''});
+    const [newBuilding,setNewBuilding]=useState({name:null,location:null, activity:null,code:null,site_id:null,year_of_construction:null,level_count:null,address:null,surface:null,type:null});
     const [openDelete, setOpenDelete] = React.useState(false);
     const [deletedRow,setDeletedRow]=useState({});
     const {t}=useTranslation();
     const token=localStorage.getItem('token');
+    const userInfo=JSON.parse(localStorage.getItem('user'));
     const dispatch = useDispatch();
 
     const { sites, statusSites , errorSites } = useSelector((state) => state.sites);
+    const { buildings, statusBuildings , errorBuildings } = useSelector((state) => state.buildings);
+    
+const [openMapModalAddBuilding,setOpenMapModalAddBuilding]=useState(false);
+
+const [addWS,setAddWS]=useState(null);
 
     useEffect(() => {
         const icon = createCustomIcon();
@@ -101,8 +112,8 @@ export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBu
     }, []);
     
     useEffect(() => {
-        if (chosenSiteBuildings && chosenSiteBuildings.length > 0) {
-            const initialPolygonCoords = chosenSiteBuildings.map(building => {
+        if (chosenSiteBuildings && chosenSiteBuildings?.length > 0) {
+            const initialPolygonCoords = chosenSiteBuildings?.map(building => {
                 const latitude = JSON.parse(building.location)[0];
                 const longitude = JSON.parse(building.location)[1];
                 return [latitude, longitude];
@@ -110,6 +121,91 @@ export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBu
             setPolygonCoords(initialPolygonCoords);
         }
     }, [chosenSiteBuildings]);
+
+
+    const [updateLocation,setUpdateLocation]=useState(false);
+
+    //!add building:
+
+    const handleAddBuilding = async () => {
+      // newBuilding.location=JSON.stringify(newBuilding.location);
+      console.log(newBuilding);
+      // setAddBuilding(false);
+  
+      try {
+        setLoaderState(true); 
+    
+        const worksp_id  = sites?.find((site)=>site.id===newBuilding.site_id)?.workspace_id; 
+        const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${worksp_id}/buildings/addBuilding`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(newBuilding), 
+        });
+    
+        const result = await response.json();
+  
+        if (response.ok) {
+          setNotif(true);
+          setMessage(result.message);
+          setChosenSiteBuildings([...chosenSiteBuildings,newBuilding]);
+          dispatch(buildingsData(token));
+          setAddBuilding(false);
+          setLoaderState(false); 
+          setNewBuilding({...newBuilding,location:null});
+        } else {
+          console.error('Failed to update the building:', result);
+          alert(`Failed to update the building: ${result.error || 'Unknown error'}`);
+        }
+      }catch (error) {
+        console.error('Error:', error); 
+        alert('An error occurred while updating the building.');
+      }
+    };
+
+    //!update building:
+    const handleUpdateBuilding = async () => {
+
+        try {
+          setLoaderState(true); 
+      
+          const workspace_id  = buildingSite.workspace_id; 
+          const building_id =  selectedRow.id; 
+        //   alert(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}`);
+          const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/updateBuilding`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(selectedRow), 
+          });
+      
+          const result = await response.json();
+    
+          if (response.ok) {
+            setNotif(true);
+            setMessage(result.message);
+            setChosenSiteBuildings(chosenSiteBuildings?.map((building) => {
+              if (building.id === building_id) {
+                return { ...building, ...selectedRow };
+              }
+              return building;
+            }));
+            setOpen(false);
+            setLoaderState(false); 
+          } else {
+            console.error('Failed to update the building:', result);
+            alert(`Failed to update the building: ${result.error || 'Unknown error'}`);
+          }
+        }catch (error) {
+          console.error('Error:', error); 
+          alert('An error occurred while updating the building.');
+        }
+      };
+  
 
     // const firstBuildingLocation = (chosenSiteBuildings && chosenSiteBuildings.length > 0)
         // ? [JSON.parse(chosenSiteBuildings[0].location)[0],JSON.parse(chosenSiteBuildings[0].location)[1]]
@@ -122,7 +218,8 @@ export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBu
       
 
         const emptyFields=()=>{
-            setNewBuilding({Name:'',Activity:'',Code:'',Site:'',ConstructionYear:'',LevelCount:'',Correlation_Code:'',Address:'',Country:'',Zipcode:'',Region_State:'',City:'',Department:'',Floor_ares:'',Comment:''});
+            setNewBuilding({name:null,location:null, activity:null,code:null,site_id:null,year_of_construction:null,level_count:null,address:null,surface:null,type:null});
+
         }
 
         const handleRowClick = (row) => {
@@ -146,18 +243,21 @@ export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBu
             setBuildingSite(sites?.find((site)=>site.id===row.site_id));
         }
         
+        //!delete building:
+
         const confirmDelete = async () => { 
             try {
                 setLoaderState(true);
                 setOpenDelete(false);
-                
-                const response = await fetch(`http://127.0.0.1:8000/api/auth/buildings/${deletedRow.id}`, {
-                    method: 'DELETE',
+                const workspace_id  = buildingSite.workspace_id;
+                // alert(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${deletedRow.id}`);
+                const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/deleteBuilding`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    
+                    body:JSON.stringify({id:deletedRow.id})
                 });
         
                 const result = await response.json();
@@ -165,7 +265,7 @@ export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBu
                 if (response.ok) {
                     setNotif(true);
                     setMessage(result.message);
-                    setChosenSiteBuildings(chosenSiteBuildings.filter((b)=>b.id!==deletedRow.id));
+                    setChosenSiteBuildings(chosenSiteBuildings?.filter((b)=>b.id!==deletedRow.id));
                     dispatch(sitesData(token)).then(()=>{
                         setAllSites(sites);
                     })
@@ -196,11 +296,11 @@ export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBu
           },[notif]);
 
   const formatCascaderDataSite = (sites) => {
-    const sitess = [...new Set(sites?.map((site) =>({name: site.name,code:site.code})))];
+    const sitess = [...new Set(sites?.map((site) =>({name: site.name,id:site.id})))];
     
     return sitess.map((site) => ({
-      label: `${site.code} - ${site.name}`,
-      value: site.code,
+      label: `${site.id} - ${site.name}`,
+      value: site.id,
     }));
   };
   const cascaderDataSites = formatCascaderDataSite(sites);
@@ -213,8 +313,8 @@ export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBu
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     />
-                    {chosenSiteBuildings && chosenSiteBuildings.length > 0 && (
-                        chosenSiteBuildings.map((loc, idx) => {
+                    {chosenSiteBuildings && chosenSiteBuildings?.length > 0 && (
+                        chosenSiteBuildings?.map((loc, idx) => {
                             // const [latitude, longitude] = loc.location.slice(1, -1).split(',').map(coord => parseFloat(coord));
                             const latitudeLongitude = JSON.parse(loc.location);
                             let latitude=latitudeLongitude[0];
@@ -312,12 +412,16 @@ export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBu
                     />
                     </Grid>
                     <Grid xs={12} lg={2} sm={12} md={12}>
-                    <Button className='apply_Button'><IoFilter size={22}/>&nbsp;&nbsp;Apply filter</Button>
+                    <Button className='apply_Button'><IoFilter size={22}/>&nbsp;&nbsp;{t('filter')}</Button>
                     </Grid>
                 </Grid>
                 </div>
                 <div className='Add_container'>
-                <Button className='add_Button' onClick={()=>setAddBuilding(true)}><MdAdd size={22}/>&nbsp;&nbsp;Add building</Button>
+                  {
+                    hasPermission(userInfo.permissions,'buildings','create')&&(
+                      <Button className='add_Button' onClick={()=>setAddBuilding(true)}><MdAdd size={22}/>&nbsp;&nbsp;{t('addBuilding')}</Button>
+                    )
+                  }
                 </div>
                 <div className='table_container'>
                     <Table hoverRow sx={{ overflowX: 'scroll' }}>
@@ -332,13 +436,17 @@ export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBu
                             <th>Surface</th>
                             <th>Type</th>
                             <th>Level Count</th>
-                            <th>Action</th>
+                            {
+                              hasPermission(userInfo.permission,'buildings','delete')&&(
+                                <th>Action</th>
+                              )
+                            }
                         </tr>
                         </thead>
                         <tbody>
                     {
-                        chosenSiteBuildings.length>0?(
-                            chosenSiteBuildings.map((site, idx) => {
+                        chosenSiteBuildings?.length>0?(
+                            chosenSiteBuildings?.map((site, idx) => {
                                 const latitudeLongitude = JSON.parse(site.location);
                                 let latitude=latitudeLongitude[0];
                                 let longitude=latitudeLongitude[1];
@@ -353,23 +461,25 @@ export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBu
                                     <td>{site.surface}</td>
                                     <td>{site.type}</td>
                                     <td>{site.level_count}</td>
-                                    <td>
-                                    <td className="locationList"
-                                    key={idx} onClick={() => setTargetLocation([latitude, longitude])}
-                                    style={{width:'100%'}}>
-                                        <Button sx={{
-                                            background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
-                                            zIndex:999
-                                            }}
-                                            onClick={(e)=>{
-                                            e.stopPropagation();
-                                            HandleDelete(site)
-                                            }}
-                                            >
-                                            <MdDelete size={22}/>
-                                        </Button>
-                                    </td>
-                                    </td>
+                                    {
+                                      hasPermission(userInfo.permission,'buildings','delete')&&(
+                                      <td className="locationList"
+                                      key={idx} onClick={() => setTargetLocation([latitude, longitude])}
+                                      style={{width:'100%'}}>
+                                          <Button sx={{
+                                              background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)',
+                                              zIndex:999
+                                              }}
+                                              onClick={(e)=>{
+                                              e.stopPropagation();
+                                              HandleDelete(site)
+                                              }}
+                                              >
+                                              <MdDelete size={22}/>
+                                          </Button>
+                                      </td>
+                                      )
+                                    }
                                     </tr>
                                 )})
                         ):
@@ -400,436 +510,477 @@ export default function SiteBuildingsMap({ siteName,setAllSites ,setChosenSiteBu
                     </div>
                 </div>
             </div>
-            {/* Modal building information's */}
-                <Modal
-                aria-labelledby="modal-title"
-                aria-describedby="modal-desc"
-                open={open}
-                onClose={() => setOpen(false)}
-                sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-            >
-                <Sheet
-                variant="outlined"
-                sx={{
-                    width:'70%',
-                    maxHeight:'85vh',
-                    borderRadius: 'md',
-                    p: 3,
-                    boxShadow: 'lg',
-                    overflowY:'scroll'
-                }}
-                >
-                <ModalClose variant="plain" sx={{ m: 1 }} />
-                <Typography
-                    component="h2"
-                    id="modal-title"
-                    level="h2"
-                    textColor="inherit"
-                    fontWeight="lg"
-                    mb={1}
-                > 
-                    <SiTestrail style={{color:'rgb(3, 110, 74)'}}/>
-                    <span>
-                    Building {selectedRow!==null&&selectedRow.name}
-                    </span>
-                </Typography>
+            <div>
+
+              {/* Modal building information's */}
+          <Modal
+          aria-labelledby="modal-title"
+          aria-describedby="modal-desc"
+          open={open}
+          onClose={() => setOpen(false)}
+          sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Sheet
+            variant="outlined"
+            sx={{
+              width:'70%',
+              maxHeight:'85vh',
+              borderRadius: 'md',
+              p: 3,
+              boxShadow: 'lg',
+              overflowY:'scroll'
+            }}
+          >
+            <ModalClose variant="plain" sx={{ m: 1 }} />
+            <Typography
+              component="h2"
+              id="modal-title"
+              level="h2"
+              textColor="inherit"
+              fontWeight="lg"
+              mb={1}
+            > 
+              <SiTestrail style={{color:'rgb(3, 110, 74)'}}/>
+              <span>
+                Building {selectedRow!==null&&selectedRow.name}
+              </span>
+            </Typography>
+            <div>
+              <Divider>
+                <h3 id='title_H3'>
+                  <IoIosInformationCircle/>
+                  <span>Information</span>
+                </h3>
+              </Divider>
+              <div className='info-container'>
+                <Divider>
+                  <h4>Information</h4>
+                </Divider>
+                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                  <Grid item xs={12} md={12} lg={12} sm={12}>
+                    <span>Name</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                      defaultValue={selectedRow?.name || ''}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Code</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                      defaultValue={selectedRow?.code || ''}
+                      onChange={(e) => handleInputChange('code', e.target.value)}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Parent Site</span><br />
+                    <Cascader
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                        data={sites?.map((site) => ({ label: site.name, value: site.id }))}
+                        defaultValue={buildingSite?.id} // Use `buildingSite?.id` here
+                        placeholder="Parent Site"
+                        popupStyle={{ width: '25%', zIndex: 10000 }}
+                        columnWidth={350}
+                        style={{ width: '100%' }}
+                        onChange={(value) => handleInputChange('site_id', value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Correlation Code</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                      placeholder="Correlation Code"
+                      variant="outlined"
+                    />
+                  </Grid>
+                </Grid>
+                <Divider>
+                  <h4>Address</h4>
+                </Divider>
+                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                  <Grid item xs={12} md={12} lg={12} sm={12}>
+                    <span>Address</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                      defaultValue={selectedRow?.address || ''}
+                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      variant="outlined"
+                    />
+                  </Grid>
+                </Grid>
+                <Divider>
+                  <h4>Parent Site information</h4>
+                </Divider>
+                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Country</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                      readOnly
+                      defaultValue={buildingSite?.country || ''}
+                      onChange={(e) => handleInputChange('country', e.target.value)}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Zipcode</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                    readOnly
+                      defaultValue={buildingSite?.zipcode || ''}
+                      onChange={(e) => handleInputChange('zipcode', e.target.value)}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Region/State</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                    readOnly
+                      placeholder="Region/State"
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>City</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                    readOnly
+                      defaultValue={buildingSite?.city || ''}
+                      onChange={(e) => handleInputChange('city', e.target.value)}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Department</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                    readOnly
+                      placeholder="Department"
+                      variant="outlined"
+                    />
+                  </Grid>
+                </Grid>
+                <Divider>
+                  <h4>Characteristics</h4>
+                </Divider>
+                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Level Count</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                      defaultValue={selectedRow?.level_count || ''}
+                      variant="outlined"
+                      onChange={(e) => handleInputChange('level_count', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Construction year </span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                      defaultValue={selectedRow?.year_of_construction || ''}
+                      variant="outlined"
+                      type="number"
+                      onChange={(e) => handleInputChange('year_of_construction', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Floor area (m²)</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                      defaultValue={selectedRow?.surface || ''}
+                      variant="outlined"
+                      endDecorator={<Button sx={{height:'100%',marginRight:'-12px',background:'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)'}}>m²</Button>}
+                      onChange={(e) => handleInputChange('surface', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Activity</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                      defaultValue={selectedRow?.activity || ''}
+                      variant="outlined"
+                      onChange={(e) => handleInputChange('activity', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={12} lg={12} sm={12}>
+                    <span>Comment</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                      variant="outlined"
+                      placeholder='Comment'
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={12} lg={12} sm={12}>
+                    <span>Location</span><br />
+                    <Input
+                      disabled={hasPermission(userInfo.permission,'buildings','update')}
+                      onClick={()=>setUpdateLocation(true)}
+                      value={selectedRow?.location}
+                      variant="outlined"
+                      placeholder='Comment'
+                      // value={Nlocation}
+                    />
+                  </Grid>
+                </Grid>
                 <div>
-                    <Divider>
-                    <h3 id='title_H3'>
-                        <IoIosInformationCircle/>
-                        <span>Information</span>
-                    </h3>
-                    </Divider>
-                    <div className='info-container'>
-                    <Divider>
-                        <h4>Information</h4>
-                    </Divider>
-                    <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                        <Grid item xs={12} md={12} lg={12} sm={12}>
-                        <span>Name</span><br />
-                        <Input
-                            value={selectedRow?.name || ''}
-                            onChange={(e) => handleInputChange('Name', e.target.value)}
-                            variant="outlined"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Code</span><br />
-                        <Input
-                            value={selectedRow?.code || ''}
-                            onChange={(e) => handleInputChange('Code', e.target.value)}
-                            variant="outlined"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Parent Site</span><br />
-                        <Cascader
-                            // value={{label:buildingSite?.name,value:buildingSite?.code} || ''}
-                            data={cascaderDataSites}
-                            placeholder="Parent Site" 
-                            popupStyle={{width:'25%',zIndex:10000}}
-                            columnWidth={350}
-                            style={{width:'100%'}}
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Correlation Code</span><br />
-                        <Input
-                            placeholder="Correlation Code"
-                            variant="outlined"
-                        />
-                        </Grid>
-                    </Grid>
-                    <Divider>
-                        <h4>Address</h4>
-                    </Divider>
-                    <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                        <Grid item xs={12} md={12} lg={12} sm={12}>
-                        <span>Address</span><br />
-                        <Input
-                            value={selectedRow?.address || ''}
-                            onChange={(e) => handleInputChange('Address', e.target.value)}
-                            variant="outlined"
-                        />
-                        </Grid>
-                    </Grid>
-                    <Divider>
-                        <h4>Parent Site information</h4>
-                    </Divider>
-                    <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Country</span><br />
-                        <Input
-                            value={buildingSite?.country || ''}
-                            onChange={(e) => handleInputChange('Country', e.target.value)}
-                            variant="outlined"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Zipcode</span><br />
-                        <Input
-                            value={buildingSite?.zipcode || ''}
-                            onChange={(e) => handleInputChange('ZipCode', e.target.value)}
-                            variant="outlined"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Region/State</span><br />
-                        <Input
-                            placeholder="Region/State"
-                            variant="outlined"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>City</span><br />
-                        <Input
-                            value={buildingSite?.city || ''}
-                            onChange={(e) => handleInputChange('City', e.target.value)}
-                            variant="outlined"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Department</span><br />
-                        <Input
-                            placeholder="Department"
-                            variant="outlined"
-                        />
-                        </Grid>
-                    </Grid>
-                    <Divider>
-                        <h4>Characteristics</h4>
-                    </Divider>
-                    <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Level Count</span><br />
-                        <Input
-                            value={selectedRow?.level_count || ''}
-                            variant="outlined"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Construction year </span><br />
-                        <Input
-                            value={selectedRow?.year_of_construction || ''}
-                            variant="outlined"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Floor area (m²)</span><br />
-                        <Input
-                            value={selectedRow?.surface || ''}
-                            variant="outlined"
-                            endDecorator={<Button sx={{height:'100%',marginRight:'-12px',background:'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)'}}>m²</Button>}
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Activity</span><br />
-                        <Input
-                            value={selectedRow?.activity || ''}
-                            variant="outlined"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={12} lg={12} sm={12}>
-                        <span>Comment</span><br />
-                        <Input
-                            variant="outlined"
-                            placeholder='Comment'
-                        />
-                        </Grid>
-                    </Grid>
-                    </div>
-                    {
-                    isDirty&&(
-                        <div className='action_buttons_validate_cancel'>
-                        <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={() => setOpen(false)}>Cancel</Button>
-                        <Button className='checkBtn' startDecorator={<FaCheck />}>Validate</Button>
-                        </div>
+                  {
+                    updateLocation&&(
+                      <AddSiteBuildings justLocation={false} handleInputChange={handleInputChange} setUpdateLocation={setUpdateLocation}/>
                     )
-                    }
+                  }
                 </div>
-                </Sheet>
-            </Modal>
+              </div>
+              {
+                isDirty&&(
+                  <div className='action_buttons_validate_cancel'>
+                    <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={() => setOpen(false)}>{t('cancel')}</Button>
+                    <Button className='checkBtn' startDecorator={<FaCheck />} onClick={handleUpdateBuilding}>{t('users.update')}</Button>
+                  </div>
+                )
+              }
+            </div>
+          </Sheet>
+        </Modal>
 
-            {/* Modal add Building */}
-            <Modal
-                aria-labelledby="modal-title"
-                aria-describedby="modal-desc"
-                open={addBuilding}
-                onClose={() => setAddBuilding(false)}
-                sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-            >
-                <Sheet
-                variant="outlined"
-                sx={{
-                    width:'70%',
-                    maxHeight:'85vh',
-                    borderRadius: 'md',
-                    p: 3,
-                    boxShadow: 'lg',
-                    overflowY:'scroll'
-                }}
-                >
-                <ModalClose variant="plain" sx={{ m: 1 }} />
-                <Typography
-                    component="h2"
-                    id="modal-title"
-                    level="h2"
-                    textColor="inherit"
-                    fontWeight="lg"
-                    mb={1}
-                    
-                > 
-                    <IoMdCreate style={{color:'rgb(3, 110, 74)'}}/>
-                    <span>
-                    Create Building
-                    </span>
-                </Typography>
-                <div>
-                    <h3 id='title_H3'>
-                    <IoIosInformationCircle/>
-                    <span>Information</span>
-                    </h3>
-                    <div className='info-container'>
-                    <h4>Information</h4>
-                    <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                        <Grid item xs={12} md={12} lg={12} sm={12}>
-                        <span>Name</span><br />
-                        <Input
-                            onChange={(e) => setNewBuilding({Name:e.target.value})}
-                            variant="outlined"
-                            placeholder="Name"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Code</span><br />
-                        <Input
-                            onChange={(e) => setNewBuilding({Code:e.target.value})}
-                            variant="outlined"
-                            placeholder="Code"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Parent Site</span><br />
-                        {/* <CheckPicker labelKey='label' placeholder={t('city')} onChange={(value)=>setNewBuilding({Site:value})} placement='bottom' menuStyle={{ zIndex: 1400 }}  data={cascaderDataCities} className='Cascader_comp'/> */}
 
-                        <Cascader
-                            data={cascaderDataSites}
-                            placeholder="Parent Site" 
-                            style={{width:'100%'}}
-                            popupStyle={{width:'25%'}}
-                            columnWidth={350}
-                            onChange={(value) => setNewBuilding({Site:value})}
+              {/* Modal add Building */}
+        <Modal
+          aria-labelledby="modal-title"
+          aria-describedby="modal-desc"
+          open={addBuilding}
+          onClose={() => setAddBuilding(false)}
+          sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Sheet
+            variant="outlined"
+            sx={{
+              width:'70%',
+              maxHeight:'85vh',
+              borderRadius: 'md',
+              p: 3,
+              boxShadow: 'lg',
+              overflowY:'scroll'
+            }}
+          >
+            <ModalClose variant="plain" sx={{ m: 1 }} />
+            <Typography
+              component="h2"
+              id="modal-title"
+              level="h2"
+              textColor="inherit"
+              fontWeight="lg"
+              mb={1}
+              
+            > 
+              <IoMdCreate style={{color:'rgb(3, 110, 74)'}}/>
+              <span>
+                Create Building
+              </span>
+            </Typography>
+            <div>
+              <h3 id='title_H3'>
+                <IoIosInformationCircle/>
+                <span>Information</span>
+              </h3>
+              <div className='info-container'>
+                <h4>Information</h4>
+                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                  <Grid item xs={12} md={12} lg={12} sm={12}>
+                    <span>Name</span><br />
+                    <Input
+                      onChange={(e) => setNewBuilding({...newBuilding,name:e.target.value})}
+                      variant="outlined"
+                      placeholder="Name"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Code</span><br />
+                    <Input
+                      onChange={(e) => setNewBuilding({...newBuilding,code:e.target.value})}
+                      variant="outlined"
+                      placeholder="Code"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Parent Site</span><br />
+                    <Cascader
+                      data={cascaderDataSites}
+                      placeholder="Parent Site" 
+                      style={{width:'100%'}}
+                      popupStyle={{width:'35%',zIndex:10000}}
+                      columnWidth={500}
+                      onChange={(value) => setNewBuilding({...newBuilding,site_id:value})}
+                    />
+                  </Grid>
+                </Grid>
+                <h4>Address</h4>
+                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                  <Grid item xs={12} md={12} lg={12} sm={12}>
+                    <span>Address</span><br />
+                    <Input
+                      onChange={(e) => setNewBuilding({...newBuilding,address:e.target.value})}
+                      variant="outlined"
+                      placeholder="Address"
 
-                        />
-                        </Grid> 
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Correlation Code</span><br />
-                        <Input
-                            placeholder="Correlation Code"
-                            variant="outlined"
-                            onChange={(e) => setNewBuilding({Correlation_Code:e.target.value})}
-                        />
-                        </Grid>
-                    </Grid>
-                    <h4>Address</h4>
-                    <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                        <Grid item xs={12} md={12} lg={12} sm={12}>
-                        <span>Address</span><br />
-                        <Input
-                            onChange={(e) => setNewBuilding({Address:e.target.value})}
-                            variant="outlined"
-                            placeholder="Address"
+                    />
+                  </Grid>
+                </Grid>
+                <h4>Characteristics</h4>
+                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Level Count</span><br />
+                    <Input
+                      variant="outlined"
+                      placeholder="Level Count"
+                      onChange={(e) => setNewBuilding({...newBuilding,level_count:e.target.value})}
 
-                        />
-                        </Grid>
-                    </Grid>
-                    <h4>Parent Site information</h4>
-                    <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Country</span><br />
-                        <Input
-                            onChange={(e) => setNewBuilding({Country:e.target.value})}
-                            variant="outlined"
-                            placeholder="Country"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Construction year </span><br />
+                    <Input
+                      variant="outlined"
+                      placeholder="Construction year"
+                      type='number'
+                      onChange={(e) => setNewBuilding({...newBuilding,year_of_construction:e.target.value})}
 
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Zipcode</span><br />
-                        <Input
-                            onChange={(e) => setNewBuilding({Zipcode:e.target.value})}
-                            variant="outlined"
-                            placeholder="Zipcode"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Region/State</span><br />
-                        <Input
-                            placeholder="Region/State"
-                            variant="outlined"
-                            onChange={(e) => setNewBuilding({Region_State:e.target.value})}
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>City</span><br />
-                        <Input
-                            onChange={(e) => setNewBuilding({City:e.target.value})}
-                            variant="outlined"
-                            placeholder="City"
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Department</span><br />
-                        <Input
-                            placeholder="Department"
-                            variant="outlined"
-                            onChange={(e) => setNewBuilding({Department:e.target.value})}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Floor area (m²)</span><br />
+                    <Input
+                      variant="outlined"
+                      placeholder="Floor area"
+                      onChange={(e) => setNewBuilding({...newBuilding,surface:e.target.value})}
+                      endDecorator={<Button sx={{height:'100%',marginRight:'-12px',background:'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)'}}>m²</Button>}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={6} sm={12}>
+                    <span>Activity</span><br />
+                    <Input
+                      variant="outlined"
+                      placeholder="Activity"
+                      onChange={(e) => setNewBuilding({...newBuilding,activity:e.target.value})}
 
-                        />
-                        </Grid>
-                    </Grid>
-                    <h4>Characteristics</h4>
-                    <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Level Count</span><br />
-                        <Input
-                            variant="outlined"
-                            placeholder="Level Count"
-                            onChange={(e) => setNewBuilding({LevelCount:e.target.value})}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={12} lg={12} sm={12}>
+                    <span>Type</span><br />
+                    <Input
+                      variant="outlined"
+                      placeholder='Type'
+                      onChange={(e) => setNewBuilding({...newBuilding,type:e.target.value})}
 
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Construction year </span><br />
-                        <Input
-                            variant="outlined"
-                            placeholder="Construction year"
-                            onChange={(e) => setNewBuilding({ConstructionYear:e.target.value})}
-
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Floor area (m²)</span><br />
-                        <Input
-                            variant="outlined"
-                            placeholder="Floor area"
-                            onChange={(e) => setNewBuilding({Floor_ares:e.target.value})}
-                            endDecorator={<Button sx={{height:'100%',marginRight:'-12px',background:'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)'}}>m²</Button>}
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={6} lg={6} sm={12}>
-                        <span>Activity</span><br />
-                        <Input
-                            variant="outlined"
-                            placeholder="Activity"
-                            onChange={(e) => setNewBuilding({Activity:e.target.value})}
-
-                        />
-                        </Grid>
-                        <Grid item xs={12} md={12} lg={12} sm={12}>
-                        <span>Comment</span><br />
-                        <Input
-                            variant="outlined"
-                            placeholder='Comment'
-                            onChange={(e) => setNewBuilding({Comment:e.target.value})}
-
-                        />
-                        </Grid>
-                    </Grid>
-                    </div>
-                    <div className='action_buttons_validate_cancel'>
-                        <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={emptyFields}>Cancel</Button>
-                        <Button className='checkBtn' startDecorator={<FaCheck />}>Validate</Button>
-                    </div>
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={12} lg={12} sm={12}>
+                    <span>Location</span><br />
+                    <Input
+                      onClick={()=>setUpdateLocation(true)}
+                      value={newBuilding.location}
+                      variant="outlined"
+                      placeholder='Location'
+                    />
+                  </Grid>
+                </Grid>
+              </div>
+              <div>
+                  {
+                    updateLocation&&(
+                      <AddSiteBuildings justLocation={true} newBuilding={newBuilding} setNewBuilding={setNewBuilding} setUpdateLocation={setUpdateLocation}/>
+                    )
+                  }
                 </div>
-                </Sheet>
-            </Modal>
+                <div className='action_buttons_validate_cancel'>
+                  <Button className='cancelBtn' startDecorator={<MdCancel />} onClick={emptyFields}>Cancel</Button>
+                  <Button className='checkBtn' startDecorator={<FaCheck />} onClick={handleAddBuilding}>Validate</Button>
+                </div>
+            </div>
+          </Sheet>
+        </Modal>
 
-            {/* Modal delete site */}
-            <Modal open={openDelete} onClose={() => setOpenDelete(false)}>
-                <ModalDialog variant="outlined" role="alertdialog">
-                <DialogTitle>
-                    <WarningRoundedIcon />
-                    Confirmation
-                </DialogTitle>
-                <Divider />
-                <DialogContent>
-                    Are you sure you want to delete {deletedRow?.name} ?
-                </DialogContent>
-                <DialogActions>
-                    <Button variant="solid" color="danger" onClick={confirmDelete}>
-                    Confirm
-                    </Button>
-                    <Button variant="plain" color="neutral" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
-                    Cancel
-                    </Button>
-                </DialogActions>
-                </ModalDialog>
-            </Modal>
+              {/* Modal delete site */}
+              <Modal open={openDelete} onClose={() => setOpenDelete(false)}>
+                  <ModalDialog variant="outlined" role="alertdialog">
+                  <DialogTitle>
+                      <WarningRoundedIcon />
+                      Confirmation
+                  </DialogTitle>
+                  <Divider />
+                  <DialogContent>
+                      Are you sure you want to delete {deletedRow?.name} ?
+                  </DialogContent>
+                  <DialogActions>
+                      <Button variant="solid" color="danger" onClick={confirmDelete}>
+                      Confirm
+                      </Button>
+                      <Button variant="plain" color="neutral" onClick={() =>{ setOpenDelete(false);setDeletedRow({})}}>
+                      Cancel
+                      </Button>
+                  </DialogActions>
+                  </ModalDialog>
+              </Modal>
 
-            {/*Loader component */}
-            <Modal
-                aria-labelledby="modal-title"
-                aria-describedby="modal-desc"
-                open={LoaderState}
-                onClose={() => setLoaderState(false)}
-                sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+        {/*add site buildings map */}
+        <Modal
+          aria-labelledby="modal-title"
+          aria-describedby="modal-desc"
+          open={openMapModalAddBuilding}
+          onClose={() => setOpenMapModalAddBuilding(false)}
+          sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Sheet
+            variant="outlined"
+            sx={{
+              width:'100%',
+              height:'98%',
+              borderRadius: 'md',
+              p: 3,
+              boxShadow: 'lg',
+              overflowY:'scroll'
+            }}
+          >
+            <ModalClose variant="plain" sx={{ m: 1 }} />
+            <Typography
+              component="h2"
+              id="modal-title"
+              level="h4"
+              textColor="inherit"
+              fontWeight="lg"
+              mb={1}
+              sx={{
+                width:'100%',
+                display: 'flex',
+                justifyContent:'center'
+              }}
             >
-                <Sheet
-                variant="outlined"
-                sx={{
-                    width:'100%',
-                    height:'98%',
-                    borderRadius: 'md',
-                    p: 3,
-                    boxShadow: 'lg',
-                    overflowY:'scroll'
-                }}
-                >
-                <ModalClose variant="plain" sx={{ m: 1 }} />
-                <LoaderComponent/>
-                </Sheet>
-            </Modal>
+              {chosenSiteBuildings?.name}
+            </Typography>
+            <Typography level='div' id="modal-desc" textColor="text.tertiary">
+              <AddSiteBuildings/>
+            </Typography>
+          </Sheet>
+        </Modal>
+
+              {/*Loader component */}
+              <Modal
+                  aria-labelledby="modal-title"
+                  aria-describedby="modal-desc"
+                  open={LoaderState}
+                  onClose={() => setLoaderState(false)}
+                  sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+              >
+                  <div>
+                    <ModalClose variant="plain" sx={{ m: 1 }} />
+                    <LoaderComponent/>
+                  </div>
+                  
+              </Modal>
+            </div>            
         </div>
     );
 }
