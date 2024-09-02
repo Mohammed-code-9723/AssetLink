@@ -76,7 +76,7 @@ export default function OtherRolesBuildings() {
     const handleWorkspaceChange = (value) => {
       setChosenWorkspaceSites(value);
       dispatch(sitesData({ token, value }));
-  };
+    };
 
   const handleSiteChange = (value) => {
     if (Array.isArray(sites)) {

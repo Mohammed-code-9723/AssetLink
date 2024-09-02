@@ -1,5 +1,6 @@
 {
     "welcome":"مرحبا",
+    "p":"الملف الشخصي",
     "welcome1": "إدارة العقارات",
     "welcome2": "بكل سهولة مع AssetLink",
     "welcome3": "باستخدام الذكاء الاصطناعي",
@@ -82,9 +83,9 @@
     "componentsPage":{
       "code":"الرمز",
       "name":"الاسم",
-      "quantity":"الكمية",
+      "q":"الكمية",
       "unit":"الوحدة",
-      "last_rehabilitation_year":"آخر سنة إعادة تأهيل",
+      "LS":"آخر سنة إعادة تأهيل",
       "condition":"الحالة",
       "severity_max":"أقصى درجة خطورة",
       "risk_level":"مستوى المخاطرة",
@@ -153,5 +154,16 @@
       "RM":"الصيانة",
       "IPM":"الحوادث لكل شهر",
       "IPS":"الحوادث لكل حالة"
+    },
+    "maintenancesPage":{
+      "maintenance":"الصيانة",
+      "tasks":"المهام",
+      "task":"المهمة",
+      "assign":"تعيين المهام",
+      "maintenanceT":"مهام الصيانة"
+    },
+    "permissionsPage":{
+      "permissions":"الأذونات",
+      "permission":"الإذن"
     }
   }

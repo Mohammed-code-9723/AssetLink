@@ -11,9 +11,10 @@ import { updateUsersPermissions } from '../features/SuperAdminSlice';
 import { TbShieldCancel } from "react-icons/tb";
 import { LuShieldCheck } from "react-icons/lu";
 import { useTranslation } from 'react-i18next';
-
 import { MdSupervisorAccount } from "react-icons/md";
 import { MdAdminPanelSettings } from "react-icons/md";
+import { SiTestrail } from 'react-icons/si';
+
 
 const Header = props => {
   const { avatarUrl, title, subtitle, ...rest } = props;
@@ -132,6 +133,10 @@ export default function Permissions() {
         </Link>
         ))}
       </Breadcrumbs>
+      <div className='title_image'>
+        <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> {t('permissionsPage.permissions')} </span></h2>
+        <img src="/assets/permissions_2.svg" alt="per_img" />
+      </div>
       {
         message && statusPermissions==="succeeded" && nameUser!==""?(
           <div>

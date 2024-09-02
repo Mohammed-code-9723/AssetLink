@@ -312,8 +312,11 @@ export default function WorkspacesSuperAdmin() {
     setOpenDeleteScenario(true);
   }
 
-  const handleOpenUpdate=()=>{
-    
+  // const []
+  const [addPFSU,setAddPFSU]=useState(false);
+  const handleOpenUpdate=(scenario,project_id)=>{
+    setAddPFSU(true);
+    setNewScenario(scenario);
   }
 
   //!
@@ -322,8 +325,7 @@ const handleAddScenario = async (event,project_id) => {
   event.preventDefault();
   // handleChange('project_id',cProject_id);
   newScenario.project_id=project_id;
-  alert(project_id);
-  alert(JSON.stringify(newScenario));
+  
   try {
     const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${chosenWorkspace?.id}/projects/${cProject_id}/scenarios/addScenario`, {
         method: 'POST',
@@ -339,7 +341,7 @@ const handleAddScenario = async (event,project_id) => {
     }
 
     const data = await response.json();
-    alert(data.message);
+    setMessage(data.message);
     dispatch(projectsData(token));
     setAddPFS(false);
     setOpenAddScenario(false);
@@ -362,7 +364,8 @@ const handleAddScenario = async (event,project_id) => {
 //!update scenario:
 
 
-const handleUpdateScenario= async () => {
+const handleUpdateScenario= async (event) => {
+  event.preventDefault();
   try {
       const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${chosenWorkspace?.id}/projects/${cProject_id}/scenarios/updateScenario`, {
         method: 'POST',
@@ -380,7 +383,7 @@ const handleUpdateScenario= async () => {
       const data = await response.json();
       setMessage(data.message);
       dispatch(projectsData(token));
-
+      setAddPFSU(false);
       setOpenUpdateScenario(false);
       setNewScenario({
         name:null,
@@ -472,6 +475,15 @@ const handleDeleteScenario = async () => {
       ),
     },
   ];
+
+  useEffect(()=>{
+    if(message!==''){
+      const intervalM=setTimeout(()=>{
+        setMessage('');
+      },5000);
+      return ()=>clearTimeout(intervalM);
+    }
+  },[message]);
 
   return (
     <div>
@@ -929,11 +941,22 @@ const handleDeleteScenario = async () => {
                               </span>
                             </Button>
                           </div>
+                          {
+                            message!==''&&(
+                              <Message >
+                                {message}
+                              </Message>
+                            )
+                          }
                           <div style={{display:addPFS?'flex':'none',width:'100%',justifyContent:'center',alignItems:'center'}}>
                           <form
                             onSubmit={(e)=>handleAddScenario(e,project?.id)}
+                            style={{width:'90%'}}
                           >
                             <Stack spacing={2}>
+                              <center>
+                                <h3>Add new Scenario</h3>
+                              </center>
                             <FormControl>
                                 <FormLabel>Name</FormLabel>
                                 <Input
@@ -949,7 +972,7 @@ const handleDeleteScenario = async () => {
                                 <DatePicker
                                   placeholder="Start Year"
 
-                                  style={{ width: 200 }}
+                                  style={{ width: '100%' }}
                                   menuStyle={{zIndex:10000}}
                                   onChange={value => handleChange('start_year',dayjs(value).format('YYYY'))} 
                                   ranges={[]} 
@@ -961,7 +984,7 @@ const handleDeleteScenario = async () => {
                                 <DatePicker
                                   placeholder="End Year"
                                   
-                                  style={{ width: 200 }}
+                                  style={{ width: '100%' }}
                                   menuStyle={{zIndex:10000}}
                                   onChange={value => handleChange('end_year',dayjs(value).format('YYYY'))}
                                   ranges={[]} 
@@ -980,7 +1003,7 @@ const handleDeleteScenario = async () => {
                               </FormControl>
                               <FormControl>
                                 <FormLabel>Budgetary constraint</FormLabel>
-                                <Input
+                                <Textarea
                                   name="Budgetary constraint"
                                   required
                                   minRow={6}
@@ -1004,7 +1027,125 @@ const handleDeleteScenario = async () => {
                                   onChange={(value)=>handleChange('status',value)}
                                 />
                               </FormControl>
-                              <Button type='submit'>Submit</Button>
+                              <div style={{width:'100%',display:'flex',justifyContent:'space-evenly'}}>
+                                <Button type='submit'>{t('users.save')}</Button>
+                                <Button onClick={()=>{
+                                  setAddPFS(false);
+                                  setNewScenario({
+                                    name: null, 
+                                    start_year: null, 
+                                    end_year: null, 
+                                    maintenance_strategy: null, 
+                                    budgetary_constraint: null, 
+                                    status: null, 
+                                    project_id: null
+                                  })
+                                }}>{t('cancel')}</Button>
+                              </div>
+                            </Stack>
+                          </form>
+                        </div>
+
+                        <div style={{display:addPFSU?'flex':'none',width:'100%',justifyContent:'center',alignItems:'center'}}>
+                          <form
+                            onSubmit={(e)=>handleUpdateScenario(e,project?.id)}
+                            style={{width:'90%'}}
+                          >
+                            <Stack spacing={2}>
+                              <center>
+                                <h3>Update Scenario {newScenario.name}</h3>
+                              </center>
+                            <FormControl>
+                                <FormLabel>Name</FormLabel>
+                                <Input
+                                  name="name"
+                                  autoFocus
+                                  required
+                                  value={newScenario.name}
+                                  placeholder='Scenario name'
+                                  onChange={(e)=>handleChange('name',e.target.value)}
+                                />
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel>Start year &nbsp;<span style={{textDecoration:'underline'}}>{newScenario.start_year}</span></FormLabel>
+                                <DatePicker
+                                  placeholder={newScenario.start_year}
+                                  style={{ width: '100%' }}
+                                  menuStyle={{zIndex:10000}}
+                                  // defaultValue={dayjs().format('yyyy-MM-dd')}
+                                  // renderValue={dayjs().format('yyyy-MM-dd')}
+                                  onChange={value => handleChange('start_year',dayjs(value).format('YYYY'))} 
+                                  ranges={[]} 
+                                  block
+                                />
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel>End year &nbsp;<span style={{textDecoration:'underline'}}>{newScenario.end_year}</span></FormLabel>
+                                <DatePicker
+                                  placeholder={newScenario.end_year}
+                                  style={{ width: '100%' }}
+                                  menuStyle={{zIndex:10000}}
+                                  // defaultValue={dayjs().format('yyyy-MM-dd')}
+                                  // renderValue={dayjs().format('yyyy-MM-dd')}
+                                  onChange={value => handleChange('end_year',dayjs(value).format('YYYY'))}
+                                  ranges={[]} 
+                                  block
+                                />
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel>Maintenances strategy</FormLabel>
+                                <Textarea
+                                  name="maintenance_strategy"
+                                  required
+                                  minRow={6}
+                                  placeholder='Maintenance strategy'
+                                  value={newScenario.maintenance_strategy}
+                                  onChange={(e)=>handleChange('maintenance_strategy',e.target.value)}
+                                />
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel>Budgetary constraint</FormLabel>
+                                <Input
+                                  name="Budgetary constraint"
+                                  required
+                                  minRow={6}
+                                  placeholder='Budgetary constraint'
+                                  menuStyle={{zIndex:10000}}
+                                  value={newScenario.budgetary_constraint}
+                                  onChange={(e)=>handleChange('budgetary_constraint',e.target.value)}
+                                />
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel>Status</FormLabel>
+                                <SelectPicker
+                                  data={[
+                                    {label:'Active',value:'Active'},
+                                    {label:'Inactive',value:'Inactive'},
+                                  ]}
+                                  name="status"
+                                  required
+                                  minRow={6}
+                                  placeholder='status'
+                                  menuStyle={{zIndex:10000}}
+                                  value={newScenario.status}
+                                  onChange={(value)=>handleChange('status',value)}
+                                />
+                              </FormControl>
+                              <div style={{width:'100%',display:'flex',justifyContent:'space-evenly'}}>
+                                <Button type='submit'>{t('users.save')}</Button>
+                                <Button onClick={()=>{
+                                  setAddPFSU(false);
+                                  setNewScenario({
+                                    name: null, 
+                                    start_year: null, 
+                                    end_year: null, 
+                                    maintenance_strategy: null, 
+                                    budgetary_constraint: null, 
+                                    status: null, 
+                                    project_id: null
+                                  })
+                                }}>{t('cancel')}</Button>
+                              </div>
                             </Stack>
                           </form>
                         </div>

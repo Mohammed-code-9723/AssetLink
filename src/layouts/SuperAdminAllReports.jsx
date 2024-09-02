@@ -506,7 +506,7 @@ export default function SuperAdminAllReports() {
                     </Col>
                     <div style={{width:'100%',display:'flex',justifyContent:'space-between'}}>
                       <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> {t('reportsPage.RA')}</span></h2>
-                      <img src="/assets/Components.svg" alt="comp_img" width={200}/>
+                      <img src="/assets/reports.svg" alt="rep_img" width={200}/>
                     </div>
                 </Row>
                 <Row style={{width:'100%',gap:'5px'}}>

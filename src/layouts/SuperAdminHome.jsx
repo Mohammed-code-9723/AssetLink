@@ -11,7 +11,7 @@ import Link from '@mui/joy/Link';
 import { AvatarGroup, Badge, Avatar, Divider } from 'rsuite';
 import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import { FaUsers } from "react-icons/fa6";
-import { SiTestcafe } from "react-icons/si";
+import { SiTestcafe, SiTestrail } from "react-icons/si";
 import { BarChart, Bar,PieChart,Pie, Rectangle, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 import { fetchUsersData } from '../features/UserSlice';
@@ -22,7 +22,6 @@ import { Timeline, Loader } from 'rsuite';
 
 import { LineChart, Line,RadialBarChart, RadialBar} from 'recharts';
 import { Pagination , Notification , Uploader, Whisper} from 'rsuite'; 
-
 
 import refreshToken from '../features/SuperAdminSlice';
 
@@ -88,48 +87,36 @@ export default function SuperAdminHome() {
         return payload.exp * 1000 < Date.now();
     };
 
+    const [allReports,setAllReports]=useState([]); 
+    const [allUserIncidents,setAllUserIncidents]=useState([]);
+    const [totalIncidents,setTotalIncidents]=useState('');
+    const [resolvedIncidents,setResolvedIncidents]=useState('');
+    const [criticalIncidents,setCriticalIncidents]=useState('');
 
     const dataRadial = [
+        
         {
-          name: '18-24',
-          uv: 31.47,
-          pv: 2400,
-          fill: '#8884d8',
-        },
-        {
-          name: '25-29',
-          uv: 26.69,
-          pv: 4567,
-          fill: '#83a6ed',
-        },
-        {
-          name: '30-34',
-          uv: 15.69,
-          pv: 1398,
+          name: 'Total workspaces',
+          uv: workspaces?workspaces.reduce((total, workspace) => total + (workspace?.sites?.length || 0), 0):0,
+        //   pv: 1398,
           fill: '#8dd1e1',
         },
         {
-          name: '35-39',
-          uv: 8.22,
-          pv: 9800,
+          name: 'Resolved Incidents',
+        //   uv: 8.22,
+          uv: resolvedIncidents,
           fill: '#82ca9d',
         },
         {
-          name: '40-49',
-          uv: 8.63,
-          pv: 3908,
+          name: 'Total Incidents',
+        //   uv: 8.63,
+          uv: totalIncidents,
           fill: '#a4de6c',
         },
         {
-          name: '50+',
-          uv: 2.63,
-          pv: 4800,
-          fill: '#d0ed57',
-        },
-        {
-          name: 'unknow',
-          uv: 6.67,
-          pv: 4800,
+          name: t("users.totalUsers"),
+        //   uv: 6.67,
+          uv: users?.users?.length,
           fill: '#ffc658',
         },
       ];
@@ -229,11 +216,7 @@ export default function SuperAdminHome() {
         },
     ];
 
-    const [allReports,setAllReports]=useState([]);
-  const [allUserIncidents,setAllUserIncidents]=useState([]);
-  const [totalIncidents,setTotalIncidents]=useState('');
-  const [resolvedIncidents,setResolvedIncidents]=useState('');
-  const [criticalIncidents,setCriticalIncidents]=useState('');
+    
 
     useEffect(()=>{
         try {
@@ -287,7 +270,7 @@ export default function SuperAdminHome() {
   ];
 
 const [activePage, setActivePage] = React.useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(5);
   const startIndex = (activePage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
 
@@ -303,6 +286,10 @@ const [activePage, setActivePage] = React.useState(1);
                 </Link>
                 ))}
             </Breadcrumbs>
+            <div className='title_image'>
+                <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> {t('dashboard')} </span></h2>
+                <img src="/assets/dashboardOrAnalytics.svg" alt="comp_img" />
+            </div>
             <div style={{display:'flex',flexWrap:'wrap',gap:10,justifyContent:'center',width:'100%'}}>
                 
                     <Grid container spacing={2} sx={{ flexGrow: 1,width:'100%' }}>
@@ -325,7 +312,6 @@ const [activePage, setActivePage] = React.useState(1);
                                     backgroundPosition:'center',
                                     // objectFit:'fill'
                                 }}>
-                                    {/* <img src="/assets/isometric-house.jpg" alt="" className='imgHH'/> */}
                                 </Item>
                             </Sheet>
                         </Grid>
@@ -537,7 +523,7 @@ const [activePage, setActivePage] = React.useState(1);
                     <Grid sm={12} md={12} xs={12} lg={6}>
                         <ResponsiveContainer width="100%" height="100%">
                         <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{ p: 1,borderRadius:'5px' ,boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
-                            <Item className='dash_items'>
+                            <Item className='dash_items' style={{maxHeight:'60vh'}}>
                                 <center>
                                     <h4>Radial chart</h4>
                                 </center>
@@ -551,15 +537,15 @@ const [activePage, setActivePage] = React.useState(1);
                                         dataKey="uv"
                                     />
                                     <Legend iconSize={10} layout="vertical" verticalAlign="middle" wrapperStyle={style} />
-                                    <Tooltip/>
+                                    <Tooltip content={'uv'}/>
                                 </RadialBarChart>
                             </Item>
                             </Sheet>
                         </ResponsiveContainer>
                     </Grid>
-                    <Grid xs={12} lg={6}>
+                    <Grid xs={12} lg={6} >
                         <Sheet className='sheet_comp' variant="outlined" color="neutral" sx={{p: 1,borderRadius:'5px' ,boxShadow:'0px 0 2px rgb(1, 138, 143)'}}>
-                            <Item className='dash_items'>
+                            <Item className='dash_items' style={{maxHeight:'60vh'}}>
                                 <center>
                                     <h4>Activities</h4>
                                 </center>

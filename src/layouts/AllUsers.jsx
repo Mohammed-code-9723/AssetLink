@@ -25,8 +25,8 @@ import { useTranslation } from 'react-i18next';
 import { Breadcrumbs,Link } from '@mui/joy';
 import { AutoComplete } from 'rsuite';
 import { hasPermission } from '../components/CheckPermissions';
-
-
+import { SiTestrail } from 'react-icons/si';
+ 
 export default function AllUsers() {
 
     const dispatch = useDispatch();
@@ -321,6 +321,10 @@ export default function AllUsers() {
                 </Link>
                 ))}
             </Breadcrumbs>
+            <div className='title_image'>
+                <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> {t('users.allUsers')} </span></h2>
+                <img src="/assets/allUsers.svg" alt="comp_img" />
+            </div>
             {(messageUpdate || messageDelete || message) && (message !== '' || messageDelete !== ''|| messageUpdate !== '') && (
                 <Notification type="success" header={`${messageUpdate || messageDelete || message}`} closable style={{position:'relative',width:'100%'}}>
                 </Notification>

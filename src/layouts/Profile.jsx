@@ -1,7 +1,7 @@
 import React,{useState,useEffect} from 'react'
 
 import { Button, Input,Grid } from '@mui/joy';
-import { Avatar , Divider, Uploader,TagPicker} from 'rsuite';
+import { Avatar , Divider, Uploader,TagPicker,Loader} from 'rsuite';
 import '../styles/profile.css';
 import { BsEye } from 'react-icons/bs';
 import { FiEyeOff } from 'react-icons/fi';
@@ -13,6 +13,8 @@ import { Notification } from 'rsuite';
 import Modal from '@mui/joy/Modal';
 import LoaderComponent from './LoaderComponent';
 import { fetchUsersData } from '../features/UserSlice';
+import { useTranslation } from 'react-i18next';
+import { SiTestrail } from 'react-icons/si';
 
 export default function Profile() {
 
@@ -28,6 +30,10 @@ export default function Profile() {
   const [updatePhoto, setUpdatePhoto] = useState(false);
   const [type, setType] = useState(true);
   const [LoaderState,setLoaderState]=useState(false);
+  const {t}=useTranslation();
+  // useEffect(()=>{
+  //   alert(JSON.stringify(userInfo))
+  // },[]);
 
   useEffect(()=>{
     const intervalLoader=setTimeout(() => {
@@ -50,25 +56,26 @@ export default function Profile() {
     if (fileList && fileList.length > 0) {
       const file = fileList[0].blobFile;
       const fileName = file.name;
+
       // console.log("file: ");
       // alert(file);
       // alert("fileName: ");
       // console.log(fileName); 
       
       const imageURL = URL.createObjectURL(file);
-      setUpdateUserState({...updateUserState,photo:imageURL});
       setImageURL(imageURL);
+      setUpdateUserState({...updateUserState,photo:imageURL});
+
       // console.log("imageURL: ");
       // console.log(imageURL);
     }
   };
-  
+  const [message,setMessage]=useState('');
   //! Update user:
   const handleUpdateExistingUser = () => {
       setLoaderState(false);
       dispatch(updateUser({ token,updateUserState }));
       dispatch(fetchUsersData(token))
-      
       setNotif(true);
   };
 
@@ -81,16 +88,36 @@ export default function Profile() {
     }
   },[users, updateUserState.id]);
 
+  useEffect(()=>{
+      setMessage(messageUpdate);
+
+    if(message!==''){
+      const intervalLoader=setTimeout(() => {
+        setMessage('');
+      }, 8000);
+      return ()=>clearTimeout(intervalLoader);
+    }
+  },[messageUpdate]);
+
   return (
     <div>
       <div>
+        <div className='title_image'>
+          <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> {t('p')} </span></h2>
+          <img src="/assets/profile.svg" alt="pro_img" />
+        </div>
         <Grid container spacing={2} sx={{ flexGrow: 1,width:'100%',display:'flex',gap:'50px' ,justifyContent:'center'}}>
             {
-            (messageUpdate)&&(
+            (message!=='')&&(
                 <Notification style={{width:'100%',zIndex: 100000 }} showIcon type="success" color='success' closable>
-                <strong><FaCheck/></strong> {messageUpdate && messageUpdate}.
+                <strong><FaCheck/></strong> {message}.
                 </Notification>
             )
+            }
+            {
+              !notif&&(
+                <Loader content=''/>
+              )
             }
             <Divider>
                 <p style={{textDecoration:'underline',margin:'30px 0'}}>
@@ -100,7 +127,7 @@ export default function Profile() {
             <Grid lg={12}>
                 <h5 className='title_photo'>Photo</h5>
                 {imageURL!=='' ? (
-                  <Avatar circle src={imageURL}/>
+                  <Avatar circle />
                   ):(
                     <Avatar circle src={userInfo.photo} size='30'/>
                   )

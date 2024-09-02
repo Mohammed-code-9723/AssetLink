@@ -294,16 +294,27 @@ export default function Sidebar({onToggle}) {
                                         alignItems:'center'
                                     }} 
                                     >
-                                        <Dropdown style={{fontWeight:'bold'}} onClick={()=>!expanded?handleToggle():true} title="Assign tasks" icon={<FaTasks size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                        <Dropdown style={{fontWeight:'bold'}} onClick={()=>!expanded?handleToggle():true} title={t('maintenancesPage.tasks')} icon={<FaTasks size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
                                             <Dropdown.Item eventKey="1" className='Dropdown_item_workspace'>
                                                 <NavLink to='/dashboard/SuperAdmin/assignTasks' className='workspace_links'>
                                                     <FaTasks  style={{marginRight:'10px'}}/>
                                                     <span>
-                                                        Assign tasks
+                                                        {t("maintenancesPage.assign")}
+                                                    </span>
+                                                </NavLink>
+                                            </Dropdown.Item>
+                                            <Dropdown.Item eventKey="1" className='Dropdown_item_workspace'>
+                                                <NavLink to='/dashboard/SuperAdmin/maintenanceTasks' className='workspace_links'>
+                                                    <FaTasks  style={{marginRight:'10px'}}/>
+                                                    <span>
+                                                        {t("maintenancesPage.maintenanceT")}
                                                     </span>
                                                 </NavLink>
                                             </Dropdown.Item>
                                         </Dropdown>
+                                        {/* <Dropdown style={{fontWeight:'bold'}} onClick={()=>!expanded?handleToggle():true} title="Assign tasks" icon={<FaTasks size={20} style={{position:'absolute',left:expanded?'21px':'18px'}}/>} placement="rightStart">
+                                            
+                                        </Dropdown> */}
                                     </Nav>
                                 </div>
                             )

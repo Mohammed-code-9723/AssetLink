@@ -41,6 +41,7 @@ import SiteBuildingsMap from './layouts/SiteBuildingsMap';
 import OtherRolesBuildings from './layouts/OtherRolesBuildings';
 import OtherRolesComponents from './layouts/OtherRolesComponents';
 import Profile from './layouts/Profile';
+import MaintenanceTasks from './layouts/MaintenanceTasks';
 
 
 //!
@@ -127,6 +128,7 @@ function App() {
                 <Route path="/dashboard/SuperAdmin/AllUsers" element={<ProtectedRoute><SuperAdminDashboard><AllUsers /></SuperAdminDashboard></ProtectedRoute>} />
                 <Route path="/dashboard/SuperAdmin/Settings" element={<ProtectedRoute><SuperAdminDashboard><SystemSettings /></SuperAdminDashboard></ProtectedRoute>} />
                 <Route path="/dashboard/SuperAdmin/assignTasks" element={<ProtectedRoute><SuperAdminDashboard><AssignTasks /></SuperAdminDashboard></ProtectedRoute>} />
+                <Route path="/dashboard/SuperAdmin/maintenanceTasks" element={<ProtectedRoute><SuperAdminDashboard><MaintenanceTasks /></SuperAdminDashboard></ProtectedRoute>} />
                 <Route path="/dashboard/SuperAdmin/Analytics" element={<ProtectedRoute><SuperAdminDashboard><Analytics /></SuperAdminDashboard></ProtectedRoute>} />
                 <Route path={`/dashboard/Workspaces`} element={<ProtectedRoute><Dashboard><OtherRolesWorkspaces /></Dashboard></ProtectedRoute>} />
                 <Route path={`/dashboard/Sites`} element={<ProtectedRoute><Dashboard><OtherRolesSites /></Dashboard></ProtectedRoute>} />

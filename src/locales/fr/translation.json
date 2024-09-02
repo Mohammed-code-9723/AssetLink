@@ -1,5 +1,6 @@
 {
     "welcome":"Bienvenue",
+    "p": "Profil",
     "welcome1": "Gestion immobilière",
     "welcome2": "Sans effort avec AssetLink",
     "welcome3": "utilisant l'IA",
@@ -155,6 +156,17 @@
       "RM": "Maintenance",
       "IPM": "Incidents par mois",
       "IPS": "Incidents par statut"
+    },
+    "maintenancesPage":{
+      "maintenance": "Maintenance",
+      "tasks": "Tâches",
+      "task": "Tâche",
+      "assign": "Attribuer des tâches",
+      "maintenanceT": "Tâches de maintenance"
+    },
+    "permissionsPage":{
+      "permissions": "Autorisations",
+      "permission": "Autorisation"
     }
   }
   

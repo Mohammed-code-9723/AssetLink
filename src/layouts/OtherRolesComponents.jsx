@@ -129,11 +129,11 @@ export default function OtherRolesComponents() {
 
 //!
 
-    useEffect(()=>{
-        if(chosenWorkspaceSites===null){
+    // useEffect(()=>{
+    //     if(chosenWorkspaceSites===null){
 
-        }
-    },[chosenWorkspaceSites])
+    //     }
+    // },[chosenWorkspaceSites])
    
 
     const HandleDelete=(row)=>{
@@ -283,6 +283,8 @@ export default function OtherRolesComponents() {
       }
     };
   
+  const [uI,setUI]=useState(false);
+
   const handleAddComponent = async () => {
     console.log(newComponent);
   
@@ -743,7 +745,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
         </Breadcrumbs>
         <div>
           <div className='title_image'>
-            <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> Components </span></h2>
+            <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> {t('components')} </span></h2>
             <img src="/assets/Components.svg" alt="comp_img" />
           </div>
           {
@@ -1061,7 +1063,13 @@ const formatCascaderDataWorkspaces = (workspaces) => {
             > 
               <SiTestrail style={{color:'rgb(3, 110, 74)'}}/>
               <span>
-                Component {selectedRow!==null&&selectedRow.name}
+              {
+                (t('component')==="المكون")?(
+                  selectedRow !== null && selectedRow.name ? (`${t('component')}${selectedRow.name}`) : (t('component'))
+                ):(
+                  t('component')
+                )
+              }
               </span>
             </Typography>
             <div>
@@ -1069,17 +1077,17 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                 <h3 id='title_H3'>
                   <IoIosInformationCircle/>
                   <span>
-                      Information
+                    {t('componentsPage.information')}
                   </span>
                 </h3>
               </Divider>
               <div className='info-container'>
                 <Divider>
-                  <h4>Knowledge base linker</h4>
+                  <h4>{t('componentsPage.knowledge')}</h4>
                 </Divider>
                 <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                    <strong>Standard Component Type</strong><br /><br />
+                    <strong>{t('componentsPage.SCT')}</strong><br /><br />
                     <Cascader
                         disabled={!hasPermission(userInfo.permissions,'components','update')}
   
@@ -1094,7 +1102,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
   
                   </Grid>
                   <Grid item xs={12} md={8} lg={6} sm={12}>
-                    <strong>Characteristics</strong><br /><br />
+                    <strong>{t('componentsPage.Characteristics')}</strong><br /><br />
                     <Cascader
                         disabled={!hasPermission(userInfo.permissions,'components','update')}
   
@@ -1108,11 +1116,11 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                   </Grid>
                 </Grid>
                 <Divider>
-                  <h4>Component Identification</h4>
+                  <h4>{t('componentsPage.CI')}</h4>
                 </Divider>
                 <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                   <Grid item xs={12} md={4} lg={6} sm={12}>
-                    <strong>Code</strong><br />
+                    <strong>{t('componentsPage.code')}</strong><br />
                     <Input
                         disabled={!hasPermission(userInfo.permissions,'components','update')}
                       readOnly
@@ -1121,7 +1129,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                     />
                   </Grid>
                   <Grid item xs={12} md={8} lg={6} sm={12}>
-                    <strong>Parent Building</strong><br />
+                    <strong>{t('componentsPage.PB')}</strong><br />
                     <Cascader
                         disabled={!hasPermission(userInfo.permissions,'components','update')}
                         data={allBuildings?.map((building) => ({ label: building.name, value: building.id }))}
@@ -1139,11 +1147,11 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                   </Grid>
                 </Grid>
                 <Divider>
-                  <h4>Information</h4>
+                  <h4>{t('ComponentsPage.information')}</h4>
                 </Divider>
                 <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                   <Grid item xs={12} md={8} lg={6} sm={12}>
-                    <strong>Quantity</strong><br /><br />
+                    <strong>{t('componentsPage.quantity')}</strong><br /><br />
                     <Input
                         disabled={!hasPermission(userInfo.permissions,'components','update')}
   
@@ -1154,7 +1162,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                     />
                   </Grid>
                   <Grid item xs={12} md={4} lg={6} sm={12}>
-                    <strong>Unit</strong><br /><br />
+                    <strong>{t('componentsPage.q')}</strong><br /><br />
                     <Cascader
                         disabled={!hasPermission(userInfo.permissions,'components','update')}
   
@@ -1167,7 +1175,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                     />
                   </Grid>
                   <Grid item xs={12} md={4} lg={6} sm={12}>
-                    <strong>Last rehabilitation year</strong><br /><br />
+                    <strong>{t('componentsPage.LS')}</strong><br /><br />
                     <Input
                         disabled={!hasPermission(userInfo.permissions,'components','update')}
   
@@ -1179,12 +1187,12 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                   </Grid>
                 </Grid>
                 <Divider>
-                  <h4>Ageing and severity</h4>
+                  <h4>{t('componentsPage.AS')}</h4>
                 </Divider>
-                <h4>Component condition</h4>
+                <h4>{t('componentsPage.CC')} </h4>
                 <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                   <Grid item xs={12} md={8} lg={6} sm={12}>
-                    <strong>Condition</strong><br /><br />
+                    <strong>{t('componentsPage.condition')}</strong><br /><br />
                     <div style={{display:'flex',width:'100%'}}>
                       <Avatar  style={{ background: selectedRow?.condition==='C1'?'green':(selectedRow?.condition==='C2')?'rgb(250, 218, 9)':(selectedRow?.condition==='C3')?'orange':'red' }}>{selectedRow?.condition}</Avatar>
                       <Input
@@ -1205,7 +1213,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                     </Toggle>
                   </Grid>
                   <Grid item xs={12} md={12} lg={12} sm={12}>
-                    <strong>Description</strong><br /><br />
+                    <strong>{t('componentsPage.description')}</strong><br /><br />
                     <Input
                         disabled={!hasPermission(userInfo.permissions,'components','update')}
   
@@ -1216,10 +1224,10 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                     />
                   </Grid>
                 </Grid>
-                <h4>Risk level</h4>
+                <h4>{t('componentsPage.risk_level')}</h4>
                 <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                   <Grid item xs={12} md={12} lg={12} sm={12}>
-                      <strong>Risk level </strong><br /><br />
+                      <strong>{t('componentsPage.risk_level')}</strong><br /><br />
                       <div style={{display:'flex'}}>
                         <Avatar  style={{ background: selectedRow?.risk_level==='R1'?'green':(selectedRow?.risk_level==='R2')?'rgb(250, 218, 9)':(selectedRow?.risk_level==='R3')?'orange':'red' }}>{selectedRow?.risk_level}</Avatar>
                         <Input
@@ -1235,10 +1243,10 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                       </div>
                     </Grid>
                 </Grid>
-                <h4>Component Severity per Stakes</h4>
+                <h4>{t('componentsPage.CSS')}</h4>
                 <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                    <strong>Severity max </strong><br /><br />
+                    <strong>{t('componentsPage.severity_max')}</strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: selectedRow?.severity_max==='S1'?'green':(selectedRow?.severity_max==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_max==='S3')?'orange':'red' }}>{selectedRow?.severity_max}</Avatar>
                       <Input
@@ -1254,7 +1262,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                     </div>
                   </Grid>
                   <Grid item xs={12} md={6} lg={6} sm={12}>
-                    <strong>Safety </strong><br /><br />
+                    <strong>{t('componentsPage.safety')} </strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: selectedRow?.severity_safety==='S1'?'green':(selectedRow?.severity_safety==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_safety==='S3')?'orange':'red' }}>{selectedRow?.severity_safety}</Avatar>
                       <Input
@@ -1270,7 +1278,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                     </div>
                   </Grid>
                   <Grid item xs={12} md={6} lg={6} sm={12}>
-                    <strong>Operations </strong><br /><br />
+                    <strong>{t('componentsPage.operations')} </strong><br /><br />
                       <div style={{display:'flex'}}>
                         <Avatar  style={{ background: selectedRow?.severity_operations==='S1'?'green':(selectedRow?.severity_operations==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_operations==='S3')?'orange':'red' }}>{selectedRow?.severity_operations}</Avatar>
                         <Input
@@ -1285,7 +1293,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                       </div>
                   </Grid>
                   <Grid item xs={12} md={6} lg={6} sm={12}>
-                    <strong>Work Conditions </strong><br /><br />
+                    <strong>{t('componentsPage.WC')} </strong><br /><br />
                       <div style={{display:'flex'}}>
                         <Avatar  style={{ background: selectedRow?.severity_work_conditions==='S1'?'green':(selectedRow?.severity_work_conditions==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_work_conditions==='S3')?'orange':'red' }}>{selectedRow?.severity_work_conditions}</Avatar>
                         <Input
@@ -1300,7 +1308,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                       </div>
                   </Grid>
                   <Grid item xs={12} md={6} lg={6} sm={12}>
-                    <strong>Environment</strong><br /><br />
+                    <strong>{t('componentsPage.environment')}</strong><br /><br />
                       <div style={{display:'flex'}}>
                         <Avatar  style={{ background: selectedRow?.severity_environment==='S1'?'green':(selectedRow?.severity_environment==='S2')?'rgb(250, 218, 9)':(selectedRow?.severity_environment==='S3')?'orange':'red' }}>{selectedRow?.severity_environment}</Avatar>
                         <Input
@@ -1315,8 +1323,33 @@ const formatCascaderDataWorkspaces = (workspaces) => {
                       </div>
                   </Grid>
                   <Grid item xs={12} md={12} lg={12} sm={12}>
-                    <strong>Component image </strong><br /><br />
-                    <img src={`http://127.0.0.1:8000/${selectedRow?.severity_image}`} alt={selectedRow?.severity_image} style={{width:'100%'}}/>
+                  {
+                    !uI&&(
+                      <>
+                      <Button sx={{background:'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)',width:'50%'}} onClick={()=>setUI(true)}>
+                        {t('componentsPage.U_ic')}
+                      </Button><br />
+                      </>
+                    )
+                  }
+                  {
+                    uI&&(
+                      <>
+                    <strong>{('componentsPage.U_ic')} </strong><br /><br />
+                      <Uploader draggable onChange={handleFileUpload}>
+                        <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span>Click or Drag files to this area to upload</span>
+                        </div>
+                      </Uploader>
+                      <Button sx={{background:'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)',width:'50%'}} onClick={()=>setUI(false)}>
+                        {('cancel')}
+                      </Button>
+                      </>
+                    )
+                  }
+                  <strong>{t('componentsPage.C_image')} </strong><br /><br />
+                  <img src={`${selectedRow?.severity_image}`} alt={selectedRow?.severity_image} style={{width:'100%'}}/>
+                  
                   </Grid>
                 </Grid>
               </div>

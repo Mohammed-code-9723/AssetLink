@@ -183,6 +183,7 @@ export default function SuperAdminAllComponents() {
     }
 };
 
+  const [uI,setUI]=useState(false);
 
 const handleUpdateComponent = async () => {
 
@@ -892,7 +893,7 @@ const handleAddComponent = async () => {
                           )
                         }
                         {
-                          hasPermission(userInfo.role,'components','delete')&&(
+                          hasPermission(userInfo.permissions,'components','delete')&&(
                             <td style={{width:'100px',textAlign:'center',position:'absolute',right:0}}>
                               <Button sx={{
                                 background:'linear-gradient(265deg, rgba(5,127,83,1) 0%, rgba(95,5,138,1) 100%)'
@@ -991,7 +992,7 @@ const handleAddComponent = async () => {
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
               <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>{t('SCT')}</strong><br /><br />
+                  <strong>{t('componentsPage.SCT')}</strong><br /><br />
                   <Cascader
                       disabled={!hasPermission(userInfo.permissions,'components','update')}
 
@@ -1033,7 +1034,7 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>{t('PB')}</strong><br />
+                  <strong>{t('componentsPage.PB')}</strong><br />
                   <Cascader
                       disabled={!hasPermission(userInfo.permissions,'components','update')}
                       data={buildings?.buildings?.map((building) => ({ label: building.name, value: building.id }))}
@@ -1055,7 +1056,7 @@ const handleAddComponent = async () => {
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>{t('componentsPage.quantity')}</strong><br /><br />
+                  <strong>{t('componentsPage.q')}</strong><br /><br />
                   <Input
                       disabled={!hasPermission(userInfo.permissions,'components','update')}
 
@@ -1079,7 +1080,7 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <strong>{t('componentsPage.last_rehabilitation_year')}</strong><br /><br />
+                  <strong>{t('componentsPage.LS')}</strong><br /><br />
                   <Input
                       disabled={!hasPermission(userInfo.permissions,'components','update')}
 
@@ -1227,8 +1228,32 @@ const handleAddComponent = async () => {
                     </div>
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
+                  {
+                    !uI&&(
+                      <>
+                      <Button sx={{background:'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)',width:'50%'}} onClick={()=>setUI(true)}>
+                        {t('componentsPage.U_ic')}
+                      </Button><br />
+                      </>
+                    )
+                  }
+                  {
+                    uI&&(
+                      <>
+                    <strong>{('componentsPage.U_ic')} </strong><br /><br />
+                      <Uploader draggable onChange={handleFileUpload}>
+                        <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span>Click or Drag files to this area to upload</span>
+                        </div>
+                      </Uploader>
+                      <Button sx={{background:'linear-gradient(124deg, rgba(7,28,75,1) 0%, rgba(9,100,60,1) 100%)',width:'50%'}} onClick={()=>setUI(false)}>
+                        {('cancel')}
+                      </Button>
+                      </>
+                    )
+                  }
                   <strong>{t('componentsPage.C_image')} </strong><br /><br />
-                  <img src={`http://127.0.0.1:8000/${selectedRow?.severity_image}`} alt={selectedRow?.severity_image} style={{width:'100%'}}/>
+                  <img src={`${newComponent.severity_image}`} alt={selectedRow?.severity_image} style={{width:'100%'}}/>
                 </Grid>
               </Grid>
             </div>
@@ -1297,7 +1322,7 @@ const handleAddComponent = async () => {
           > 
             <IoMdCreate style={{color:'rgb(3, 110, 74)'}}/>
             <span>
-              {('componentsPage.CreateC')}
+              {t('componentsPage.CreateC')}
             </span>
           </Typography>
           <div>
@@ -1305,17 +1330,17 @@ const handleAddComponent = async () => {
               <h3 id='title_H3'>
                 <IoIosInformationCircle/>
                 <span>
-                {('componentsPage.information')}
+                {t('componentsPage.information')}
                 </span>
               </h3>
             </Divider>
             <div className='info-container'>
               <Divider>
-                <h4>{('componentsPage.knowledge')}</h4>
+                <h4>{t('componentsPage.knowledge')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
               <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>{('componentsPage.SCT')}</strong><br /><br />
+                  <strong>{t('componentsPage.SCT')}</strong><br /><br />
                   <Cascader
                       data={cascaderDataComponentsType.map((type)=>({label:`Immobilier - Générique ${type.value}`,value:type.value}))}
                       // defaultValue={cascaderDataComponentsType.find((type)=>type.value===selectedRow?.name)?.label || ''}
@@ -1340,7 +1365,7 @@ const handleAddComponent = async () => {
                 </Grid>
               </Grid>
               <Divider>
-                <h4>{('componentsPage.CI')}</h4>
+                <h4>{t('componentsPage.CI')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
@@ -1351,7 +1376,7 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>{('componentsPage.PB')}</strong><br />
+                  <strong>{t('componentsPage.PB')}</strong><br />
                   <Cascader
                       data={buildings?.buildings?.map((building) => ({ label: building.name, value: building.id }))}
                       placeholder="Parent Site"
@@ -1363,11 +1388,11 @@ const handleAddComponent = async () => {
                 </Grid>
               </Grid>
               <Divider>
-                <h4>{('componentsPage.information')}</h4>
+                <h4>{t('componentsPage.information')}</h4>
               </Divider>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>{('componentsPage.quantity')}</strong><br /><br />
+                  <strong>{('componentsPage.q')}</strong><br /><br />
                   <Input
                     placeholder="Quantity"
                     onChange={(e) =>setNewComponent({...newComponent,quantity:e.target.value})}  
@@ -1376,7 +1401,7 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <strong>{('componentsPage.unit')}</strong><br /><br />
+                  <strong>{t('componentsPage.unit')}</strong><br /><br />
                   <Cascader
                       data={cascaderDataComponentsUnit}
                       columnWidth={600}
@@ -1387,7 +1412,7 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={4} lg={6} sm={12}>
-                  <strong>{('componentsPage.last_rehabilitation_year')}</strong><br /><br />
+                  <strong>{t('componentsPage.LS')}</strong><br /><br />
                   <Input
                     type='number'
                     placeholder="Last rehabilitation year"
@@ -1397,12 +1422,12 @@ const handleAddComponent = async () => {
                 </Grid>
               </Grid>
               <Divider>
-                <h4>{('componentsPage.AS')}</h4>
+                <h4>{t('componentsPage.AS')}</h4>
               </Divider>
-              <h4>{('componentsPage.CC')}</h4>
+              <h4>{t('componentsPage.CC')}</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={8} lg={6} sm={12}>
-                  <strong>{('componentsPage.condition')} <span style={{color:'green'}}>C1</span> - <span style={{color:'rgb(250, 218, 9)'}}>C2</span> - <span style={{color:'orange'}}>C3</span> - <span style={{color:'red'}}>C4</span></strong><br /><br />
+                  <strong>{t('componentsPage.condition')} <span style={{color:'green'}}>C1</span> - <span style={{color:'rgb(250, 218, 9)'}}>C2</span> - <span style={{color:'orange'}}>C3</span> - <span style={{color:'red'}}>C4</span></strong><br /><br />
                   <div style={{display:'flex',width:'100%'}}>
                     <Avatar   style={{ background: newComponent?.condition==='C1'?'green':(newComponent?.condition==='C2')?'rgb(250, 218, 9)':(newComponent?.condition==='C3')?'orange':'red' }}>{(newComponent?.condition)?newComponent?.condition:'?'}</Avatar>
                     <Input
@@ -1420,7 +1445,7 @@ const handleAddComponent = async () => {
                   </Toggle>
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <strong>{('componentsPage.description')}</strong><br /><br />
+                  <strong>{t('componentsPage.description')}</strong><br /><br />
                   <Textarea
                     minRows={8}
                     variant="outlined"
@@ -1429,10 +1454,10 @@ const handleAddComponent = async () => {
                   />
                 </Grid>
               </Grid>
-              <h4>{('componentsPage.risk_level')}</h4>
+              <h4>{t('componentsPage.risk_level')}</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                    <strong>{('componentsPage.risk_level')} <span style={{color:'green'}}>R1</span> - <span style={{color:'rgb(250, 218, 9)'}}>R2</span> - <span style={{color:'orange'}}>R3</span> - <span style={{color:'red'}}>R4</span></strong><br /><br />
+                    <strong>{t('componentsPage.risk_level')} <span style={{color:'green'}}>R1</span> - <span style={{color:'rgb(250, 218, 9)'}}>R2</span> - <span style={{color:'orange'}}>R3</span> - <span style={{color:'red'}}>R4</span></strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: newComponent?.risk_level==='R1'?'green':(newComponent?.risk_level==='R2')?'rgb(250, 218, 9)':(newComponent?.risk_level==='R3')?'orange':'red' }}>{(newComponent?.risk_level)?newComponent?.risk_level:'?'}</Avatar>
                       <Input
@@ -1445,10 +1470,10 @@ const handleAddComponent = async () => {
                     </div>
                   </Grid>
               </Grid>
-              <h4>{('componentsPage.CSS')}</h4>
+              <h4>{t('componentsPage.CSS')}</h4>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
               <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>{('componentsPage.severity_max')}<span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                  <strong>{t('componentsPage.severity_max')}<span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
                   <div style={{display:'flex'}}>
                     <Avatar  style={{ background: newComponent?.severity_max==='S1'?'green':(newComponent?.severity_max==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_max==='S3')?'orange':'red' }}>{(newComponent?.severity_max)?newComponent?.severity_max:'?'}</Avatar>
                     <Input
@@ -1461,7 +1486,7 @@ const handleAddComponent = async () => {
                   </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>{('componentsPage.safety')} <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                  <strong>{t('componentsPage.safety')} <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
                   <div style={{display:'flex'}}>
                     <Avatar  style={{ background: newComponent?.severity_safety==='S1'?'green':(newComponent?.severity_safety==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_safety==='S3')?'orange':'red' }}>{(newComponent?.severity_safety)?newComponent?.severity_safety:'?'}</Avatar>
                     <Input
@@ -1474,7 +1499,7 @@ const handleAddComponent = async () => {
                   </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>{('componentsPage.operations')} <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                  <strong>{t('componentsPage.operations')} <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: newComponent?.severity_operations==='S1'?'green':(newComponent?.severity_operations==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_operations==='S3')?'orange':'red' }}>{(newComponent?.severity_operations)?newComponent?.severity_operations:'?'}</Avatar>
                       <Input
@@ -1487,7 +1512,7 @@ const handleAddComponent = async () => {
                     </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>{('componentsPage.WC')}<span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                  <strong>{t('componentsPage.WC')}<span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: newComponent?.severity_work_conditions==='S1'?'green':(newComponent?.severity_work_conditions==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_work_conditions==='S3')?'orange':'red' }}>{(newComponent?.severity_work_conditions)?newComponent?.severity_work_conditions:'?'}</Avatar>
                       <Input
@@ -1501,7 +1526,7 @@ const handleAddComponent = async () => {
                     </div>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sm={12}>
-                  <strong>{('componentsPage.environment')} <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
+                  <strong>{t('componentsPage.environment')} <span style={{color:'green'}}>S1</span> - <span style={{color:'rgb(250, 218, 9)'}}>S2</span> - <span style={{color:'orange'}}>S3</span> - <span style={{color:'red'}}>S4</span></strong><br /><br />
                     <div style={{display:'flex'}}>
                       <Avatar  style={{ background: newComponent?.severity_environment==='S1'?'green':(newComponent?.severity_environment==='S2')?'rgb(250, 218, 9)':(newComponent?.severity_environment==='S3')?'orange':'red' }}>{(newComponent?.severity_environment)?newComponent?.severity_environment:'?'}</Avatar>
                       <Input
@@ -1514,7 +1539,7 @@ const handleAddComponent = async () => {
                     </div>
                 </Grid>
                 <Grid item xs={12} md={12} lg={12} sm={12}>
-                  <strong>{('componentsPage.U_ic')} </strong><br /><br />
+                  <strong>{t('componentsPage.U_ic')} </strong><br /><br />
                   <Uploader draggable onChange={handleFileUpload}>
                     <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <span>Click or Drag files to this area to upload</span>

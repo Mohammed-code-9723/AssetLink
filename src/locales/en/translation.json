@@ -1,5 +1,6 @@
 {
     "welcome":"Welcome",
+    "p":"Profile",
     "welcome1": "Real Estate Management",
     "welcome2": "Effortless with AssetLink",
     "welcome3": "using AI",
@@ -156,6 +157,17 @@
       "RM":"Maintenance",
       "IPM":"Incidents per months",
       "IPS":"Incidents per status"
+    },
+    "maintenancesPage":{
+      "maintenance":"Maintenance",
+      "tasks":"Tasks",
+      "task":"Task",
+      "assign":"Assign tasks",
+      "maintenanceT":"Maintenance tasks"
+    },
+    "permissionsPage":{
+      "permissions":"Permissions",
+      "permission":"Permission"
     }
     
 }

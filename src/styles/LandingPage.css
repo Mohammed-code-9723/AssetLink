@@ -7,7 +7,7 @@
     display:flex;
     justify-content:space-around;
     align-items:center;
-    overflow-x: hidden;
+    overflow-x: hidden !important;
 }
 .landing_container .hero_section{
     width:50%;
@@ -23,10 +23,22 @@
 .landing_container .image_section{
     width:50%;
     /* margin-left: -10px; */
+    height:50vh;
+    /* background:red; */
+    padding-left: 30px;
 }
 .landing_container .image_section #imgHouse{
     width:100%;
     position:relative;
+    
+}
+
+.landing_container .image_section #imgHouse2{
+    width:100%;
+    position:relative;
+    height: 50vh;
+    
+    
 }
                 
 @media (max-width: 984px){
@@ -49,4 +61,12 @@
         transition: all 0.3s;
     }
 
+}
+
+
+.imgHH{
+    position: relative;
+    z-index: 1000;
+    width: 40%;
+    height: 150px;
 }

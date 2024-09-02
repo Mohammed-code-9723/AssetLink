@@ -516,7 +516,7 @@ export default function SuperAdminAllIncidents() {
         <div>
             <div className='title_image'>
                 <h2 id='title_H2'><SiTestrail style={{color:'rgb(3, 110, 74)'}}/><span> {t('Incidents')} </span></h2>
-                <img src="/assets/Components.svg" alt="comp_img" />
+                <img src="/assets/incidents.svg" alt="inc_img" />
             </div>
             {
             (message&&notif)&&(

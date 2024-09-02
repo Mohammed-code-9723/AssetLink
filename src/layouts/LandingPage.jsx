@@ -7,7 +7,7 @@ import Modal from '@mui/joy/Modal';
 import ModalClose from '@mui/joy/ModalClose';
 // import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
-import { Form ,Carousel} from 'rsuite';
+import { Form } from 'rsuite';
 import { useDispatch } from 'react-redux';
 import { login } from '../features/UserSlice';
 //
@@ -16,8 +16,18 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LoaderComponent from './LoaderComponent';
 
+//!ant design:
+import { Carousel } from 'antd';
 
 export default function LandingPage() {
+
+    const contentStyle = {
+  height: '160px',
+  color: '#fff',
+  lineHeight: '160px',
+  textAlign: 'center',
+  background: '#364d79',
+};
 
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
@@ -88,10 +98,20 @@ export default function LandingPage() {
                 {
                     t('welcome1')==="إدارة العقارات"?(
                         <React.Fragment>
-                            <div className='image_section'>
-                                <img src="/realEstate.png" alt="realEstate" id='imgHouse'/>
+                            <div className='image_section' style={{marginLeft:'-20px',paddingRight:'0px'}}>
+                                <Carousel autoplay  autoplaySpeed={3000} speed={500}  easing='ease-in-out'>
+                                    <div >
+                                        <img src="/realEstate.png" alt="realEstate" id='imgHouse'/>
+                                    </div>
+                                    <div >
+                                        <img src="/assets/asset_2.png" alt="realEstate" id='imgHouse2'/>
+                                    </div>
+                                    <div >
+                                        <img src="/assets/isometric.png" alt="realEstate" id='imgHouse2'/>
+                                    </div>
+                                </Carousel>
                             </div>
-                            <div className='hero_section'  style={{marginLeft:'-120px',padding:'0 100px'}}>
+                            <div className='hero_section'  style={{marginLeft:'-80px',padding:'0 80px'}}>
                                 {t('welcome1')} &nbsp;
                                 {t('welcome2')} &nbsp;
                                 {t('welcome3')}  &nbsp;
@@ -115,7 +135,7 @@ export default function LandingPage() {
                         </React.Fragment>
                     ):(
                         <React.Fragment>
-                            <div className='hero_section' style={{marginLeft:'-30px'}}>
+                            <div className='hero_section' style={{marginLeft:'-20px'}}>
                                 {t('welcome1')} <br />
                                 {t('welcome2')} <br />
                                 {t('welcome3')}  
@@ -136,8 +156,19 @@ export default function LandingPage() {
                                     <FiLogIn />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{t('login')}
                                 </Button>
                             </div>
-                            <div className='image_section' style={{marginLeft:'-100px',paddingRight:'50px'}}>
-                                <img src="/realEstate.png" alt="realEstate" id='imgHouse'/>
+                            
+                            <div className='image_section' style={{marginLeft:'-90px',paddingRight:'40px'}}>
+                                <Carousel autoplay  autoplaySpeed={3000} speed={500}  easing='ease-in-out'>
+                                    <div >
+                                        <img src="/realEstate.png" alt="realEstate" id='imgHouse'/>
+                                    </div>
+                                    <div >
+                                        <img src="/assets/asset_2.png" alt="realEstate" id='imgHouse2'/>
+                                    </div>
+                                    <div >
+                                        <img src="/assets/isometric.png" alt="realEstate" id='imgHouse2'/>
+                                    </div>
+                                </Carousel>
                             </div>
                         </React.Fragment>
                     )
