@@ -5,9 +5,9 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 export const workspacesData = createAsyncThunk('workspaces/workspacesData', async (token) => {
     const user=JSON.parse(localStorage.getItem('user'));
     const url=(user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?
-    'http://127.0.0.1:8000/api/workspaces/allWorkspaces'
+    'https://vweb02.nexo.systems/api/workspaces/allWorkspaces'
     :
-    'http://127.0.0.1:8000/api/workspaces';
+    'https://vweb02.nexo.systems/api/workspaces';
 
     const response = await fetch(url, {
         method: 'GET',
@@ -50,9 +50,9 @@ const workspacesSlice = createSlice({
 export const sitesData = createAsyncThunk('sites/sitesData', async ({token,value}) => {
     const user=JSON.parse(localStorage.getItem('user'));
     const url=(user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?
-    'http://127.0.0.1:8000/api/workspaces/allSites'
+    'https://vweb02.nexo.systems/api/workspaces/allSites'
     :
-    `http://127.0.0.1:8000/api/workspaces/${value}/sites`;
+    `https://vweb02.nexo.systems/api/workspaces/${value}/sites`;
 
     const response = await fetch(url, {
         method: 'GET',
@@ -95,7 +95,7 @@ const sitesSlice = createSlice({
 
 export const buildingsData = createAsyncThunk('buildings/buildingsData', async (token) => {
 
-    const response = await fetch('http://127.0.0.1:8000/api/workspaces/allBuildings', {
+    const response = await fetch('https://vweb02.nexo.systems/api/workspaces/allBuildings', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ const buildingsSlice = createSlice({
 
 export const projectsData = createAsyncThunk('projects/projectsData', async (token) => {
 
-    const response = await fetch('http://127.0.0.1:8000/api/workspaces/allProjects', {
+    const response = await fetch('https://vweb02.nexo.systems/api/workspaces/allProjects', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ const projectsSlice = createSlice({
 //!add user:
 export const addUser = createAsyncThunk('newUser/addUser', async ({ token, newUser }) => {
     try {
-        const response = await fetch('http://127.0.0.1:8000/api/auth/register', {
+        const response = await fetch('https://vweb02.nexo.systems/api/auth/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -220,7 +220,7 @@ const addUserSlice = createSlice({
 //!delete user:
 export const deleteUser = createAsyncThunk('delUser/deleteUser', async ({ token, id }) => {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/auth/users/${id}`, {
+        const response = await fetch(`https://vweb02.nexo.systems/api/auth/users/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -270,7 +270,7 @@ const refreshToken = async () => {
     }
 
     try {
-        const response = await fetch('http://127.0.0.1:8000/api/auth/refresh', {
+        const response = await fetch('https://vweb02.nexo.systems/api/auth/refresh', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -296,7 +296,7 @@ export default refreshToken;
 //!update user:
 export const updateUser = createAsyncThunk('updateUser/updateUser',async ({ token, updateUserState }) => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/auth/update_user`, {
+            const response = await fetch(`https://vweb02.nexo.systems/api/auth/update_user`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -345,7 +345,7 @@ export const updateUsersPermissions = createAsyncThunk(
     'permissions/updateUsers',
     async ({updatedUsers,  token }) => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/auth/update_permissions', {
+            const response = await fetch('https://vweb02.nexo.systems/api/auth/update_permissions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -394,7 +394,7 @@ extraReducers: (builder) => {
 //!users activities:
 export const activitiesData = createAsyncThunk('activities/activitiesData', async (token) => {
 
-    const response = await fetch('http://127.0.0.1:8000/api/auth/activities', {
+    const response = await fetch('https://vweb02.nexo.systems/api/auth/activities', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -434,7 +434,7 @@ const activitiesSlice = createSlice({
 //!delete workspace:
 export const deleteWorkspace = createAsyncThunk('delWorkspace/deleteWorkspace', async ({ token, id }) => {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/auth/workspaces/${id}`, {
+        const response = await fetch(`https://vweb02.nexo.systems/api/auth/workspaces/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -480,7 +480,7 @@ const deleteWorkspaceSlice = createSlice({
 //!delete site:
 export const deleteSite = createAsyncThunk('delSite/deleteSite', async ({ token, id }) => {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/auth/sites/${id}`, {
+        const response = await fetch(`https://vweb02.nexo.systems/api/auth/sites/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -525,7 +525,7 @@ const deleteSiteSlice = createSlice({
 //!add site:
 export const addSiteAsync = createAsyncThunk('newSite/addSiteAsync', async ({ token, newSite,workspace }) => {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/auth/${workspace}/addSite`, {
+        const response = await fetch(`https://vweb02.nexo.systems/api/auth/${workspace}/addSite`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -575,7 +575,7 @@ export const updateSite = createAsyncThunk(
     'site/updateSite',
     async ({updatedSite,  token }) => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/auth/update_site', {
+            const response = await fetch('https://vweb02.nexo.systems/api/auth/update_site', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -626,9 +626,9 @@ export const componentsData = createAsyncThunk('components/componentsData', asyn
 
     const user=JSON.parse(localStorage.getItem('user'));
     const url=(user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?
-    'http://127.0.0.1:8000/api/auth/Components'
+    'https://vweb02.nexo.systems/api/auth/Components'
     :
-    `http://127.0.0.1:8000/api/workspaces/${workspace_id}/sites/${site_id}/buildings/${building_id}/components`;
+    `https://vweb02.nexo.systems/api/workspaces/${workspace_id}/sites/${site_id}/buildings/${building_id}/components`;
 
     const method=(user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?
     {
@@ -684,9 +684,9 @@ export const incidentsData = createAsyncThunk('incidents/incidentsData', async (
     const user=JSON.parse(localStorage.getItem('user'));
 
     const url=(user?.role==='superadmin'||user?.role==='admin'||user?.role==='manager')?(
-        'http://127.0.0.1:8000/api/auth/allIncidents'
+        'https://vweb02.nexo.systems/api/auth/allIncidents'
     ):(
-        'http://127.0.0.1:8000/api/workspaces/usersIncidents'
+        'https://vweb02.nexo.systems/api/workspaces/usersIncidents'
     )
     const response = await fetch(url, {
         method: 'GET',

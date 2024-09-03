@@ -159,8 +159,8 @@ export default function OtherRolesBuildings() {
             setLoaderState(true);
             setOpenDelete(false);
             const workspace_id  = buildingSite.workspace_id;
-            // alert(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${deletedRow.id}`);
-            const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/deleteBuilding`, {
+            // alert(`https://vweb02.nexo.systems/api/workspaces/${workspace_id}/buildings/${deletedRow.id}`);
+            const response = await fetch(`https://vweb02.nexo.systems/api/workspaces/${workspace_id}/buildings/deleteBuilding`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -192,7 +192,7 @@ export default function OtherRolesBuildings() {
     
         const workspace_id  = buildingSite.workspace_id; 
         const building_id =  selectedRow.id; 
-        const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/updateBuilding`, {
+        const response = await fetch(`https://vweb02.nexo.systems/api/workspaces/${workspace_id}/buildings/updateBuilding`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -234,7 +234,7 @@ export default function OtherRolesBuildings() {
         setLoaderState(true); 
     
         const worksp_id  = sites?.find((site)=>site.id===newBuilding.site_id)?.workspace_id; 
-        const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${worksp_id}/buildings/addBuilding`, {
+        const response = await fetch(`https://vweb02.nexo.systems/api/workspaces/${worksp_id}/buildings/addBuilding`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
