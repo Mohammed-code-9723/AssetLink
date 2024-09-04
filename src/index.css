@@ -1,11 +1,16 @@
+@font-face {
+  font-family: 'Roboto-Light';
+  src: url('/public/fonts/Roboto-Light.ttf');
+}
+*{
+  font-family:'Roboto-Light';
+}
 body {
   margin: 0;
   padding: 0;
   /* overflow:hidden; */
   overflow-x: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   
@@ -29,7 +34,3 @@ body::-webkit-scrollbar-thumb:hover {
   background: #c7c6c6; /* Darker color on hover */
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
