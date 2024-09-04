@@ -20,12 +20,14 @@
     font-weight: bold;
     margin: 0;
 }
+
 nav{
     /* background:rgb(27, 214, 251); */
     width: 80%;
     display: flex;
     justify-content: space-between;
 }
+
 nav .nav_links {
     list-style-type: none;
     margin: 0;
@@ -34,7 +36,6 @@ nav .nav_links {
     justify-content: space-around;
     align-items: center;
     gap: 20px;
-    /* background:rgb(0, 255, 195); */
     width:90%
 }
 .signInBtn{
