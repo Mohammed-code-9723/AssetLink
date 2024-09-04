@@ -244,7 +244,9 @@ const handleSubmit = async (e) => {
                                 background:'#088fa6',
 
                             }
-                        }}>
+                        }}
+                        className='loginNav'
+                        >
                             <FiLogIn />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{t('login')}
                         </Button>
                     </Box>
