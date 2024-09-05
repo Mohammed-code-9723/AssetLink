@@ -5,7 +5,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 export const fetchUsersData = createAsyncThunk('users/fetchUsersData', async (token) => {
 
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/refresh/api/auth/all`, {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/all`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -61,6 +61,7 @@ export const refreshToken = createAsyncThunk('auth/refreshToken', async (_, { ge
 
 //! login:
 export const login = createAsyncThunk('auth/login', async ({ email, password }) => {
+    // alert(`${process.env.REACT_APP_API_URL}/api/login`); 
     const response = await fetch(`${process.env.REACT_APP_API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -74,7 +75,7 @@ export const login = createAsyncThunk('auth/login', async ({ email, password }) 
 });
 
 const authSlice = createSlice({
-    name: 'auth',
+    name: 'auth',     
     initialState: {
         user: null,
         token: null,
