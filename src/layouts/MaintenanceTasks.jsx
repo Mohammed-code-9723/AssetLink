@@ -132,9 +132,9 @@ const cascaderDataUsers = formatCascaderDataUsers(allUsers);
     const fetchMaintenances=async()=>{
       try {
         const url=(userInfo.role==='superadmin'||userInfo.role==='admin'||userInfo.role==='manager'||userInfo.role==='ingenieur')?
-        'https://vweb02.nexo.systems/api/auth/getAllMaintenancesTasks'
+        `${process.env.REACT_APP_API_URL}/api/auth/getAllMaintenancesTasks`
         :
-        'https://vweb02.nexo.systems/api/auth/getAllMaintenancesTasksT';
+        `${process.env.REACT_APP_API_URL}/api/auth/getAllMaintenancesTasksT`;
         const response = await fetch(url, {
           method: 'GET',
           headers: {
@@ -207,7 +207,7 @@ const handleChange = (name, value) => {
   const handleSubmit=async()=>{
     alert(JSON.stringify(newMaintenance));
     try {
-      const response = await fetch(`https://vweb02.nexo.systems/api/auth/maintenances/addMaintenanceTask`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/maintenances/addMaintenanceTask`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

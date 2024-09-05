@@ -136,7 +136,7 @@ const [addWS,setAddWS]=useState(null);
         setLoaderState(true); 
     
         const worksp_id  = sites?.find((site)=>site.id===newBuilding.site_id)?.workspace_id; 
-        const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${worksp_id}/buildings/addBuilding`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/workspaces/${worksp_id}/buildings/addBuilding`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ const [addWS,setAddWS]=useState(null);
           const workspace_id  = buildingSite.workspace_id; 
           const building_id =  selectedRow.id; 
         //   alert(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}`);
-          const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/updateBuilding`, {
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/workspaces/${workspace_id}/buildings/updateBuilding`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -251,7 +251,7 @@ const [addWS,setAddWS]=useState(null);
                 setOpenDelete(false);
                 const workspace_id  = buildingSite.workspace_id;
                 // alert(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${deletedRow.id}`);
-                const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/deleteBuilding`, {
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/workspaces/${workspace_id}/buildings/deleteBuilding`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -189,7 +189,7 @@ export default function OtherRolesComponents() {
             setOpenDelete(false);
             // api/workspaces/{workspace}/buildings/{building}/components/{component} 
         const workspace_id  = buildingSite.workspace_id; 
-          const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${deletedRow?.building_id}/components/deleteComponent`, {
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/workspaces/${workspace_id}/buildings/${deletedRow?.building_id}/components/deleteComponent`, {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -225,7 +225,7 @@ export default function OtherRolesComponents() {
   
       const workspace_id  = buildingSite?.workspace_id; 
       const building_id =  selectedRow?.building_id; 
-      const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -301,7 +301,7 @@ export default function OtherRolesComponents() {
       });
   
       // Send the formData in the request body
-      const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/addComponent`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/workspaces/${workspace_id}/buildings/${building_id}/components/addComponent`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`, // Authorization token if needed
@@ -514,7 +514,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
           const building_id = parentComponent?.building_id;
       
           const response = await fetch(
-            `http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}/incidents/addIncident`,
+            `${process.env.REACT_APP_API_URL}/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}/incidents/addIncident`,
             {
               method: 'POST',
               headers: {
@@ -567,7 +567,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
           const building_id = selectedRow?.building_id;
       
           const response = await fetch(
-            `http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}/incidents/updateIncident`,
+            `${process.env.REACT_APP_API_URL}/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}/incidents/updateIncident`,
             {
               method: 'POST',
               headers: {
@@ -653,7 +653,7 @@ const formatCascaderDataWorkspaces = (workspaces) => {
           const building_id = parentComponent?.building_id;
       
           const response = await fetch(
-            `http://127.0.0.1:8000/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}/incidents/deleteIncident`,
+            `${process.env.REACT_APP_API_URL}/api/workspaces/${workspace_id}/buildings/${building_id}/components/${selectedRow?.id}/incidents/deleteIncident`,
             {
               method: 'POST',
               headers: {

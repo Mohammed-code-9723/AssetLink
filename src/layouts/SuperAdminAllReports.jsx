@@ -156,7 +156,7 @@ export default function SuperAdminAllReports() {
   useEffect(()=>{
   
       try {
-        fetch(`http://127.0.0.1:8000/api/auth/allReports`, {
+        fetch(`${process.env.REACT_APP_API_URL}/api/auth/allReports`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ export default function SuperAdminAllReports() {
 
   const fetchReportsData=()=>{
     try {
-      fetch(`http://127.0.0.1:8000/api/auth/allReports`, {
+      fetch(`${process.env.REACT_APP_API_URL}/api/auth/allReports`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -213,7 +213,7 @@ export default function SuperAdminAllReports() {
 //!add report
   const handleAddReport = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/auth/add_Report', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/add_Report`, {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json',
@@ -275,7 +275,7 @@ export default function SuperAdminAllReports() {
 
   const handleUpdateReport = async () => {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/auth/update_report/${selectedReportId}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/update_report/${selectedReportId}`, {
           method: 'PUT',
           headers: {
               'Content-Type': 'application/json',
@@ -312,7 +312,7 @@ export default function SuperAdminAllReports() {
   //!delete report:
   const deleteReport = async ( token,selectedReportId ) => {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/auth/delete_report`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/delete_report`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

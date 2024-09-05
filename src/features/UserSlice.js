@@ -5,7 +5,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 export const fetchUsersData = createAsyncThunk('users/fetchUsersData', async (token) => {
 
-    const response = await fetch('http://127.0.0.1:8000/api/auth/all', {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/refresh/api/auth/all`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -42,23 +42,10 @@ const usersSlice = createSlice({
     },
 });
 
-//! login:
-export const login = createAsyncThunk('auth/login', async ({ email, password }) => {
-    const response = await fetch('http://127.0.0.1:8000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-    }
-    return data;
-});
 
 export const refreshToken = createAsyncThunk('auth/refreshToken', async (_, { getState }) => {
     const { auth } = getState();
-    const response = await fetch('http://127.0.0.1:8000/api/refresh', {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/refresh`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -68,6 +55,20 @@ export const refreshToken = createAsyncThunk('auth/refreshToken', async (_, { ge
     const data = await response.json();
     if (!response.ok) {
         throw new Error(data.error || 'Token refresh failed');
+    }
+    return data;
+});
+
+//! login:
+export const login = createAsyncThunk('auth/login', async ({ email, password }) => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
     }
     return data;
 });

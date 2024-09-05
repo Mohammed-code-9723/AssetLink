@@ -321,7 +321,7 @@ export default function SuperAdminAllIncidents() {
         //   const building_id = parentComponent?.building_id;
       
           const response = await fetch(
-            `http://127.0.0.1:8000/api/workspaces/incidents/addIncident`,
+            `${process.env.REACT_APP_API_URL}/api/workspaces/incidents/addIncident`,
             {
               method: 'POST',
               headers: {
@@ -392,7 +392,7 @@ export default function SuperAdminAllIncidents() {
             console.log("updatedIncidentData")
             console.log(updatedIncidentData)
             const response = await fetch(
-            `http://127.0.0.1:8000/api/workspaces/incidents/${IncidentData?.id}`,
+            `${process.env.REACT_APP_API_URL}/api/workspaces/incidents/${IncidentData?.id}`,
             {
                 method: 'POST',
                 headers: {
@@ -465,7 +465,7 @@ export default function SuperAdminAllIncidents() {
             // const building_id = parentComponent?.building_id;
     
             const response = await fetch(
-                `http://127.0.0.1:8000/api/workspaces/deleteIncident`,
+                `${process.env.REACT_APP_API_URL}/api/workspaces/deleteIncident`,
                 {
                     method: 'POST',
                     headers: {

@@ -126,7 +126,7 @@ export default function OtherRolesWorkspaces() {
     };
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${workspace_id}/addProject`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/workspaces/${workspace_id}/addProject`, {
         method: 'POST', 
         headers: {
           'Content-Type': 'application/json',
@@ -170,7 +170,7 @@ export default function OtherRolesWorkspaces() {
       description: formData.get('description'),
     };
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${chosenWorkspace?.id}/Projects/${projectID&&projectID.id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/workspaces/${chosenWorkspace?.id}/Projects/${projectID&&projectID.id}`, {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -206,7 +206,7 @@ export default function OtherRolesWorkspaces() {
     setAddPF(false);
     setNotif(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${chosenWorkspace?.id}/Projects/${project_id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/workspaces/${chosenWorkspace?.id}/Projects/${project_id}`, {
         method: 'DELETE', 
         headers: {
           'Content-Type': 'application/json',
@@ -292,7 +292,7 @@ const handleAddScenario = async (event,project_id) => {
   alert(project_id);
   alert(JSON.stringify(newScenario));
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${chosenWorkspace?.id}/projects/${cProject_id}/scenarios/addScenario`, {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/workspaces/${chosenWorkspace?.id}/projects/${cProject_id}/scenarios/addScenario`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -331,7 +331,7 @@ const handleAddScenario = async (event,project_id) => {
 
 const handleUpdateScenario= async () => {
   try {
-      const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${chosenWorkspace?.id}/projects/${cProject_id}/scenarios/updateScenario`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/workspaces/${chosenWorkspace?.id}/projects/${cProject_id}/scenarios/updateScenario`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -370,7 +370,7 @@ const handleDeleteScenario = async () => {
   
   try {
     // '{workspace}/projects/{project}/scenarios'
-    const response = await fetch(`http://127.0.0.1:8000/api/workspaces/${chosenWorkspace?.id}/projects/${cProject_id}/scenarios/deleteScenario`, {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/workspaces/${chosenWorkspace?.id}/projects/${cProject_id}/scenarios/deleteScenario`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1024,7 +1024,7 @@ const handleDeleteScenario = async () => {
               };
 
               try {
-                const response = await fetch(`http://127.0.0.1:8000/api/auth/workspaces/${chosenWorkspace?.id}`, {
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/workspaces/${chosenWorkspace?.id}`, {
                   method: 'POST', // Or 'POST' depending on your backend logic
                   headers: {
                     'Content-Type': 'application/json',
@@ -1092,7 +1092,7 @@ const handleDeleteScenario = async () => {
               };
 
               try {
-                const response = await fetch(`http://127.0.0.1:8000/api/auth/users/${chosenUser?.id}/addWorkspace`, {
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/users/${chosenUser?.id}/addWorkspace`, {
                   method: 'POST', // Or 'POST' depending on your backend logic
                   headers: {
                     'Content-Type': 'application/json',

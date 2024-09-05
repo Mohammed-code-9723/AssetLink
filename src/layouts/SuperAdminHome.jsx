@@ -220,7 +220,7 @@ export default function SuperAdminHome() {
 
     useEffect(()=>{
         try {
-        fetch(`http://127.0.0.1:8000/api/auth/allReports`, {
+        fetch(`${process.env.REACT_APP_API_URL}/api/auth/allReports`, {
             method: 'GET',
             headers: {
             'Content-Type': 'application/json',
